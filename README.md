@@ -1,22 +1,31 @@
-# Welcome to your Lovable project
+# R_25 Trading Bot
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Automated trading dashboard for the R_25 Trading Bot system.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- Real-time bot status monitoring
+- Live trading dashboard
+- Trade history and analytics
+- Performance metrics
+- Signal monitoring
 
-**Use Lovable**
+## How to run
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+1. Install dependencies: `npm install` or `bun install`
+2. Start development server: `npm run dev` or `bun dev`
+3. Build for production: `npm run build` or `bun build`
 
-Changes made via Lovable will be committed automatically to this repo.
+## API Integration
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+The frontend connects to the R_25 Trading Bot backend API at:
+- Base URL: `https://r-25v1.onrender.com`
+- Bot Status: `/api/v1/bot/status`
+- Active Trades: `/api/v1/trades/active`
+- Trade History: `/api/v1/trades/history`
+- Trading Signals: `/api/v1/monitor/signals`
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 

@@ -42,8 +42,8 @@ export function Sidebar() {
           </div>
           {!collapsed && (
             <div className="animate-fade-in">
-              <h1 className="text-lg font-bold text-foreground">Deriv Bot</h1>
-              <p className="text-xs text-muted-foreground">R25 Trading</p>
+              <h1 className="text-lg font-bold text-foreground">R_25tradingbot</h1>
+              <p className="text-xs text-muted-foreground">Trading Dashboard</p>
             </div>
           )}
         </div>
