@@ -9,6 +9,7 @@ import { api } from '@/services/api';
 import { formatDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { Signal, Cpu, HardDrive, Activity, Wifi, CheckCircle2, AlertCircle } from 'lucide-react';
+import { transformSignals, transformPerformance, type FrontendSignal, type FrontendPerformance } from '@/lib/monitoringTransformers';
 
 interface SignalData {
   id: string;
@@ -30,8 +31,8 @@ interface PerformanceData {
 }
 
 export default function Monitoring() {
-  const [signals, setSignals] = useState<SignalData[]>([]);
-  const [performance, setPerformance] = useState<PerformanceData | null>(null);
+  const [signals, setSignals] = useState<FrontendSignal[]>([]);
+  const [performance, setPerformance] = useState<FrontendPerformance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -47,8 +48,12 @@ export default function Monitoring() {
         api.monitor.performance(),
       ]);
 
-      setSignals(signalsRes.data?.signals || []);
-      setPerformance(performanceRes.data);
+      // Transform backend data to frontend format
+      const transformedSignals = transformSignals(signalsRes.data || []);
+      const transformedPerformance = transformPerformance(performanceRes.data);
+
+      setSignals(transformedSignals);
+      setPerformance(transformedPerformance);
     } catch (error) {
       console.error('Failed to fetch monitoring data:', error);
     } finally {
