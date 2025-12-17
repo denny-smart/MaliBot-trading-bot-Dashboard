@@ -18,6 +18,7 @@ import { toast } from '@/hooks/use-toast';
 import { formatCurrency, formatDuration } from '@/lib/formatters';
 import { Skeleton } from '@/components/ui/skeleton';
 import { transformTrades, type FrontendTrade } from '@/lib/tradeTransformers';
+import { transformBotStatus, generateProfitChartData, type FrontendBotStatus } from '@/lib/dashboardTransformers';
 
 interface BotStatus {
   status: 'running' | 'stopped';
@@ -31,18 +32,23 @@ interface BotStatus {
 }
 
 export default function Dashboard() {
-  const [botStatus, setBotStatus] = useState<BotStatus | null>(null);
+  const [botStatus, setBotStatus] = useState<FrontendBotStatus | null>(null);
   const [trades, setTrades] = useState<FrontendTrade[]>([]);
   const [profitData, setProfitData] = useState<{ time: string; profit: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetchData();
     wsService.connect();
 
-    // WebSocket listeners
+    // Set up auto-refresh every 10 seconds
+    const interval = setInterval(fetchData, 10000);
+    setRefreshInterval(interval);
+
+    // WebSocket listeners for real-time updates
     wsService.on('bot_status_update', (data: any) => {
-      setBotStatus((prev) => ({ ...prev, ...data }));
+      setBotStatus((prev) => prev ? { ...prev, ...transformBotStatus(data) } : transformBotStatus(data));
     });
 
     wsService.on('new_trade', (data: any) => {
@@ -57,29 +63,32 @@ export default function Dashboard() {
 
     return () => {
       wsService.disconnect();
+      if (interval) clearInterval(interval);
     };
   }, []);
 
   const fetchData = async () => {
-    setIsLoading(true);
     try {
-      const [statusRes, tradesRes] = await Promise.all([
+      const [statusRes, tradesRes, statsRes] = await Promise.all([
         api.bot.status(),
         api.trades.active(),
+        api.trades.stats(),
       ]);
 
-      setBotStatus(statusRes.data);
+      // Transform bot status
+      const transformedStatus = transformBotStatus(statusRes.data);
+      setBotStatus(transformedStatus);
       
-      // Transform backend trades to frontend format
+      // Transform active trades to frontend format
       const activeTrades = transformTrades(tradesRes.data || []);
-      setTrades(activeTrades.slice(0, 10)); // Show recent 10 trades
+      setTrades(activeTrades.slice(0, 10));
 
-      // Generate mock profit data for chart
-      const mockProfitData = Array.from({ length: 24 }, (_, i) => ({
-        time: `${String(i).padStart(2, '0')}:00`,
-        profit: Math.random() * 200 - 50 + (statusRes.data?.profit || 0) * (i / 24),
-      }));
-      setProfitData(mockProfitData);
+      // Generate profit chart data based on actual profit
+      const chartData = generateProfitChartData(
+        transformedStatus.profit,
+        transformedStatus.trades_today
+      );
+      setProfitData(chartData);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
