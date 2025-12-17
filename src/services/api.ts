@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { mockActiveTrades, mockTradeHistory, mockTradeStats } from './mockData';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string) ?? 'https://r-25v1.onrender.com';
 
@@ -22,6 +23,21 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('access_token');
       window.location.href = '/login';
     }
+    
+    // Serve mock data for trades endpoints in development
+    const url = error.config?.url || '';
+    if (import.meta.env.DEV) {
+      if (url.includes('/api/v1/trades/active')) {
+        return Promise.resolve({ data: mockActiveTrades, status: 200 });
+      }
+      if (url.includes('/api/v1/trades/history')) {
+        return Promise.resolve({ data: mockTradeHistory, status: 200 });
+      }
+      if (url.includes('/api/v1/trades/stats')) {
+        return Promise.resolve({ data: mockTradeStats, status: 200 });
+      }
+    }
+    
     return Promise.reject(error);
   }
 );
