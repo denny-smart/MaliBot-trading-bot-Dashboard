@@ -12,7 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
-import { useMediaQuery } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -24,7 +24,7 @@ const navItems = [
 
 export function Sidebar() {
   const location = useLocation();
-  const isMobile = useMediaQuery('(max-width: 1024px)');
+  const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(isMobile);
 
   return (
