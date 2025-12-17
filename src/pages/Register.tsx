@@ -7,23 +7,14 @@ import { Bot, Eye, EyeOff, Loader2, User, Lock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
-const registerSchema = z
-  .object({
-    username: z.string().min(3, 'Username must be at least 3 characters'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string(),
-    terms: z.boolean().refine((val) => val === true, 'You must accept the terms'),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-  });
+const registerSchema = z.object({
+  username: z.string().min(3, 'Username must be at least 3 characters'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
@@ -36,27 +27,10 @@ export default function Register() {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
-    defaultValues: {
-      terms: false,
-    },
   });
-
-  const password = watch('password', '');
-
-  const getPasswordStrength = (password: string): number => {
-    let strength = 0;
-    if (password.length >= 8) strength += 25;
-    if (/[a-z]/.test(password)) strength += 25;
-    if (/[A-Z]/.test(password)) strength += 25;
-    if (/[0-9]/.test(password) || /[^a-zA-Z0-9]/.test(password)) strength += 25;
-    return strength;
-  };
-
-  const passwordStrength = getPasswordStrength(password);
 
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
@@ -155,65 +129,10 @@ export default function Register() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {password && (
-                <div className="space-y-1">
-                  <Progress value={passwordStrength} className="h-1" />
-                  <p className="text-xs text-muted-foreground">
-                    Password strength:{' '}
-                    <span
-                      className={
-                        passwordStrength <= 25
-                          ? 'text-destructive'
-                          : passwordStrength <= 50
-                          ? 'text-warning'
-                          : passwordStrength <= 75
-                          ? 'text-primary'
-                          : 'text-success'
-                      }
-                    >
-                      {passwordStrength <= 25
-                        ? 'Weak'
-                        : passwordStrength <= 50
-                        ? 'Fair'
-                        : passwordStrength <= 75
-                        ? 'Good'
-                        : 'Strong'}
-                    </span>
-                  </p>
-                </div>
-              )}
               {errors.password && (
                 <p className="text-xs text-destructive">{errors.password.message}</p>
               )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  {...register('confirmPassword')}
-                  placeholder="Confirm your password"
-                  className="pl-10"
-                  disabled={isLoading}
-                />
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
-              )}
-            </div>
-
-            <div className="flex items-start gap-2">
-              <Checkbox id="terms" {...register('terms')} className="mt-0.5" />
-              <Label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">
-                I agree to the Terms of Service and Privacy Policy
-              </Label>
-            </div>
-            {errors.terms && (
-              <p className="text-xs text-destructive">{errors.terms.message}</p>
-            )}
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
