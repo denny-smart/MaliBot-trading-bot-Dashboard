@@ -46,19 +46,25 @@ export function transformBotStatus(backendStatus: BackendBotStatus | any): Front
     };
   }
 
+  console.log('Full bot status object:', backendStatus);
+  
+  // Extract statistics if available
+  const stats = backendStatus.statistics || {};
+  console.log('Statistics object:', stats);
+
   // Handle different possible field names from backend
   // Status fields
   const uptime = backendStatus.uptime_seconds ?? backendStatus.uptime ?? 0;
   
-  // Trades/Stats fields (from /api/v1/trades/stats endpoint)
-  const tradesCount = backendStatus.total_trades ?? backendStatus.trades_today ?? 0;
-  const profit = backendStatus.total_pnl ?? backendStatus.pnl ?? backendStatus.profit ?? 0;
-  const rate = backendStatus.win_rate ?? backendStatus.winrate ?? 0;
+  // Trades/Stats fields (from statistics object or top level)
+  const tradesCount = stats.total_trades ?? backendStatus.total_trades ?? backendStatus.trades_today ?? 0;
+  const profit = stats.total_pnl ?? stats.daily_pnl ?? backendStatus.pnl ?? backendStatus.profit ?? 0;
+  const rate = stats.win_rate ?? backendStatus.win_rate ?? backendStatus.winrate ?? 0;
   
   // Optional fields with defaults
   const accountBalance = backendStatus.balance ?? backendStatus.account_balance ?? 0;
   const activePos = backendStatus.active_positions ?? backendStatus.open_positions ?? 0;
-  const profitPercent = backendStatus.pnl_percent ?? backendStatus.profit_percent ?? 0;
+  const profitPercent = backendStatus.pnl_percent ?? backendStatus.profit_percent ?? (profit && accountBalance ? (profit / accountBalance) * 100 : 0);
 
   const transformed: FrontendBotStatus = {
     status: backendStatus.status || 'stopped',
