@@ -75,25 +75,15 @@ export default function Dashboard() {
       setError(null);
       console.log('=== DASHBOARD FETCH START ===');
       
-      // Fetch all data in parallel
-      const [statusRes, tradesRes, statsRes] = await Promise.all([
-        api.bot.status(),
-        api.trades.active(),
-        api.trades.stats(),
-      ]);
+      // Fetch all dashboard data from the single bot status endpoint
+      const statusRes = await api.bot.status();
+      console.log('Bot Status Response:', statusRes.data);
 
-      console.log('Bot Status:', statusRes.data);
-      console.log('Stats:', statsRes.data);
+      // Also fetch trades for the recent trades widget
+      const tradesRes = await api.trades.active();
+      console.log('Active Trades Response:', tradesRes.data);
 
-      // Merge bot status with stats data
-      const mergedStatus = {
-        ...statusRes.data,
-        ...statsRes.data, // This will add trades data to status
-      };
-
-      console.log('Merged bot status with stats:', mergedStatus);
-
-      const transformedStatus = transformBotStatus(mergedStatus);
+      const transformedStatus = transformBotStatus(statusRes.data);
       console.log('Transformed Status:', transformedStatus);
       setBotStatus(transformedStatus);
       
