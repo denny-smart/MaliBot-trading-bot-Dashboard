@@ -53,17 +53,43 @@ export default function Logs() {
     }
   }, [logs, autoScroll]);
 
+  const parseLogString = (logString: string, index: number): LogEntry => {
+    // Format: "2025-12-17 10:19:06 | INFO | [OK] Fetched 150 candles (60s)"
+    const match = logString.match(/^(.+?)\s*\|\s*([A-Z]+)\s*\|\s*(.+)$/);
+    if (match) {
+      const [, timestamp, level, message] = match;
+      return {
+        id: `log-${index}`,
+        timestamp: timestamp.trim(),
+        level: (level.trim() as 'INFO' | 'WARNING' | 'ERROR' | 'DEBUG') || 'INFO',
+        message: message.trim(),
+      };
+    }
+    // Fallback for unparseable logs
+    return {
+      id: `log-${index}`,
+      timestamp: new Date().toISOString(),
+      level: 'INFO',
+      message: logString,
+    };
+  };
+
   const fetchLogs = async () => {
     try {
       const response = await api.monitor.logs();
-      setLogs(response.data?.logs || []);
+      const logsData = response.data?.logs || [];
+      // Parse string logs into LogEntry objects
+      const parsedLogs = logsData.map((log: string | LogEntry, index: number) =>
+        typeof log === 'string' ? parseLogString(log, index) : log
+      );
+      setLogs(parsedLogs);
     } catch (error) {
       console.error('Failed to fetch logs:', error);
     }
   };
 
   const filteredLogs = logs.filter((log) => {
-    const matchesSearch = log.message.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (log.message || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLevel = levelFilter === 'all' || log.level === levelFilter;
     return matchesSearch && matchesLevel;
   });
@@ -164,9 +190,9 @@ export default function Logs() {
               {filteredLogs.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">No logs found</p>
               ) : (
-                filteredLogs.map((log) => (
+                filteredLogs.map((log, index) => (
                   <div
-                    key={log.id}
+                    key={log.id || index}
                     className="flex items-start gap-3 p-2 rounded hover:bg-secondary/50 transition-colors animate-fade-in"
                   >
                     <span className="text-xs text-muted-foreground whitespace-nowrap min-w-[140px]">

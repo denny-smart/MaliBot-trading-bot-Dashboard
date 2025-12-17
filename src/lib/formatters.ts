@@ -32,7 +32,29 @@ export const formatDuration = (seconds: number): string => {
 };
 
 export const formatDate = (date: string | Date): string => {
-  return new Date(date).toLocaleString('en-US', {
+  // Handle format "YYYY-MM-DD HH:MM:SS" directly
+  if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}$/)) {
+    // Replace space with T to make it ISO 8601 compatible
+    const isoString = date.replace(' ', 'T');
+    const parsed = new Date(isoString);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      });
+    }
+  }
+  // Fallback for other date formats
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) {
+    return 'Invalid Date';
+  }
+  return parsed.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
