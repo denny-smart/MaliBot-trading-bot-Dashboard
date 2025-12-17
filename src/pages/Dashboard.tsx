@@ -17,6 +17,7 @@ import { wsService } from '@/services/websocket';
 import { toast } from '@/hooks/use-toast';
 import { formatCurrency, formatDuration } from '@/lib/formatters';
 import { Skeleton } from '@/components/ui/skeleton';
+import { transformTrades, type FrontendTrade } from '@/lib/tradeTransformers';
 
 interface BotStatus {
   status: 'running' | 'stopped';
@@ -29,19 +30,9 @@ interface BotStatus {
   win_rate: number;
 }
 
-interface Trade {
-  id: string;
-  time: string;
-  direction: 'RISE' | 'FALL';
-  entry_price: number;
-  exit_price?: number;
-  profit?: number;
-  status: 'open' | 'closed' | 'win' | 'loss';
-}
-
 export default function Dashboard() {
   const [botStatus, setBotStatus] = useState<BotStatus | null>(null);
-  const [trades, setTrades] = useState<Trade[]>([]);
+  const [trades, setTrades] = useState<FrontendTrade[]>([]);
   const [profitData, setProfitData] = useState<{ time: string; profit: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -78,7 +69,10 @@ export default function Dashboard() {
       ]);
 
       setBotStatus(statusRes.data);
-      setTrades(tradesRes.data?.trades || []);
+      
+      // Transform backend trades to frontend format
+      const activeTrades = transformTrades(tradesRes.data || []);
+      setTrades(activeTrades.slice(0, 10)); // Show recent 10 trades
 
       // Generate mock profit data for chart
       const mockProfitData = Array.from({ length: 24 }, (_, i) => ({

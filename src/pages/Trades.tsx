@@ -17,6 +17,7 @@ import { api } from '@/services/api';
 import { formatCurrency, formatDate, formatDuration } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { Download, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
+import { transformTrades, transformTradeStats, type FrontendTrade, type FrontendTradeStats } from '@/lib/tradeTransformers';
 
 interface Trade {
   id: string;
@@ -45,9 +46,9 @@ interface TradeStats {
 }
 
 export default function Trades() {
-  const [activeTrades, setActiveTrades] = useState<Trade[]>([]);
-  const [historyTrades, setHistoryTrades] = useState<Trade[]>([]);
-  const [stats, setStats] = useState<TradeStats | null>(null);
+  const [activeTrades, setActiveTrades] = useState<FrontendTrade[]>([]);
+  const [historyTrades, setHistoryTrades] = useState<FrontendTrade[]>([]);
+  const [stats, setStats] = useState<FrontendTradeStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [directionFilter, setDirectionFilter] = useState<string>('all');
@@ -66,9 +67,14 @@ export default function Trades() {
         api.trades.stats(),
       ]);
 
-      setActiveTrades(activeRes.data?.trades || []);
-      setHistoryTrades(historyRes.data?.trades || []);
-      setStats(statsRes.data);
+      // Transform backend data to frontend format
+      const activeTrades = transformTrades(activeRes.data || []);
+      const historyTrades = transformTrades(historyRes.data || []);
+      const stats = transformTradeStats(statsRes.data);
+
+      setActiveTrades(activeTrades);
+      setHistoryTrades(historyTrades);
+      setStats(stats);
     } catch (error) {
       console.error('Failed to fetch trades:', error);
     } finally {
@@ -83,7 +89,7 @@ export default function Trades() {
     return matchesSearch && matchesDirection && matchesStatus;
   });
 
-  const TradeRow = ({ trade }: { trade: Trade }) => (
+  const TradeRow = ({ trade }: { trade: FrontendTrade }) => (
     <tr className="hover:bg-secondary/50 transition-colors">
       <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
       <td className="py-3 px-4 text-muted-foreground text-sm">{formatDate(trade.time)}</td>
