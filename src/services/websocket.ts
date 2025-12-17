@@ -9,10 +9,11 @@ class WebSocketService {
 
   connect() {
     const token = localStorage.getItem('access_token');
-    const wsUrl = token 
-      ? `wss://r-25v1.onrender.com/ws/live?token=${token}`
-      : 'wss://r-25v1.onrender.com/ws/live';
-    
+    const WS_BASE = (import.meta.env.VITE_WS_URL as string) || 'wss://r-25v1.onrender.com';
+    const wsUrl = token
+      ? `${WS_BASE}/ws/live?token=${token}`
+      : `${WS_BASE}/ws/live`;
+
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
