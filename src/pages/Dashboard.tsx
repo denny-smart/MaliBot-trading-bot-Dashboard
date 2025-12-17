@@ -74,53 +74,32 @@ export default function Dashboard() {
     try {
       setError(null);
       console.log('=== DASHBOARD FETCH START ===');
-      console.log('API Base URL:', import.meta.env.VITE_API_URL);
       
-      // Test individual endpoints
-      console.log('1. Fetching bot status...');
-      const statusRes = await api.bot.status();
-      console.log('   Response:', statusRes);
-      console.log('   Data:', statusRes.data);
+      // Fetch all data in parallel
+      const [statusRes, tradesRes, statsRes] = await Promise.all([
+        api.bot.status(),
+        api.trades.active(),
+        api.trades.stats(),
+      ]);
 
-      console.log('2. Fetching active trades...');
-      const tradesRes = await api.trades.active();
-      console.log('   Response:', tradesRes);
-      console.log('   Data:', tradesRes.data);
+      console.log('Bot Status:', statusRes.data);
+      console.log('Stats:', statsRes.data);
 
-      console.log('3. Fetching stats...');
-      const statsRes = await api.trades.stats();
-      console.log('   Response:', statsRes);
-      console.log('   Data:', statsRes.data);
+      // Merge bot status with stats data
+      const mergedStatus = {
+        ...statusRes.data,
+        ...statsRes.data, // This will add trades data to status
+      };
 
-      // Transform bot status - handle different response structures
-      let botStatusData = statusRes.data;
-      console.log('4. Bot status raw data:', botStatusData);
-      
-      if (!botStatusData || typeof botStatusData !== 'object') {
-        console.warn('Invalid bot status data, using defaults');
-        botStatusData = {
-          status: 'stopped',
-          uptime: 0,
-          trades_today: 0,
-          balance: 0,
-          profit: 0,
-          profit_percent: 0,
-          active_positions: 0,
-          win_rate: 0,
-        };
-      }
+      console.log('Merged bot status with stats:', mergedStatus);
 
-      const transformedStatus = transformBotStatus(botStatusData);
-      console.log('5. Transformed bot status:', transformedStatus);
+      const transformedStatus = transformBotStatus(mergedStatus);
+      console.log('Transformed Status:', transformedStatus);
       setBotStatus(transformedStatus);
       
       // Transform active trades to frontend format
       const tradesArray = Array.isArray(tradesRes.data) ? tradesRes.data : [];
-      console.log('6. Trades array:', tradesArray);
-      
       const activeTrades = transformTrades(tradesArray);
-      console.log('7. Transformed trades:', activeTrades);
-      
       setTrades(activeTrades.slice(0, 10));
 
       // Generate profit chart data based on actual profit
@@ -128,18 +107,14 @@ export default function Dashboard() {
         transformedStatus.profit,
         transformedStatus.trades_today
       );
-      console.log('8. Chart data:', chartData);
       setProfitData(chartData);
       
       console.log('=== DASHBOARD FETCH SUCCESS ===');
     } catch (error: any) {
       const errorMsg = error?.message || 'Unknown error occurred';
       console.error('=== DASHBOARD FETCH ERROR ===');
-      console.error('Full error:', error);
-      console.error('Error message:', errorMsg);
-      console.error('Error response:', error?.response);
-      console.error('Error response data:', error?.response?.data);
-      setError(`${errorMsg} - Check console for details`);
+      console.error('Error:', error);
+      setError(`${errorMsg}`);
     } finally {
       setIsLoading(false);
     }
