@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [trades, setTrades] = useState<FrontendTrade[]>([]);
   const [profitData, setProfitData] = useState<{ time: string; profit: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
+      setError(null);
       console.log('Fetching dashboard data...');
       const [statusRes, tradesRes, statsRes] = await Promise.all([
         api.bot.status(),
@@ -111,8 +113,10 @@ export default function Dashboard() {
         transformedStatus.trades_today
       );
       setProfitData(chartData);
-    } catch (error) {
+    } catch (error: any) {
+      const errorMsg = error?.message || 'Unknown error occurred';
       console.error('Failed to fetch data:', error);
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -181,6 +185,12 @@ export default function Dashboard() {
   return (
     <DashboardLayout title="Dashboard">
       <div className="space-y-6">
+        {error && (
+          <div className="p-4 bg-destructive/10 border border-destructive rounded-lg">
+            <p className="text-destructive text-sm font-medium">Error: {error}</p>
+            <p className="text-destructive/70 text-xs mt-2">Check console for more details</p>
+          </div>
+        )}
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <StatsCard
