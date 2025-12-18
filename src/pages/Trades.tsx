@@ -89,6 +89,33 @@ export default function Trades() {
     return matchesSearch && matchesDirection && matchesStatus;
   });
 
+  const exportToCSV = () => {
+    const headers = ['Trade ID', 'Date/Time', 'Direction', 'Entry Price', 'Exit Price', 'Stake', 'Profit/Loss', 'Duration (s)', 'Status'];
+    const rows = filteredHistory.map((trade) => [
+      trade.id,
+      trade.time,
+      trade.direction,
+      trade.entry_price,
+      trade.exit_price ?? '',
+      trade.stake,
+      trade.profit ?? '',
+      trade.duration ?? '',
+      trade.status,
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${cell}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `trade_history_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const TradeRow = ({ trade }: { trade: FrontendTrade }) => (
     <tr className="hover:bg-secondary/50 transition-colors">
       <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
@@ -223,7 +250,7 @@ export default function Trades() {
                 <SelectItem value="loss">Loss</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={exportToCSV} disabled={filteredHistory.length === 0}>
               <Download className="w-4 h-4" />
               Export CSV
             </Button>
