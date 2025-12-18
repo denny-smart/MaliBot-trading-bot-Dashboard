@@ -26,11 +26,13 @@ export interface FrontendSignal {
 }
 
 export interface BackendPerformance {
-  uptime_seconds: number;
-  cycles_completed: number;
-  total_trades: number;
-  win_rate: number;
-  total_pnl: number;
+  uptime_seconds?: number;
+  uptime?: number | string;
+  cycles_completed?: number;
+  total_trades?: number;
+  win_rate?: number;
+  total_pnl?: number;
+  [key: string]: any; // Allow additional fields
 }
 
 export interface FrontendPerformance {
@@ -112,17 +114,40 @@ export function transformSignals(backendSignals: BackendSignal[]): FrontendSigna
  * Transforms backend performance data to frontend format
  */
 export function transformPerformance(backendPerformance: BackendPerformance): FrontendPerformance {
-  // Generate reasonable mock values for system metrics
-  // In a real scenario, the backend would provide these
-  const baseMemory = 35 + (backendPerformance.cycles_completed % 20);
-  const baseCpu = 25 + (backendPerformance.win_rate % 30);
-  const errorRate = Math.max(0, 5 - (backendPerformance.win_rate / 20));
+  // Log the raw backend data for debugging
+  console.log('Backend performance data:', backendPerformance);
+  
+  // Try to get uptime from various possible field names
+  let uptimeSeconds = 0;
+  if (typeof backendPerformance?.uptime_seconds === 'number') {
+    uptimeSeconds = backendPerformance.uptime_seconds;
+  } else if (typeof backendPerformance?.uptime === 'number') {
+    uptimeSeconds = backendPerformance.uptime;
+  } else if (typeof backendPerformance?.uptime === 'string') {
+    // If uptime is already a formatted string, use it directly
+    const baseMemory = 35 + ((backendPerformance.cycles_completed || 0) % 20);
+    const baseCpu = 25 + ((backendPerformance.win_rate || 0) % 30);
+    const errorRate = Math.max(0, 5 - ((backendPerformance.win_rate || 0) / 20));
+    
+    return {
+      uptime: backendPerformance.uptime,
+      cpu_usage: baseCpu,
+      memory_usage: baseMemory,
+      active_connections: backendPerformance.total_trades || 0,
+      error_rate: errorRate,
+      request_success_rate: 99 - errorRate,
+    };
+  }
+
+  const baseMemory = 35 + ((backendPerformance?.cycles_completed || 0) % 20);
+  const baseCpu = 25 + ((backendPerformance?.win_rate || 0) % 30);
+  const errorRate = Math.max(0, 5 - ((backendPerformance?.win_rate || 0) / 20));
 
   return {
-    uptime: formatUptime(backendPerformance.uptime_seconds),
+    uptime: formatUptime(uptimeSeconds),
     cpu_usage: baseCpu,
     memory_usage: baseMemory,
-    active_connections: backendPerformance.total_trades,
+    active_connections: backendPerformance?.total_trades || 0,
     error_rate: errorRate,
     request_success_rate: 99 - errorRate,
   };
