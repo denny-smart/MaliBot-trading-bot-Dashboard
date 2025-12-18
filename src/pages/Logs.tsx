@@ -17,7 +17,7 @@ import { api } from '@/services/api';
 import { wsService } from '@/services/websocket';
 import { formatDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
-import { Search, Download, Trash2, ArrowDown } from 'lucide-react';
+import { Search, Download, Trash2, ArrowDown, RefreshCw } from 'lucide-react';
 
 interface LogEntry {
   id: string;
@@ -32,7 +32,8 @@ export default function Logs() {
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState<string>('all');
   const [autoScroll, setAutoScroll] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchLogs();
@@ -47,9 +48,24 @@ export default function Logs() {
     };
   }, []);
 
+  // Auto-refresh every 30 seconds
   useEffect(() => {
-    if (autoScroll && scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (!autoRefresh) return;
+
+    const interval = setInterval(() => {
+      fetchLogs();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [autoRefresh]);
+
+  // Auto-scroll to bottom when new logs arrive
+  useEffect(() => {
+    if (autoScroll && scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
   }, [logs, autoScroll]);
 
@@ -155,20 +171,37 @@ export default function Logs() {
             </Select>
           </div>
 
-          {/* Second Row: Auto-scroll and Action Buttons */}
+          {/* Second Row: Auto-scroll, Auto-refresh and Action Buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 md:gap-4">
-            <div className="flex items-center gap-2">
-              <Switch
-                id="auto-scroll"
-                checked={autoScroll}
-                onCheckedChange={setAutoScroll}
-              />
-              <Label htmlFor="auto-scroll" className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
-                Auto-scroll
-              </Label>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="auto-scroll"
+                  checked={autoScroll}
+                  onCheckedChange={setAutoScroll}
+                />
+                <Label htmlFor="auto-scroll" className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+                  Auto-scroll
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="auto-refresh"
+                  checked={autoRefresh}
+                  onCheckedChange={setAutoRefresh}
+                />
+                <Label htmlFor="auto-refresh" className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap flex items-center gap-1">
+                  <RefreshCw className={cn("w-3 h-3", autoRefresh && "animate-spin")} style={{ animationDuration: '3s' }} />
+                  30s refresh
+                </Label>
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={fetchLogs} className="gap-2 flex-1 sm:flex-none text-xs sm:text-sm">
+                <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Refresh</span>
+              </Button>
               <Button variant="outline" size="sm" onClick={clearLogs} className="gap-2 flex-1 sm:flex-none text-xs sm:text-sm">
                 <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Clear</span>
@@ -190,7 +223,7 @@ export default function Logs() {
             </Badge>
           </div>
 
-          <ScrollArea className="h-[400px] sm:h-[500px] md:h-[600px] rounded-lg bg-background/50 border border-border" ref={scrollRef}>
+          <ScrollArea className="h-[400px] sm:h-[500px] md:h-[600px] rounded-lg bg-background/50 border border-border" ref={scrollAreaRef}>
             <div className="p-2 sm:p-4 space-y-1 sm:space-y-2 font-mono text-xs sm:text-sm">
               {filteredLogs.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">No logs found</p>
@@ -233,8 +266,11 @@ export default function Logs() {
               size="sm"
               className="absolute bottom-8 right-8 gap-2"
               onClick={() => {
-                if (scrollRef.current) {
-                  scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+                if (scrollAreaRef.current) {
+                  const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+                  if (scrollContainer) {
+                    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+                  }
                 }
               }}
             >
