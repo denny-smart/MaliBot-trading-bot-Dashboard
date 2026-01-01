@@ -40,7 +40,7 @@ export default function Login() {
         title: 'Welcome back!',
         description: 'Successfully logged in to your account.',
       });
-      navigate('/');
+      navigate('/dashboard');
     } catch (error: any) {
       toast({
         title: 'Login failed',
