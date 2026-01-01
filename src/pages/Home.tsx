@@ -8,60 +8,208 @@ import {
   TrendingUp, 
   BarChart3, 
   ArrowRight, 
-  PlayCircle,
-  Settings,
-  Activity
+  Activity,
+  Clock,
+  LineChart,
+  AlertTriangle,
+  Globe,
+  Radio,
+  Lock,
+  Bell,
+  FileText,
+  PieChart,
+  History,
+  Target,
+  ScrollText
 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
-const features = [
+// Animation hook for scroll reveal
+function useScrollReveal() {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, isVisible };
+}
+
+// Animated Section Component
+function AnimatedSection({ 
+  children, 
+  className = '',
+  delay = 0 
+}: { 
+  children: React.ReactNode; 
+  className?: string;
+  delay?: number;
+}) {
+  const { ref, isVisible } = useScrollReveal();
+  
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${className}`}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+        transitionDelay: `${delay}ms`
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// Feature Card Component
+function FeatureCard({ 
+  icon: Icon, 
+  title, 
+  description, 
+  delay = 0 
+}: { 
+  icon: React.ElementType; 
+  title: string; 
+  description: string;
+  delay?: number;
+}) {
+  const { ref, isVisible } = useScrollReveal();
+  
+  return (
+    <div
+      ref={ref}
+      className="group"
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transition: `all 0.5s ease-out ${delay}ms`
+      }}
+    >
+      <Card className="h-full bg-card/50 border-border/50 hover:border-primary/50 hover:bg-card/80 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
+        <CardContent className="p-6">
+          <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
+            <Icon className="w-6 h-6" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+            {title}
+          </h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+const coreFeatures = [
   {
     icon: Zap,
     title: 'Automated Trading',
-    description: 'Execute trades automatically 24/7 based on your configured strategies without manual intervention.',
+    description: 'Execute trades automatically based on technical analysis signals without manual intervention.',
+  },
+  {
+    icon: Clock,
+    title: 'Multi-Timeframe Analysis',
+    description: 'Analyze 1-minute and 5-minute charts simultaneously for precise entry and exit signals.',
+  },
+  {
+    icon: LineChart,
+    title: 'Technical Indicators',
+    description: 'RSI, ADX, ATR, MACD, and Bollinger Bands working together for accurate predictions.',
   },
   {
     icon: Shield,
     title: 'Risk Management',
-    description: 'Built-in stop-loss, take-profit, and position sizing to protect your capital.',
+    description: 'Built-in stop loss, take profit, and trailing stop to protect your capital.',
   },
   {
-    icon: BarChart3,
-    title: 'Real-time Analysis',
-    description: 'Monitor market conditions and get instant insights with live data feeds.',
+    icon: AlertTriangle,
+    title: 'Anti-Reversal Protection',
+    description: 'Smart detection to avoid volatile market conditions and sudden reversals.',
   },
   {
     icon: TrendingUp,
-    title: 'Secure Execution',
-    description: 'Enterprise-grade security ensures your trades are executed reliably and safely.',
+    title: 'Trend Following',
+    description: 'Identify and ride market trends with intelligent position management.',
   },
 ];
 
-const steps = [
+const apiFeatures = [
   {
-    number: '01',
-    icon: Settings,
-    title: 'Connect Account',
-    description: 'Link your exchange account securely with API keys.',
+    icon: Globe,
+    title: 'REST API',
+    description: 'Full bot control through a comprehensive RESTful API interface.',
   },
   {
-    number: '02',
-    icon: Zap,
-    title: 'Configure Strategy',
-    description: 'Set your trading parameters, risk limits, and preferences.',
+    icon: Radio,
+    title: 'WebSocket API',
+    description: 'Real-time streaming updates for trades, signals, and market data.',
   },
   {
-    number: '03',
-    icon: Activity,
-    title: 'Run & Monitor',
-    description: 'Start the bot and track performance in real-time.',
+    icon: Lock,
+    title: 'JWT Authentication',
+    description: 'Secure token-based authentication for protected access.',
+  },
+  {
+    icon: Bell,
+    title: 'Telegram Notifications',
+    description: 'Instant trade alerts and status updates via Telegram.',
+  },
+  {
+    icon: FileText,
+    title: 'Interactive API Docs',
+    description: 'Swagger and ReDoc documentation for easy integration.',
+  },
+];
+
+const monitoringFeatures = [
+  {
+    icon: PieChart,
+    title: 'Live Performance',
+    description: 'Real-time metrics including win rate, P&L, and trade statistics.',
+  },
+  {
+    icon: History,
+    title: 'Trade History',
+    description: 'Complete historical record of all executed trades and outcomes.',
+  },
+  {
+    icon: Target,
+    title: 'Signal Tracking',
+    description: 'Monitor buy/sell signals and their accuracy over time.',
+  },
+  {
+    icon: ScrollText,
+    title: 'Real-time Logs',
+    description: 'Live system logs for transparency and debugging.',
   },
 ];
 
 export default function Home() {
+  const [heroVisible, setHeroVisible] = useState(false);
+
+  useEffect(() => {
+    setHeroVisible(true);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-lg">
+      <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/20 text-primary">
@@ -70,19 +218,22 @@ export default function Home() {
             <span className="text-xl font-bold text-foreground">R_25tradingbot</span>
           </div>
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <a href="#features" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Features
             </a>
-            <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              How It Works
+            <a href="#api" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              API
+            </a>
+            <a href="#monitoring" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              Monitoring
             </a>
           </nav>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" asChild>
-              <Link to="/login">Log In</Link>
+            <Button variant="ghost" asChild className="hover:text-primary">
+              <Link to="/login">Sign In</Link>
             </Button>
-            <Button asChild>
-              <Link to="/register">Get Started</Link>
+            <Button asChild className="shadow-lg shadow-primary/25">
+              <Link to="/register">Sign Up</Link>
             </Button>
           </div>
         </div>
@@ -90,147 +241,213 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
-        <div className="container mx-auto px-4 py-24 md:py-32 relative">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-              <Bot className="w-4 h-4" />
-              <span>Automated Trading Platform</span>
+        {/* Animated background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+        
+        {/* Floating elements */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+
+        <div className="container mx-auto px-4 py-24 md:py-32 lg:py-40 relative">
+          <div className="max-w-4xl mx-auto text-center">
+            <div 
+              className="transition-all duration-1000 ease-out"
+              style={{
+                opacity: heroVisible ? 1 : 0,
+                transform: heroVisible ? 'translateY(0)' : 'translateY(30px)'
+              }}
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8">
+                <Activity className="w-4 h-4 animate-pulse" />
+                <span>Intelligent Automated Trading</span>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Automated Trading{' '}
-              <span className="text-primary">Made Simple</span>{' '}
-              and Smart
+
+            <h1 
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight transition-all duration-1000 ease-out"
+              style={{
+                opacity: heroVisible ? 1 : 0,
+                transform: heroVisible ? 'translateY(0)' : 'translateY(30px)',
+                transitionDelay: '100ms'
+              }}
+            >
+              Smart Trading Bot for{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">
+                Precision Trading
+              </span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Take control of your trading with intelligent automation. Set your strategy once, 
-              and let the bot execute trades around the clock with precision and consistency.
+
+            <p 
+              className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed transition-all duration-1000 ease-out"
+              style={{
+                opacity: heroVisible ? 1 : 0,
+                transform: heroVisible ? 'translateY(0)' : 'translateY(30px)',
+                transitionDelay: '200ms'
+              }}
+            >
+              An intelligent automated trading bot that analyzes markets in real time, 
+              manages risk with precision, and executes trades based on advanced technical indicators.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="gap-2 px-8" asChild>
+
+            <div 
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-1000 ease-out"
+              style={{
+                opacity: heroVisible ? 1 : 0,
+                transform: heroVisible ? 'translateY(0)' : 'translateY(30px)',
+                transitionDelay: '300ms'
+              }}
+            >
+              <Button size="lg" className="gap-2 px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow" asChild>
                 <Link to="/register">
-                  <PlayCircle className="w-5 h-5" />
-                  Start Trading
+                  Sign Up
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="gap-2" asChild>
+              <Button size="lg" variant="outline" className="gap-2 border-border/50 hover:border-primary/50 hover:bg-primary/5" asChild>
                 <Link to="/login">
-                  View Dashboard
-                  <ArrowRight className="w-4 h-4" />
+                  Sign In
                 </Link>
               </Button>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="mt-16 md:mt-24 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div 
+            className="mt-20 md:mt-28 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto transition-all duration-1000 ease-out"
+            style={{
+              opacity: heroVisible ? 1 : 0,
+              transform: heroVisible ? 'translateY(0)' : 'translateY(30px)',
+              transitionDelay: '400ms'
+            }}
+          >
             {[
-              { value: '24/7', label: 'Trading Hours' },
-              { value: '99.9%', label: 'Uptime' },
+              { value: '24/7', label: 'Automated Trading' },
+              { value: '5+', label: 'Technical Indicators' },
               { value: '<50ms', label: 'Execution Speed' },
-              { value: '100+', label: 'Strategies' },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center p-4">
-                <div className="text-2xl md:text-3xl font-bold text-primary">{stat.value}</div>
-                <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+              { value: 'Real-time', label: 'Market Analysis' },
+            ].map((stat, index) => (
+              <div 
+                key={stat.label} 
+                className="text-center p-6 rounded-xl bg-card/30 border border-border/30 backdrop-blur-sm hover:border-primary/30 transition-colors"
+              >
+                <div className="text-2xl md:text-3xl font-bold text-primary mb-1">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 md:py-28 bg-muted/30">
+      {/* Core Trading Features */}
+      <section id="features" className="py-24 md:py-32 bg-muted/20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 md:mb-16">
+          <AnimatedSection className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+              <BarChart3 className="w-4 h-4" />
+              <span>Core Features</span>
+            </div>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Powerful Features
+              Powerful Trading Capabilities
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to automate your trading strategy with confidence.
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              Advanced technical analysis and risk management features for consistent trading performance.
             </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {features.map((feature) => (
-              <Card key={feature.title} className="bg-card border-border hover:border-primary/50 transition-colors">
-                <CardContent className="p-6">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
-                    <feature.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
+          </AnimatedSection>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {coreFeatures.map((feature, index) => (
+              <FeatureCard key={feature.title} {...feature} delay={index * 100} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 md:py-28">
+      {/* API & Integration */}
+      <section id="api" className="py-24 md:py-32">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 md:mb-16">
+          <AnimatedSection className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+              <Globe className="w-4 h-4" />
+              <span>API & Integration</span>
+            </div>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              How It Works
+              Seamless Integration
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Get started in three simple steps and begin automating your trades today.
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              Full API access with real-time updates and secure authentication.
             </p>
+          </AnimatedSection>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {apiFeatures.map((feature, index) => (
+              <FeatureCard key={feature.title} {...feature} delay={index * 100} />
+            ))}
           </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {steps.map((step, index) => (
-              <div key={step.title} className="relative text-center">
-                {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-px bg-border" />
-                )}
-                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary/10 text-primary mb-6 relative">
-                  <span className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center">
-                    {step.number}
-                  </span>
-                  <step.icon className="w-10 h-10" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
-                <p className="text-muted-foreground">{step.description}</p>
-              </div>
+        </div>
+      </section>
+
+      {/* Monitoring & Analytics */}
+      <section id="monitoring" className="py-24 md:py-32 bg-muted/20">
+        <div className="container mx-auto px-4">
+          <AnimatedSection className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+              <Activity className="w-4 h-4" />
+              <span>Monitoring</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Real-time Analytics
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              Track performance, analyze trades, and monitor signals in real time.
+            </p>
+          </AnimatedSection>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            {monitoringFeatures.map((feature, index) => (
+              <FeatureCard key={feature.title} {...feature} delay={index * 100} />
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 md:py-28 bg-primary/5">
-        <div className="container mx-auto px-4">
+      <section className="py-24 md:py-32 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-transparent" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+        
+        <AnimatedSection className="container mx-auto px-4 relative">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Ready to Start Trading?
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+              Start Trading Smarter Today
             </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Join now and let intelligent automation work for you. No complex setup required.
+            <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto">
+              Join now and let intelligent automation analyze markets and execute trades for you.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="gap-2 px-8" asChild>
+              <Button size="lg" className="gap-2 px-10 shadow-lg shadow-primary/25" asChild>
                 <Link to="/register">
-                  Create Free Account
+                  Sign Up Now
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/login">Sign In to Dashboard</Link>
+              <Button size="lg" variant="outline" className="border-border/50 hover:border-primary/50" asChild>
+                <Link to="/login">Sign In</Link>
               </Button>
             </div>
           </div>
-        </div>
+        </AnimatedSection>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8">
+      <footer className="border-t border-border/50 py-12 bg-muted/10">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Bot className="w-5 h-5 text-primary" />
             <span className="font-semibold text-foreground">R_25tradingbot</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} R_25tradingbot. All rights reserved.
+            © {new Date().getFullYear()} R_25tradingbot. Automated trading with precision.
           </p>
         </div>
       </footer>
