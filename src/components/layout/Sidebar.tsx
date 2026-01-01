@@ -15,7 +15,7 @@ import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/trades', icon: Activity, label: 'Trades' },
   { path: '/monitoring', icon: TrendingUp, label: 'Monitoring' },
   { path: '/logs', icon: FileText, label: 'Logs' },
