@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Bot, 
-  Zap, 
-  Shield, 
-  TrendingUp, 
-  BarChart3, 
-  ArrowRight, 
+import {
+  Bot,
+  Zap,
+  Shield,
+  TrendingUp,
+  BarChart3,
+  ArrowRight,
   Activity,
   Clock,
   LineChart,
@@ -50,17 +50,17 @@ function useScrollReveal() {
 }
 
 // Animated Section Component
-function AnimatedSection({ 
-  children, 
+function AnimatedSection({
+  children,
   className = '',
-  delay = 0 
-}: { 
-  children: React.ReactNode; 
+  delay = 0
+}: {
+  children: React.ReactNode;
   className?: string;
   delay?: number;
 }) {
   const { ref, isVisible } = useScrollReveal();
-  
+
   return (
     <div
       ref={ref}
@@ -77,19 +77,19 @@ function AnimatedSection({
 }
 
 // Feature Card Component
-function FeatureCard({ 
-  icon: Icon, 
-  title, 
-  description, 
-  delay = 0 
-}: { 
-  icon: React.ElementType; 
-  title: string; 
+function FeatureCard({
+  icon: Icon,
+  title,
+  description,
+  delay = 0
+}: {
+  icon: React.ElementType;
+  title: string;
   description: string;
   delay?: number;
 }) {
   const { ref, isVisible } = useScrollReveal();
-  
+
   return (
     <div
       ref={ref}
@@ -233,7 +233,7 @@ export default function Home() {
               <Link to="/login">Sign In</Link>
             </Button>
             <Button asChild className="shadow-lg shadow-primary/25">
-              <Link to="/register">Sign Up</Link>
+              <Link to="/login">Sign Up</Link>
             </Button>
           </div>
         </div>
@@ -244,14 +244,14 @@ export default function Home() {
         {/* Animated background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
-        
+
         {/* Floating elements */}
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
 
         <div className="container mx-auto px-4 py-24 md:py-32 lg:py-40 relative">
           <div className="max-w-4xl mx-auto text-center">
-            <div 
+            <div
               className="transition-all duration-1000 ease-out"
               style={{
                 opacity: heroVisible ? 1 : 0,
@@ -264,7 +264,7 @@ export default function Home() {
               </div>
             </div>
 
-            <h1 
+            <h1
               className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight transition-all duration-1000 ease-out"
               style={{
                 opacity: heroVisible ? 1 : 0,
@@ -278,7 +278,7 @@ export default function Home() {
               </span>
             </h1>
 
-            <p 
+            <p
               className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed transition-all duration-1000 ease-out"
               style={{
                 opacity: heroVisible ? 1 : 0,
@@ -286,11 +286,11 @@ export default function Home() {
                 transitionDelay: '200ms'
               }}
             >
-              A high-performance automated trading bot powered by FastAPI. Analyzes markets in real time, 
+              A high-performance automated trading bot powered by FastAPI. Analyzes markets in real time,
               manages risk with precision, and executes trades based on advanced technical indicators.
             </p>
 
-            <div 
+            <div
               className="flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-1000 ease-out"
               style={{
                 opacity: heroVisible ? 1 : 0,
@@ -299,7 +299,7 @@ export default function Home() {
               }}
             >
               <Button size="lg" className="gap-2 px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow" asChild>
-                <Link to="/register">
+                <Link to="/login">
                   Sign Up
                   <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -313,7 +313,7 @@ export default function Home() {
           </div>
 
           {/* Stats */}
-          <div 
+          <div
             className="mt-20 md:mt-28 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto transition-all duration-1000 ease-out"
             style={{
               opacity: heroVisible ? 1 : 0,
@@ -327,8 +327,8 @@ export default function Home() {
               { value: '<50ms', label: 'Execution Speed' },
               { value: 'Real-time', label: 'Market Analysis' },
             ].map((stat, index) => (
-              <div 
-                key={stat.label} 
+              <div
+                key={stat.label}
                 className="text-center p-6 rounded-xl bg-card/30 border border-border/30 backdrop-blur-sm hover:border-primary/30 transition-colors"
               >
                 <div className="text-2xl md:text-3xl font-bold text-primary mb-1">{stat.value}</div>
@@ -415,7 +415,7 @@ export default function Home() {
       <section className="py-24 md:py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-transparent" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
-        
+
         <AnimatedSection className="container mx-auto px-4 relative">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
@@ -426,7 +426,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button size="lg" className="gap-2 px-10 shadow-lg shadow-primary/25" asChild>
-                <Link to="/register">
+                <Link to="/login">
                   Sign Up Now
                   <ArrowRight className="w-4 h-4" />
                 </Link>
