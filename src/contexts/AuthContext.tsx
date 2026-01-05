@@ -1,66 +1,111 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { api } from '@/services/api';
-
-interface User {
-  id: string;
-  username: string;
-  email: string;
-}
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string, email: string) => Promise<void>;
+  isApproved: boolean | null;
+  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  checkApproval: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isApproved, setIsApproved] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      fetchUser();
-    } else {
-      setIsLoading(false);
-    }
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Reset approval status on logout
+        if (!session) {
+          setIsApproved(null);
+        }
+        
+        // Defer approval check with setTimeout to avoid deadlock
+        if (session?.user) {
+          setTimeout(() => {
+            checkApprovalStatus();
+          }, 0);
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        checkApprovalStatus();
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUser = async () => {
+  const checkApprovalStatus = async () => {
     try {
-      const response = await api.auth.me();
-      setUser(response.data);
+      const response = await api.auth.checkApproval();
+      setIsApproved(response.data.is_approved);
     } catch (error) {
-      localStorage.removeItem('access_token');
+      console.error('Error checking approval status:', error);
+      setIsApproved(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = async (username: string, password: string) => {
-    const response = await api.auth.login(username, password);
-    const { access_token } = response.data;
-    localStorage.setItem('access_token', access_token);
-    await fetchUser();
+  const checkApproval = async (): Promise<boolean> => {
+    try {
+      const response = await api.auth.checkApproval();
+      const approved = response.data.is_approved;
+      setIsApproved(approved);
+      return approved;
+    } catch (error) {
+      console.error('Error checking approval:', error);
+      return false;
+    }
   };
 
-  const register = async (username: string, password: string, email: string) => {
-    await api.auth.register(username, password, email);
+  const signInWithGoogle = async () => {
+    const redirectUrl = `${window.location.origin}/dashboard`;
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+      },
+    });
+    
+    if (error) {
+      throw error;
+    }
   };
 
   const logout = async () => {
     try {
-      await api.auth.logout();
+      await supabase.auth.signOut();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('access_token');
       setUser(null);
+      setSession(null);
+      setIsApproved(null);
     }
   };
 
@@ -68,11 +113,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        session,
         isAuthenticated: !!user,
         isLoading,
-        login,
-        register,
+        isApproved,
+        signInWithGoogle,
         logout,
+        checkApproval,
       }}
     >
       {children}

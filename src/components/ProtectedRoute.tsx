@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isApproved } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -23,6 +23,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Check if user is approved
+  if (isApproved === false) {
+    return <Navigate to="/pending-approval" replace />;
   }
 
   return <>{children}</>;

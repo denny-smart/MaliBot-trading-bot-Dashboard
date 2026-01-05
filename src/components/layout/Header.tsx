@@ -51,11 +51,11 @@ export function Header({ title, onMenuClick }: HeaderProps) {
               <Button variant="ghost" className="flex items-center gap-2 px-2">
                 <Avatar className="w-8 h-8">
                   <AvatarFallback className="bg-primary/20 text-primary text-sm">
-                    {user?.username?.charAt(0).toUpperCase() || 'U'}
+                    {user?.email?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden md:inline text-sm font-medium text-foreground">
-                  {user?.username || 'User'}
+                <span className="hidden md:inline text-sm font-medium text-foreground truncate max-w-[150px]">
+                  {user?.email || 'User'}
                 </span>
               </Button>
             </DropdownMenuTrigger>

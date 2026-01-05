@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, Save, RotateCcw, Lock } from 'lucide-react';
+import { Loader2, Save, RotateCcw, User } from 'lucide-react';
 
 const configSchema = z.object({
   stake_amount: z.number().min(1).max(1000),
@@ -36,25 +36,12 @@ const configSchema = z.object({
   signal_threshold: z.number().min(0).max(100),
 });
 
-const passwordSchema = z
-  .object({
-    current_password: z.string().min(1, 'Current password is required'),
-    new_password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirm_password: z.string(),
-  })
-  .refine((data) => data.new_password === data.confirm_password, {
-    message: "Passwords don't match",
-    path: ['confirm_password'],
-  });
-
 type ConfigForm = z.infer<typeof configSchema>;
-type PasswordForm = z.infer<typeof passwordSchema>;
 
 export default function Settings() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const {
     register,
@@ -78,15 +65,6 @@ export default function Settings() {
       timeframe: '1m',
       signal_threshold: 70,
     },
-  });
-
-  const {
-    register: registerPassword,
-    handleSubmit: handlePasswordSubmit,
-    reset: resetPassword,
-    formState: { errors: passwordErrors },
-  } = useForm<PasswordForm>({
-    resolver: zodResolver(passwordSchema),
   });
 
   useEffect(() => {
@@ -126,26 +104,6 @@ export default function Settings() {
     }
   };
 
-  const onPasswordChange = async (data: PasswordForm) => {
-    setIsChangingPassword(true);
-    try {
-      await api.auth.changePassword(data.current_password, data.new_password);
-      toast({
-        title: 'Password changed',
-        description: 'Your password has been updated successfully.',
-      });
-      resetPassword();
-    } catch (error: any) {
-      toast({
-        title: 'Failed to change password',
-        description: error.response?.data?.detail || 'An error occurred',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
-
   const stopLossPercent = watch('stop_loss_percent');
   const takeProfitPercent = watch('take_profit_percent');
   const signalThreshold = watch('signal_threshold');
@@ -167,7 +125,7 @@ export default function Settings() {
       <Tabs defaultValue="bot" className="space-y-6">
         <TabsList className="bg-secondary">
           <TabsTrigger value="bot">Bot Configuration</TabsTrigger>
-          <TabsTrigger value="account">Account & Security</TabsTrigger>
+          <TabsTrigger value="account">Account</TabsTrigger>
         </TabsList>
 
         <TabsContent value="bot" className="space-y-6">
@@ -330,73 +288,23 @@ export default function Settings() {
         <TabsContent value="account" className="space-y-6">
           {/* User Info */}
           <div className="stat-card">
-            <h3 className="font-semibold text-foreground mb-6">Account Information</h3>
+            <h3 className="font-semibold text-foreground mb-6 flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Account Information
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Username</Label>
-                <Input value={user?.username || ''} disabled />
-              </div>
               <div className="space-y-2">
                 <Label>Email</Label>
                 <Input value={user?.email || ''} disabled />
               </div>
+              <div className="space-y-2">
+                <Label>User ID</Label>
+                <Input value={user?.id || ''} disabled className="font-mono text-xs" />
+              </div>
             </div>
-          </div>
-
-          {/* Change Password */}
-          <div className="stat-card">
-            <h3 className="font-semibold text-foreground mb-6 flex items-center gap-2">
-              <Lock className="w-5 h-5" />
-              Change Password
-            </h3>
-            <form onSubmit={handlePasswordSubmit(onPasswordChange)} className="space-y-4 max-w-md">
-              <div className="space-y-2">
-                <Label htmlFor="current_password">Current Password</Label>
-                <Input
-                  id="current_password"
-                  type="password"
-                  {...registerPassword('current_password')}
-                />
-                {passwordErrors.current_password && (
-                  <p className="text-xs text-destructive">
-                    {passwordErrors.current_password.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="new_password">New Password</Label>
-                <Input id="new_password" type="password" {...registerPassword('new_password')} />
-                {passwordErrors.new_password && (
-                  <p className="text-xs text-destructive">{passwordErrors.new_password.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirm_password">Confirm New Password</Label>
-                <Input
-                  id="confirm_password"
-                  type="password"
-                  {...registerPassword('confirm_password')}
-                />
-                {passwordErrors.confirm_password && (
-                  <p className="text-xs text-destructive">
-                    {passwordErrors.confirm_password.message}
-                  </p>
-                )}
-              </div>
-
-              <Button type="submit" disabled={isChangingPassword}>
-                {isChangingPassword ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Changing...
-                  </>
-                ) : (
-                  'Change Password'
-                )}
-              </Button>
-            </form>
+            <p className="text-sm text-muted-foreground mt-4">
+              Account authentication is managed through Google. To change your email or password, please update your Google account settings.
+            </p>
           </div>
         </TabsContent>
       </Tabs>

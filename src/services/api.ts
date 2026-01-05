@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { supabase } from '@/integrations/supabase/client';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string) ?? 'https://r-25v1.onrender.com';
 
@@ -7,8 +8,11 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
+// Add Supabase token to all requests
+apiClient.interceptors.request.use(async (config) => {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -19,7 +23,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('access_token');
+      supabase.auth.signOut();
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -28,14 +32,8 @@ apiClient.interceptors.response.use(
 
 export const api = {
   auth: {
-    login: (username: string, password: string) =>
-      apiClient.post('/api/v1/auth/login', { username, password }),
-    register: (username: string, password: string, email: string) =>
-      apiClient.post('/api/v1/auth/register', { username, password, email }),
+    checkApproval: () => apiClient.get('/api/v1/auth/check-approval'),
     me: () => apiClient.get('/api/v1/auth/me'),
-    changePassword: (current_password: string, new_password: string) =>
-      apiClient.post('/api/v1/auth/change-password', { current_password, new_password }),
-    logout: () => apiClient.post('/api/v1/auth/logout'),
     status: () => apiClient.get('/api/v1/auth/status'),
   },
   bot: {
