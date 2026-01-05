@@ -15,7 +15,7 @@ export default function Login() {
     if (!authLoading && isAuthenticated) {
       if (isApproved) {
         navigate('/dashboard');
-      } else if (isApproved === false) {
+      } else {
         navigate('/pending-approval');
       }
     }

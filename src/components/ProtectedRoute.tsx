@@ -25,8 +25,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check if user is approved
-  if (isApproved === false) {
+  // Check if user is approved (strict check)
+  if (!isApproved) {
     return <Navigate to="/pending-approval" replace />;
   }
 

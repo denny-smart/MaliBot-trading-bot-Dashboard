@@ -9,6 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   isApproved: boolean | null;
+  role: 'admin' | 'user' | null;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   checkApproval: () => Promise<boolean>;
@@ -21,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isApproved, setIsApproved] = useState<boolean | null>(null);
+  const [role, setRole] = useState<'admin' | 'user' | null>(null);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -28,12 +30,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         // Reset approval status on logout
         if (!session) {
           setIsApproved(null);
+          setRole(null);
         }
-        
+
         // Defer approval check with setTimeout to avoid deadlock
         if (session?.user) {
           setTimeout(() => {
@@ -47,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
         checkApprovalStatus();
       } else {
@@ -60,11 +63,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkApprovalStatus = async () => {
     try {
-      const response = await api.auth.checkApproval();
-      setIsApproved(response.data.is_approved);
+      const response = await api.auth.me();
+      const approved = !!response.data.is_approved;
+      setIsApproved(approved);
+      setRole(response.data.role);
     } catch (error) {
       console.error('Error checking approval status:', error);
       setIsApproved(false);
+      setRole(null);
     } finally {
       setIsLoading(false);
     }
@@ -72,9 +78,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkApproval = async (): Promise<boolean> => {
     try {
-      const response = await api.auth.checkApproval();
-      const approved = response.data.is_approved;
+      const response = await api.auth.me();
+      const approved = !!response.data.is_approved;
       setIsApproved(approved);
+      setRole(response.data.role);
       return approved;
     } catch (error) {
       console.error('Error checking approval:', error);
@@ -84,14 +91,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     const redirectUrl = `${window.location.origin}/dashboard`;
-    
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
       },
     });
-    
+
     if (error) {
       throw error;
     }
@@ -106,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setSession(null);
       setIsApproved(null);
+      setRole(null);
     }
   };
 
@@ -117,6 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isLoading,
         isApproved,
+        role,
         signInWithGoogle,
         logout,
         checkApproval,

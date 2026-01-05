@@ -4,6 +4,9 @@ import { StatsCard } from '@/components/dashboard/StatsCard';
 import { BotControl } from '@/components/dashboard/BotControl';
 import { RecentTrades } from '@/components/dashboard/RecentTrades';
 import { ProfitChart } from '@/components/dashboard/ProfitChart';
+import { AdminUserList } from '@/components/dashboard/AdminUserList';
+import { useAuth } from '@/contexts/AuthContext';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Activity,
@@ -40,6 +43,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const { role } = useAuth();
 
   useEffect(() => {
     fetchData();
@@ -74,7 +78,7 @@ export default function Dashboard() {
     try {
       setError(null);
       console.log('=== DASHBOARD FETCH START ===');
-      
+
       // Fetch all dashboard data from the single bot status endpoint
       const statusRes = await api.bot.status();
       console.log('Bot Status Response:', statusRes.data);
@@ -86,7 +90,7 @@ export default function Dashboard() {
       const transformedStatus = transformBotStatus(statusRes.data);
       console.log('Transformed Status:', transformedStatus);
       setBotStatus(transformedStatus);
-      
+
       // Transform active trades to frontend format
       const tradesArray = Array.isArray(tradesRes.data) ? tradesRes.data : [];
       const activeTrades = transformTrades(tradesArray);
@@ -98,7 +102,7 @@ export default function Dashboard() {
         transformedStatus.trades_today
       );
       setProfitData(chartData);
-      
+
       console.log('=== DASHBOARD FETCH SUCCESS ===');
     } catch (error: any) {
       const errorMsg = error?.message || 'Unknown error occurred';
@@ -182,7 +186,7 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-          <Button 
+          <Button
             onClick={fetchData}
             variant="outline"
             size="sm"
@@ -192,6 +196,20 @@ export default function Dashboard() {
             Refresh
           </Button>
         </div>
+
+        {/* Role Badge */}
+        <div className="flex items-center gap-2">
+          <Badge variant={role === 'admin' ? 'default' : 'secondary'} className="text-sm px-3 py-1">
+            Role: {role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User'}
+          </Badge>
+        </div>
+
+        {/* Admin Section */}
+        {role === 'admin' && (
+          <div className="space-y-6">
+            <AdminUserList />
+          </div>
+        )}
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <StatsCard
