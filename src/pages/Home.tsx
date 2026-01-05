@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Bot, 
@@ -201,6 +202,7 @@ const monitoringFeatures = [
 
 export default function Home() {
   const [heroVisible, setHeroVisible] = useState(false);
+  const { signInWithGoogle } = useAuth();
 
   useEffect(() => {
     setHeroVisible(true);
@@ -232,8 +234,8 @@ export default function Home() {
             <Button variant="ghost" asChild className="hover:text-primary">
               <Link to="/login">Sign In</Link>
             </Button>
-            <Button asChild className="shadow-lg shadow-primary/25">
-              <Link to="/register">Sign Up</Link>
+            <Button className="shadow-lg shadow-primary/25" onClick={signInWithGoogle}>
+              Sign Up
             </Button>
           </div>
         </div>
@@ -298,11 +300,9 @@ export default function Home() {
                 transitionDelay: '300ms'
               }}
             >
-              <Button size="lg" className="gap-2 px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow" asChild>
-                <Link to="/register">
-                  Sign Up
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+              <Button size="lg" className="gap-2 px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow" onClick={signInWithGoogle}>
+                Sign Up
+                <ArrowRight className="w-4 h-4" />
               </Button>
               <Button size="lg" variant="outline" className="gap-2 border-border/50 hover:border-primary/50 hover:bg-primary/5" asChild>
                 <Link to="/login">
@@ -425,11 +425,9 @@ export default function Home() {
               Join now and let intelligent automation analyze markets and execute trades for you.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="gap-2 px-10 shadow-lg shadow-primary/25" asChild>
-                <Link to="/register">
-                  Sign Up Now
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+              <Button size="lg" className="gap-2 px-10 shadow-lg shadow-primary/25" onClick={signInWithGoogle}>
+                Sign Up Now
+                <ArrowRight className="w-4 h-4" />
               </Button>
               <Button size="lg" variant="outline" className="border-border/50 hover:border-primary/50" asChild>
                 <Link to="/login">Sign In</Link>
