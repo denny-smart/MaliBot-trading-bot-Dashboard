@@ -101,8 +101,17 @@ export function AdminUserList() {
                     table: 'profiles',
                 },
                 (payload) => {
-                    // Simple refresh on change
-                    fetchUsers();
+                    // Handle realtime updates without full refetch
+                    if (payload.eventType === 'INSERT') {
+                        const newUser = payload.new as Profile;
+                        setUsers(prev => [newUser, ...prev]);
+                    } else if (payload.eventType === 'UPDATE') {
+                        const updatedUser = payload.new as Profile;
+                        setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+                    } else if (payload.eventType === 'DELETE') {
+                        const deletedUser = payload.old as Profile;
+                        setUsers(prev => prev.filter(u => u.id !== deletedUser.id));
+                    }
                 }
             )
             .subscribe();
