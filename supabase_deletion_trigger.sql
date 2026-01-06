@@ -1,12 +1,14 @@
--- Create a function that deletes the user from auth.users
--- This needs to be SECURITY DEFINER to bypass RLS and access the auth schema
 create or replace function public.delete_user_from_auth()
-returns trigger as $$
+returns trigger 
+language plpgsql
+security definer
+set search_path = public
+as $$
 begin
   delete from auth.users where id = old.id;
   return old;
 end;
-$$ language plpgsql security definer;
+$$;
 
 -- Create the trigger on the profiles table
 -- applying it AFTER DELETE so the profile is gone, and then we clean up the auth user
@@ -37,37 +39,40 @@ begin
   end if;
 end $$;
 
--- Enable RLS
+-- 40. Enable RLS
 alter table public.profiles enable row level security;
 
--- 1. DELETE Policy (Admins only)
+-- CLEANUP: Drop all previous versions of policies to fix "Multiple Permissive Policies" warnings
 drop policy if exists "Admins can delete profiles" on public.profiles;
+drop policy if exists "Profiles visible to owner and admins" on public.profiles;
+drop policy if exists "Public profiles are viewable by everyone" on public.profiles; -- Removing the lingering old policy
+drop policy if exists "Admins can update any profile" on public.profiles;
+drop policy if exists "Users can update own profile" on public.profiles;
+
+-- 50. DELETE Policy (Admins only)
+-- Using (select ...) to force initplan for performance
 create policy "Admins can delete profiles"
   on public.profiles
   for delete
-  using ( public.is_admin() );
+  using ( (select public.is_admin()) );
 
--- 2. SELECT Policy (Admins see all, Users see own)
-drop policy if exists "Profiles visible to owner and admins" on public.profiles;
+-- 60. SELECT Policy (Combined: Admin OR Owner)
 create policy "Profiles visible to owner and admins"
   on public.profiles
   for select
   using (
-    auth.uid() = id
+    (select auth.uid()) = id
     or
-    public.is_admin()
+    (select public.is_admin())
   );
 
--- 3. UPDATE Policy (Admins update all, Users update own)
-drop policy if exists "Admins can update any profile" on public.profiles;
-create policy "Admins can update any profile"
+-- 70. UPDATE Policy (Combined: Admin OR Owner)
+create policy "Admins or owners can update profile"
   on public.profiles
   for update
-  using ( public.is_admin() );
-
-drop policy if exists "Users can update own profile" on public.profiles;
-create policy "Users can update own profile"
-  on public.profiles
-  for update
-  using ( auth.uid() = id );
+  using (
+    (select auth.uid()) = id
+    or
+    (select public.is_admin())
+  );
 
