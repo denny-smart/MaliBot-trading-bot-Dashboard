@@ -140,6 +140,34 @@ export function AdminUserList() {
         }
     };
 
+    const handleRevoke = async (userId: string) => {
+        setProcessingId(userId);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ is_approved: false })
+                .eq('id', userId);
+
+            if (error) throw error;
+
+            toast({
+                title: 'Access Revoked',
+                description: 'The user access has been revoked.',
+            });
+
+            // Optimistic update
+            setUsers(users.map(u => u.id === userId ? { ...u, is_approved: false } : u));
+        } catch (error: any) {
+            toast({
+                title: 'Error revoking access',
+                description: error.message,
+                variant: 'destructive',
+            });
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
     // Filter users
     const pendingUsers = users.filter(u => !u.is_approved);
     const approvedUsers = users.filter(u => u.is_approved);
@@ -207,6 +235,23 @@ export function AdminUserList() {
                                             ) : (
                                                 <>
                                                     <Check className="h-4 w-4 mr-1" /> Approve
+                                                </>
+                                            )}
+                                        </Button>
+                                    )}
+                                    {showApprove && user.is_approved && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-yellow-600 border-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                                            onClick={() => handleRevoke(user.id)}
+                                            disabled={processingId === user.id}
+                                        >
+                                            {processingId === user.id ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <X className="h-4 w-4 mr-1" /> Revoke
                                                 </>
                                             )}
                                         </Button>
