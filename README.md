@@ -1,6 +1,6 @@
-# Deriv R_25 Trading Hub
+# MaliBot Trading Hub
 
-A modern, full-featured trading dashboard for the Deriv R_25 Trading Bot system with Google OAuth authentication and admin approval workflow.
+A modern, full-featured trading dashboard for the MaliBot system with Google OAuth authentication and admin approval workflow.
 
 ## 🚀 Features
 

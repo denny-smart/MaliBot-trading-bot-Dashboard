@@ -62,7 +62,7 @@ export default function Login() {
 
         {/* Login Card */}
         <div className="glass-card rounded-2xl p-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-          <h2 className="text-xl font-semibold text-foreground mb-6 text-center">Sign in to your account</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-6 text-center">Sign in with your account</h2>
 
           <Button
             onClick={handleGoogleSignIn}
