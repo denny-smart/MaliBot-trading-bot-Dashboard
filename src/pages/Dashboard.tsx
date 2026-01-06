@@ -4,7 +4,6 @@ import { StatsCard } from '@/components/dashboard/StatsCard';
 import { BotControl } from '@/components/dashboard/BotControl';
 import { RecentTrades } from '@/components/dashboard/RecentTrades';
 import { ProfitChart } from '@/components/dashboard/ProfitChart';
-import { AdminUserList } from '@/components/dashboard/AdminUserList';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -204,12 +203,6 @@ export default function Dashboard() {
           </Badge>
         </div>
 
-        {/* Admin Section */}
-        {role === 'admin' && (
-          <div className="space-y-6">
-            <AdminUserList />
-          </div>
-        )}
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <StatsCard

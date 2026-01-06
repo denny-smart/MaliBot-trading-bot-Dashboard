@@ -7,12 +7,14 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
-  Bot
+  Bot,
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -22,10 +24,20 @@ const navItems = [
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
+const adminNavItems = [
+  { path: '/users', icon: Users, label: 'Users', adminOnly: true },
+];
+
 export function Sidebar() {
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { role } = useAuth();
   const [collapsed, setCollapsed] = useState(isMobile);
+
+  // Combine nav items, including admin-only items if user is admin
+  const allNavItems = role === 'admin'
+    ? [...navItems, ...adminNavItems]
+    : navItems;
 
   return (
     <aside
@@ -50,7 +62,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map((item) => {
+          {allNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link

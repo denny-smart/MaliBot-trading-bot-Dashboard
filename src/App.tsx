@@ -13,6 +13,7 @@ import Trades from "@/pages/Trades";
 import Monitoring from "@/pages/Monitoring";
 import Logs from "@/pages/Logs";
 import Settings from "@/pages/Settings";
+import Users from "@/pages/Users";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <Users />
                 </ProtectedRoute>
               }
             />
