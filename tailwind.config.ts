@@ -76,6 +76,12 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        bloom: {
+          purple: "#E6E6FA", // Lavender
+          dark: "#1A1A2E",   // Dark background
+          primary: "#8B5CF6", // Primary purple
+          soft: "#F3F0FF",   // Soft background
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

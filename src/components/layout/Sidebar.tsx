@@ -1,9 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Activity, 
-  TrendingUp, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Activity,
+  TrendingUp,
+  Settings,
   FileText,
   ChevronLeft,
   ChevronRight,
@@ -42,7 +42,7 @@ export function Sidebar() {
           </div>
           {!collapsed && (
             <div className="animate-fade-in">
-              <h1 className="text-lg font-bold text-foreground">R_25tradingbot</h1>
+              <h1 className="text-lg font-bold text-foreground">MaliBot</h1>
               <p className="text-xs text-muted-foreground">Trading Dashboard</p>
             </div>
           )}
