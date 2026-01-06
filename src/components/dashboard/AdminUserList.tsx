@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
-import { Check, X, Shield, User as UserIcon, Loader2 } from 'lucide-react';
+import { Check, X, Shield, User as UserIcon, Loader2, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Profile {
@@ -34,6 +34,36 @@ export function AdminUserList() {
     const [users, setUsers] = useState<Profile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
+
+    const handleDelete = async (userId: string) => {
+        if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+
+        setProcessingId(userId);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .delete()
+                .eq('id', userId);
+
+            if (error) throw error;
+
+            toast({
+                title: 'User deleted',
+                description: 'The user profile has been removed.',
+            });
+
+            // Optimistic update
+            setUsers(prev => prev.filter(u => u.id !== userId));
+        } catch (error: any) {
+            toast({
+                title: 'Error deleting user',
+                description: error.message,
+                variant: 'destructive',
+            });
+        } finally {
+            setProcessingId(null);
+        }
+    };
 
     const fetchUsers = async () => {
         setIsLoading(true);
@@ -165,21 +195,35 @@ export function AdminUserList() {
                                 {user.created_at && formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
                             </TableCell>
                             <TableCell className="text-right">
-                                {showApprove && !user.is_approved && (
+                                <div className="flex justify-end gap-2">
+                                    {showApprove && !user.is_approved && (
+                                        <Button
+                                            size="sm"
+                                            onClick={() => handleApprove(user.id)}
+                                            disabled={processingId === user.id}
+                                        >
+                                            {processingId === user.id ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <Check className="h-4 w-4 mr-1" /> Approve
+                                                </>
+                                            )}
+                                        </Button>
+                                    )}
                                     <Button
                                         size="sm"
-                                        onClick={() => handleApprove(user.id)}
+                                        variant="destructive"
+                                        onClick={() => handleDelete(user.id)}
                                         disabled={processingId === user.id}
                                     >
                                         {processingId === user.id ? (
                                             <Loader2 className="h-4 w-4 animate-spin" />
                                         ) : (
-                                            <>
-                                                <Check className="h-4 w-4 mr-1" /> Approve
-                                            </>
+                                            <Trash2 className="h-4 w-4" />
                                         )}
                                     </Button>
-                                )}
+                                </div>
                             </TableCell>
                         </TableRow>
                     ))
