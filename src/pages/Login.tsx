@@ -56,8 +56,8 @@ export default function Login() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/20 text-primary mb-4 glow-primary">
             <Bot className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Deriv Trading Bot</h1>
-          <p className="text-muted-foreground mt-1">R25 Automated Trading System</p>
+          <h1 className="text-2xl font-bold text-foreground">MaliBot</h1>
+          <p className="text-muted-foreground mt-1">Volatility Market Automated Trading System</p>
         </div>
 
         {/* Login Card */}
