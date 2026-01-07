@@ -1,6 +1,7 @@
 # MaliBot Trading Hub
 
 A modern, full-featured trading dashboard for the MaliBot system with Google OAuth authentication and admin approval workflow.
+https://malibot.vercel.app/
 
 ## 🚀 Features
 
