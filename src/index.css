@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @layer base {
   :root {
@@ -225,5 +225,22 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
     border-radius: 3px;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+    transform-style: preserve-3d;
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: perspective(1000px) rotateX(5deg) translateY(0px);
+    }
+
+    50% {
+      transform: perspective(1000px) rotateX(5deg) translateY(-10px);
+    }
   }
 }
