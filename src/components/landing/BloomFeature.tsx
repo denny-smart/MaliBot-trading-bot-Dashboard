@@ -21,7 +21,7 @@ export function BloomFeature({
 
     const variants = {
         light: "bg-bloom-soft text-bloom-dark",
-        dark: "bg-bloom-dark text-bloom-soft border border-bloom-soft/10",
+        dark: "bg-bloom-dark/50 text-bloom-soft border border-bloom-soft/10",
         glass: "bg-white/5 backdrop-blur-lg border border-white/10 text-white"
     };
 
@@ -43,7 +43,7 @@ export function BloomFeature({
                     <h3 className="text-2xl font-bold mb-3">{title}</h3>
                     <p className={cn(
                         "text-lg leading-relaxed",
-                        variant === 'light' ? "text-slate-600" : "text-bloom-purple/70"
+                        variant === 'light' ? "text-slate-600" : "text-slate-300"
                     )}>
                         {description}
                     </p>
