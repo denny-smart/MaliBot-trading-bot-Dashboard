@@ -48,11 +48,7 @@ export function Sidebar() {
     >
       <div className="flex h-full flex-col">
         {/* Logo */}
-        {/* Logo */}
-        <div
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="flex items-center gap-3 px-4 py-6 border-b border-sidebar-border hover:bg-sidebar-accent/50 transition-colors cursor-pointer"
-        >
+        <div className="flex items-center gap-3 px-4 py-6 border-b border-sidebar-border">
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/20 text-primary">
             <Bot className="w-6 h-6" />
           </div>
