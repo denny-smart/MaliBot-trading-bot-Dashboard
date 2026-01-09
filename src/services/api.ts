@@ -12,7 +12,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(async (config) => {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
-  
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -24,7 +24,6 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       supabase.auth.signOut();
-      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
