@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { supabase } from '@/integrations/supabase/client';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL as string) ?? 'https://r-25v1.onrender.com';
+const API_BASE_URL = (import.meta.env.VITE_API_URL as string) ?? '';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
