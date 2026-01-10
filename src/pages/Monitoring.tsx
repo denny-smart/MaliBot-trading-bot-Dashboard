@@ -10,6 +10,7 @@ import { formatDate, formatDuration } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { Signal, Cpu, HardDrive, Activity, Wifi, CheckCircle2, AlertCircle } from 'lucide-react';
 import { transformSignals, transformPerformance, type FrontendSignal, type FrontendPerformance } from '@/lib/monitoringTransformers';
+import { transformBotStatus } from '@/lib/dashboardTransformers';
 
 interface SignalData {
   id: string;
@@ -52,10 +53,14 @@ export default function Monitoring() {
       // Transform backend data to frontend format
       const transformedSignals = transformSignals(signalsRes.data || []);
       const transformedPerformance = transformPerformance(performanceRes.data);
+      const botStatus = transformBotStatus(botStatusRes.data);
 
       // Override uptime with reliable data from bot status
-      if (botStatusRes.data?.uptime !== undefined) {
-        transformedPerformance.uptime = formatDuration(botStatusRes.data.uptime);
+      if (botStatus.uptime > 0) {
+        transformedPerformance.uptime = formatDuration(botStatus.uptime);
+      } else if (botStatusRes.data?.uptime !== undefined) {
+        // Fallback: try raw uptime if it exists (e.g. if simpler response)
+        transformedPerformance.uptime = formatDuration(typeof botStatusRes.data.uptime === 'number' ? botStatusRes.data.uptime : 0);
       }
 
       setSignals(transformedSignals);
