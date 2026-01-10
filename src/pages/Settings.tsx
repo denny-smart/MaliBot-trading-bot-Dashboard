@@ -34,6 +34,7 @@ const configSchema = z.object({
   strategy: z.string(),
   timeframe: z.string(),
   signal_threshold: z.number().min(0).max(100),
+  deriv_api_key: z.string().optional(),
 });
 
 type ConfigForm = z.infer<typeof configSchema>;
@@ -64,6 +65,7 @@ export default function Settings() {
       strategy: 'default',
       timeframe: '1m',
       signal_threshold: 70,
+      deriv_api_key: '',
     },
   });
 
@@ -88,7 +90,13 @@ export default function Settings() {
   const onSubmit = async (data: ConfigForm) => {
     setIsSaving(true);
     try {
-      await api.config.update(data);
+      // Filter out masked API key before sending
+      const payload = { ...data };
+      if (payload.deriv_api_key && payload.deriv_api_key.startsWith('*****')) {
+        delete payload.deriv_api_key;
+      }
+
+      await api.config.update(payload);
       toast({
         title: 'Settings saved',
         description: 'Your bot configuration has been updated.',
@@ -130,6 +138,25 @@ export default function Settings() {
 
         <TabsContent value="bot" className="space-y-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* API Configuration */}
+            <div className="stat-card">
+              <h3 className="font-semibold text-foreground mb-6">API Configuration</h3>
+              <div className="space-y-2">
+                <Label htmlFor="deriv_api_key">Deriv API Token</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="deriv_api_key"
+                    type="password"
+                    placeholder="Enter your Deriv API Token"
+                    {...register('deriv_api_key')}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Your API token is encrypted and stored securely. Create a token with 'Read' and 'Trade' scopes in your Deriv account settings.
+                </p>
+              </div>
+            </div>
+
             {/* Trading Parameters */}
             <div className="stat-card">
               <h3 className="font-semibold text-foreground mb-6">Trading Parameters</h3>

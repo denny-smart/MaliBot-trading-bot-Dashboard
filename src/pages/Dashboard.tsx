@@ -154,6 +154,31 @@ export default function Dashboard() {
     }
   };
 
+  const handleUpdateApiKey = async (key: string) => {
+    try {
+      // Fetch current config first to preserve other settings
+      const currentConfigRes = await api.config.current();
+      const currentConfig = currentConfigRes.data || {};
+
+      // Update with new key
+      await api.config.update({
+        ...currentConfig,
+        deriv_api_key: key
+      });
+
+      toast({
+        title: 'API Key Updated',
+        description: 'Your Deriv API key has been securely saved.'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Failed to update API Key',
+        description: error.response?.data?.detail || 'An error occurred',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout title="Dashboard">
@@ -258,6 +283,7 @@ export default function Dashboard() {
           onStart={handleStart}
           onStop={handleStop}
           onRestart={handleRestart}
+          onUpdateApiKey={handleUpdateApiKey}
         />
 
         {/* Charts and Trades */}

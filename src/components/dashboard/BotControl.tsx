@@ -1,5 +1,7 @@
-import { Play, Square, RotateCw, Loader2 } from 'lucide-react';
+import { Play, Square, RotateCw, Loader2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -17,28 +19,31 @@ interface BotControlProps {
   onStart: () => Promise<void>;
   onStop: () => Promise<void>;
   onRestart: () => Promise<void>;
+  onUpdateApiKey: (key: string) => Promise<void>;
 }
 
-export function BotControl({ status, onStart, onStop, onRestart }: BotControlProps) {
-  const [isLoading, setIsLoading] = useState<'start' | 'stop' | 'restart' | null>(null);
+export function BotControl({ status, onStart, onStop, onRestart, onUpdateApiKey }: BotControlProps) {
+  const [isLoading, setIsLoading] = useState<'start' | 'stop' | 'restart' | 'apikey' | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogAction, setDialogAction] = useState<'start' | 'stop' | 'restart' | null>(null);
+  const [dialogAction, setDialogAction] = useState<'start' | 'stop' | 'restart' | 'apikey' | null>(null);
+  const [apiKey, setApiKey] = useState('');
 
   const handleAction = async () => {
     if (!dialogAction) return;
-    
+
     setIsLoading(dialogAction);
     try {
       if (dialogAction === 'start') await onStart();
       else if (dialogAction === 'stop') await onStop();
       else if (dialogAction === 'restart') await onRestart();
+      else if (dialogAction === 'apikey') await onUpdateApiKey(apiKey);
     } finally {
       setIsLoading(null);
       setDialogOpen(false);
     }
   };
 
-  const openDialog = (action: 'start' | 'stop' | 'restart') => {
+  const openDialog = (action: 'start' | 'stop' | 'restart' | 'apikey') => {
     setDialogAction(action);
     setDialogOpen(true);
   };
@@ -60,6 +65,11 @@ export function BotControl({ status, onStart, onStop, onRestart }: BotControlPro
           title: 'Restart Trading Bot?',
           description: 'The bot will be restarted with the current configuration.',
         };
+      case 'apikey':
+        return {
+          title: 'Configure API Key',
+          description: 'Enter your Deriv API Token to enable trading.',
+        };
       default:
         return { title: '', description: '' };
     }
@@ -77,8 +87,8 @@ export function BotControl({ status, onStart, onStop, onRestart }: BotControlPro
             status === 'running'
               ? 'border-success/50 bg-success/10 animate-glow'
               : status === 'stopped'
-              ? 'border-destructive/50 bg-destructive/10'
-              : 'border-primary/50 bg-primary/10'
+                ? 'border-destructive/50 bg-destructive/10'
+                : 'border-primary/50 bg-primary/10'
           )}
         >
           <div
@@ -108,6 +118,16 @@ export function BotControl({ status, onStart, onStop, onRestart }: BotControlPro
 
         {/* Control Buttons */}
         <div className="flex gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => openDialog('apikey')}
+            className="control-btn"
+            title="Configure API Key"
+          >
+            <Settings className="w-4 h-4" />
+          </Button>
+
           <Button
             onClick={() => openDialog('start')}
             disabled={status === 'running' || isLoading !== null}
@@ -156,6 +176,20 @@ export function BotControl({ status, onStart, onStop, onRestart }: BotControlPro
             <DialogTitle>{dialogContent.title}</DialogTitle>
             <DialogDescription>{dialogContent.description}</DialogDescription>
           </DialogHeader>
+          {dialogAction === 'apikey' && (
+            <div className="py-4">
+              <div className="space-y-2">
+                <Label htmlFor="api-key-input">API Token</Label>
+                <Input
+                  id="api-key-input"
+                  type="password"
+                  placeholder="Enter Deriv API Token"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
