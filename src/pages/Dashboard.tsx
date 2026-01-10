@@ -136,6 +136,20 @@ export default function Dashboard() {
       // If we know it's a 500 and no key is present (though we checked above), handle gracefully
       if (error?.response?.status === 500) {
         setError("Server returned an error. Please check your configuration.");
+
+        // Reset data just in case
+        setBotStatus({
+          status: 'stopped',
+          uptime: 0,
+          trades_today: 0,
+          balance: 0,
+          profit: 0,
+          profit_percent: 0,
+          active_positions: 0,
+          win_rate: 0
+        });
+        setTrades([]);
+        setProfitData([]);
       } else {
         setError(`${errorMsg}`);
       }
