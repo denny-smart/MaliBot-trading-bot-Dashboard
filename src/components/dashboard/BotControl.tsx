@@ -45,7 +45,7 @@ export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUp
   };
 
   const openDialog = (action: 'start' | 'stop' | 'restart' | 'apikey') => {
-    if (action === 'start' && !hasApiKey) {
+    if ((action === 'start' || action === 'restart') && !hasApiKey) {
       setDialogAction('apikey');
     } else {
       setDialogAction(action);
@@ -124,15 +124,7 @@ export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUp
 
         {/* Control Buttons */}
         <div className="flex gap-3">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => openDialog('apikey')}
-            className="control-btn"
-            title="Configure API Key"
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
+
 
           <Button
             onClick={() => openDialog('start')}

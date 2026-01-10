@@ -79,40 +79,70 @@ export default function Dashboard() {
       setError(null);
       console.log('=== DASHBOARD FETCH START ===');
 
-      // Fetch all dashboard data from the single bot status endpoint
-      const statusRes = await api.bot.status();
-      console.log('Bot Status Response:', statusRes.data);
-
-      // Also fetch trades for the recent trades widget
-      const tradesRes = await api.trades.active();
-      console.log('Active Trades Response:', tradesRes.data);
-
-      // Check for API key
+      // 1. Check for API key FIRST
       const configRes = await api.config.current();
-      setHasApiKey(!!configRes.data?.deriv_api_key);
+      const hasKey = !!configRes.data?.deriv_api_key && configRes.data.deriv_api_key !== '';
+      setHasApiKey(hasKey);
 
-      const transformedStatus = transformBotStatus(statusRes.data);
-      console.log('Transformed Status:', transformedStatus);
-      setBotStatus(transformedStatus);
+      // 2. Fetch all dashboard data from the single bot status endpoint
+      // We wrap this in a try-catch specifically to handle the case where backend 500s due to missing key
+      let statusRes;
+      try {
+        statusRes = await api.bot.status();
+        const transformedStatus = transformBotStatus(statusRes.data);
+        console.log('Transformed Status:', transformedStatus);
+        setBotStatus(transformedStatus);
 
-      // Transform active trades to frontend format
-      const tradesArray = Array.isArray(tradesRes.data) ? tradesRes.data : [];
-      const activeTrades = transformTrades(tradesArray);
-      setTrades(activeTrades.slice(0, 10));
+        // Generate profit chart data based on actual profit
+        const chartData = generateProfitChartData(
+          transformedStatus.profit,
+          transformedStatus.trades_today
+        );
+        setProfitData(chartData);
 
-      // Generate profit chart data based on actual profit
-      const chartData = generateProfitChartData(
-        transformedStatus.profit,
-        transformedStatus.trades_today
-      );
-      setProfitData(chartData);
+      } catch (statusError: any) {
+        if (!hasKey) {
+          console.warn("Bot status fetch failed, likely due to missing API key");
+          // Allow this to pass silently or set a specific "stopped" status
+          setBotStatus({
+            status: 'stopped',
+            uptime: 0,
+            trades_today: 0,
+            balance: 0,
+            profit: 0,
+            profit_percent: 0,
+            active_positions: 0,
+            win_rate: 0
+          });
+        } else {
+          throw statusError;
+        }
+      }
+
+      // 3. Also fetch trades for the recent trades widget
+      try {
+        const tradesRes = await api.trades.active();
+        console.log('Active Trades Response:', tradesRes.data);
+        // Transform active trades to frontend format
+        const tradesArray = Array.isArray(tradesRes.data) ? tradesRes.data : [];
+        const activeTrades = transformTrades(tradesArray);
+        setTrades(activeTrades.slice(0, 10));
+      } catch (tradeError) {
+        console.warn("Failed to fetch trades:", tradeError);
+      }
 
       console.log('=== DASHBOARD FETCH SUCCESS ===');
     } catch (error: any) {
       const errorMsg = error?.message || 'Unknown error occurred';
       console.error('=== DASHBOARD FETCH ERROR ===');
       console.error('Error:', error);
-      setError(`${errorMsg}`);
+
+      // If we know it's a 500 and no key is present, don't show the scary error
+      if (error?.response?.status === 500 && !hasApiKey) {
+        setError("Please configure your Deriv API Token to enable the bot.");
+      } else {
+        setError(`${errorMsg}`);
+      }
     } finally {
       setIsLoading(false);
     }
