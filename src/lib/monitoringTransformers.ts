@@ -49,12 +49,12 @@ export interface FrontendPerformance {
  */
 function formatUptime(seconds: number): string {
   if (!seconds || seconds <= 0) return '0h 0m';
-  
+
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = Math.floor(seconds % 60);
-  
+
   if (days > 0) {
     return `${days}d ${hours}h ${minutes}m`;
   }
@@ -72,7 +72,7 @@ function formatUptime(seconds: number): string {
  */
 export function transformSignal(backendSignal: BackendSignal, index: number): FrontendSignal {
   const details = backendSignal.details;
-  
+
   // Determine market conditions based on available indicators
   const conditions: string[] = [];
   if (details.close_above_sma) conditions.push('Close > SMA');
@@ -83,7 +83,7 @@ export function transformSignal(backendSignal: BackendSignal, index: number): Fr
   if (details.rsi_bearish) conditions.push('RSI Bearish');
   if (details.strong_trend) conditions.push('Strong Trend');
   if (details.consecutive_momentum) conditions.push('Momentum');
-  
+
   const marketConditions = conditions.join(', ') || 'Neutral';
 
   // Action taken based on can_trade flag
@@ -116,39 +116,49 @@ export function transformSignals(backendSignals: BackendSignal[]): FrontendSigna
 export function transformPerformance(backendPerformance: BackendPerformance): FrontendPerformance {
   // Log the raw backend data for debugging
   console.log('Backend performance data:', backendPerformance);
-  
+
   // Try to get uptime from various possible field names
   let uptimeSeconds = 0;
   if (typeof backendPerformance?.uptime_seconds === 'number') {
     uptimeSeconds = backendPerformance.uptime_seconds;
   } else if (typeof backendPerformance?.uptime === 'number') {
     uptimeSeconds = backendPerformance.uptime;
-  } else if (typeof backendPerformance?.uptime === 'string') {
-    // If uptime is already a formatted string, use it directly
-    const baseMemory = 35 + ((backendPerformance.cycles_completed || 0) % 20);
-    const baseCpu = 25 + ((backendPerformance.win_rate || 0) % 30);
-    const errorRate = Math.max(0, 5 - ((backendPerformance.win_rate || 0) / 20));
-    
-    return {
-      uptime: backendPerformance.uptime,
-      cpu_usage: baseCpu,
-      memory_usage: baseMemory,
-      active_connections: backendPerformance.total_trades || 0,
-      error_rate: errorRate,
-      request_success_rate: 99 - errorRate,
-    };
   }
 
-  const baseMemory = 35 + ((backendPerformance?.cycles_completed || 0) % 20);
-  const baseCpu = 25 + ((backendPerformance?.win_rate || 0) % 30);
-  const errorRate = Math.max(0, 5 - ((backendPerformance?.win_rate || 0) / 20));
+  // Parse Real Data (or fall back to defaults/calculated if missing)
+  // We check for explicit null/undefined to allow 0 as a valid value
+
+  const cpuUsage = backendPerformance?.cpu_usage !== undefined
+    ? Number(backendPerformance.cpu_usage)
+    : (25 + ((backendPerformance?.win_rate || 0) % 30)); // Fallback simulation
+
+  const memoryUsage = backendPerformance?.memory_usage !== undefined
+    ? Number(backendPerformance.memory_usage)
+    : (35 + ((backendPerformance?.cycles_completed || 0) % 20)); // Fallback simulation
+
+  const activeConnections = backendPerformance?.active_connections !== undefined
+    ? Number(backendPerformance.active_connections)
+    : (backendPerformance?.total_trades || 0);
+
+  const errorRate = backendPerformance?.error_rate !== undefined
+    ? Number(backendPerformance.error_rate)
+    : Math.max(0, 5 - ((backendPerformance?.win_rate || 0) / 20));
+
+  const successRate = backendPerformance?.request_success_rate !== undefined
+    ? Number(backendPerformance.request_success_rate)
+    : (99 - errorRate);
+
+  // Handle uptime string vs number
+  const formattedUptime = typeof backendPerformance?.uptime === 'string'
+    ? backendPerformance.uptime
+    : formatUptime(uptimeSeconds);
 
   return {
-    uptime: formatUptime(uptimeSeconds),
-    cpu_usage: baseCpu,
-    memory_usage: baseMemory,
-    active_connections: backendPerformance?.total_trades || 0,
+    uptime: formattedUptime,
+    cpu_usage: cpuUsage,
+    memory_usage: memoryUsage,
+    active_connections: activeConnections,
     error_rate: errorRate,
-    request_success_rate: 99 - errorRate,
+    request_success_rate: successRate,
   };
 }
