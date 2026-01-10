@@ -16,13 +16,14 @@ import { cn } from '@/lib/utils';
 
 interface BotControlProps {
   status: 'running' | 'stopped' | 'loading';
+  hasApiKey: boolean;
   onStart: () => Promise<void>;
   onStop: () => Promise<void>;
   onRestart: () => Promise<void>;
   onUpdateApiKey: (key: string) => Promise<void>;
 }
 
-export function BotControl({ status, onStart, onStop, onRestart, onUpdateApiKey }: BotControlProps) {
+export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUpdateApiKey }: BotControlProps) {
   const [isLoading, setIsLoading] = useState<'start' | 'stop' | 'restart' | 'apikey' | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogAction, setDialogAction] = useState<'start' | 'stop' | 'restart' | 'apikey' | null>(null);
@@ -44,9 +45,14 @@ export function BotControl({ status, onStart, onStop, onRestart, onUpdateApiKey 
   };
 
   const openDialog = (action: 'start' | 'stop' | 'restart' | 'apikey') => {
-    setDialogAction(action);
+    if (action === 'start' && !hasApiKey) {
+      setDialogAction('apikey');
+    } else {
+      setDialogAction(action);
+    }
     setDialogOpen(true);
   };
+
 
   const getDialogContent = () => {
     switch (dialogAction) {
@@ -135,10 +141,12 @@ export function BotControl({ status, onStart, onStop, onRestart, onUpdateApiKey 
           >
             {isLoading === 'start' ? (
               <Loader2 className="w-4 h-4 animate-spin" />
+            ) : !hasApiKey ? (
+              <Settings className="w-4 h-4" />
             ) : (
               <Play className="w-4 h-4" />
             )}
-            <span className="hidden sm:inline">Start</span>
+            <span className="hidden sm:inline">{!hasApiKey ? 'Configure API' : 'Start'}</span>
           </Button>
 
           <Button
