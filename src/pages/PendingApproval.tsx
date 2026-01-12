@@ -136,7 +136,7 @@ export default function PendingApproval() {
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="secondary" className="w-full">
+                <Button className="w-full">
                   <Send className="w-4 h-4 mr-2" />
                   Request Approval
                 </Button>
