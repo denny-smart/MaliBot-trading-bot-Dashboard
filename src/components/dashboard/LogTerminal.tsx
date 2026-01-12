@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { wsService } from "@/services/websocket";
+import { api } from "@/services/api";
 import { Terminal, XCircle, ArrowDown, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,15 +22,62 @@ export function LogTerminal() {
     const scrollRef = useRef<HTMLDivElement>(null);
     const viewportRef = useRef<HTMLDivElement | null>(null);
 
+    // Parse log string from API into LogMessage format
+    const parseLogString = (logString: string): LogMessage | null => {
+        // Format: "2026-01-12 14:30:05 | INFO | [user_123] Message content"
+        const match = logString.match(/^(.+?)\s*\|\s*([A-Z]+)\s*\|\s*(.+)$/);
+        if (match) {
+            const [, timestamp, level, message] = match;
+            // Clean user tags like [user_123] or [None] from the message
+            const cleanMessage = message.replace(/^\[.*?\]\s*/, '').trim();
+
+            // Parse timestamp to Unix timestamp (seconds)
+            const date = new Date(timestamp.trim().replace(' ', 'T'));
+            const unixTimestamp = date.getTime() / 1000;
+
+            return {
+                type: "log",
+                level: (level.trim() as "INFO" | "WARNING" | "ERROR" | "DEBUG") || "INFO",
+                message: cleanMessage,
+                timestamp: unixTimestamp,
+            };
+        }
+        return null;
+    };
+
+    // Fetch initial logs on mount
+    useEffect(() => {
+        const fetchInitialLogs = async () => {
+            try {
+                const response = await api.monitor.logs();
+                const logsData = response.data?.logs || [];
+                // Parse string logs into LogMessage objects
+                const parsedLogs = logsData
+                    .map((log: string) => parseLogString(log))
+                    .filter((log): log is LogMessage => log !== null)
+                    .slice(-200); // Keep last 200 logs
+
+                setLogs(parsedLogs);
+            } catch (error) {
+                console.error('Failed to fetch initial logs:', error);
+            }
+        };
+
+        fetchInitialLogs();
+    }, []);
+
     useEffect(() => {
         const handleLog = (data: any) => {
-            // Validate it's a log message slightly better if needed, but assuming type safety from usage
-            if (data.type === 'log') {
-                setLogs((prev) => {
-                    const newLogs = [...prev, data as LogMessage];
-                    // Keep last 200 logs to prevent memory issues
-                    return newLogs.slice(-200);
-                });
+            if (data && data.message) {
+                // Parse the message string from WebSocket
+                const parsedLog = parseLogString(data.message);
+                if (parsedLog) {
+                    setLogs((prev) => {
+                        const newLogs = [...prev, parsedLog];
+                        // Keep last 200 logs to prevent memory issues
+                        return newLogs.slice(-200);
+                    });
+                }
             }
         };
 
