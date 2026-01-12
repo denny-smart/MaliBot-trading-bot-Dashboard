@@ -4,11 +4,25 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { api } from '@/services/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Send } from 'lucide-react';
 
 export default function PendingApproval() {
   const navigate = useNavigate();
   const { logout, checkApproval, user } = useAuth();
+
   const [isChecking, setIsChecking] = useState(false);
+  const [isRequesting, setIsRequesting] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -42,6 +56,26 @@ export default function PendingApproval() {
     }
   };
 
+  const handleRequestApproval = async () => {
+    setIsRequesting(true);
+    try {
+      await api.auth.requestApproval();
+      toast({
+        title: 'Request Sent',
+        description: 'The administrator has been notified of your request.',
+      });
+      setIsDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Could not send approval request. It might have already been sent.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRequesting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background relative overflow-hidden">
       {/* Background decoration */}
@@ -63,19 +97,19 @@ export default function PendingApproval() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/20 text-primary mb-4">
             <Bot className="w-6 h-6" />
           </div>
-          
+
           <h2 className="text-xl font-semibold text-foreground mb-4">Thanks for signing up!</h2>
-          
+
           <p className="text-muted-foreground mb-2">
             Your account is waiting for administrator approval.
           </p>
-          
+
           {user?.email && (
             <p className="text-sm text-muted-foreground mb-6">
               Signed in as: <span className="text-foreground font-medium">{user.email}</span>
             </p>
           )}
-          
+
           <p className="text-sm text-muted-foreground mb-8">
             Please check back later or contact an administrator for access.
           </p>
@@ -99,7 +133,44 @@ export default function PendingApproval() {
                 </>
               )}
             </Button>
-            
+
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="secondary" className="w-full">
+                  <Send className="w-4 h-4 mr-2" />
+                  Request Approval
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Request Account Approval</DialogTitle>
+                  <DialogDescription>
+                    This will send a notification to the administrator that you are waiting for approval.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <p className="text-sm text-foreground">
+                    Please confirm you want to send this request.
+                  </p>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleRequestApproval} disabled={isRequesting}>
+                    {isRequesting ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      'Send Request'
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             <Button
               onClick={handleLogout}
               variant="ghost"

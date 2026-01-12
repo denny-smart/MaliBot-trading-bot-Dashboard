@@ -34,6 +34,7 @@ export const api = {
     checkApproval: () => apiClient.get('/api/v1/auth/check-approval'),
     me: () => apiClient.get('/api/v1/auth/me'),
     status: () => apiClient.get('/api/v1/auth/status'),
+    requestApproval: () => apiClient.post('/api/v1/auth/request-approval'),
   },
   bot: {
     start: () => apiClient.post('/api/v1/bot/start'),
