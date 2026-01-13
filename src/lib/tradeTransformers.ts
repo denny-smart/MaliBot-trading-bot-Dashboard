@@ -73,7 +73,7 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
 
   // Map direction: CALL -> RISE, PUT -> FALL
   let mappedDirection: 'RISE' | 'FALL' = 'RISE';
-  const rawDirection = String(backendTrade.direction || '').toUpperCase();
+  const rawDirection = String(backendTrade.direction || backendTrade.contract_type || backendTrade.type || '').toUpperCase();
   if (rawDirection === 'FALL' || rawDirection === 'SELL' || rawDirection === 'PUT') {
     mappedDirection = 'FALL';
   }
@@ -175,7 +175,7 @@ export function calculateTradeStats(trades: FrontendTrade[]): FrontendTradeStats
   const winRate = totalTrades > 0 ? (wins.length / totalTrades) * 100 : 0;
 
   const totalProfit = closedTrades.reduce((sum, t) => sum + (t.profit || 0), 0);
-  
+
   // Calculate Avg Win
   const totalWinAmount = wins.reduce((sum, t) => sum + (t.profit || 0), 0);
   const avgWin = wins.length > 0 ? totalWinAmount / wins.length : 0;
@@ -189,7 +189,7 @@ export function calculateTradeStats(trades: FrontendTrade[]): FrontendTradeStats
   // formatCurrency usually formats the number as is. If it's negative, it shows -. 
   // If the label is "Avg Loss", usually users expect a positive number representing the magnitude, or a negative number.
   // The previous transformer used `Math.abs(avgLoss)`. So I will return positive magnitude for Avg Loss and Largest Loss.
-  
+
   const totalLossAmount = losses.reduce((sum, t) => sum + (t.profit || 0), 0); // This will be negative
   const avgLoss = losses.length > 0 ? Math.abs(totalLossAmount / losses.length) : 0;
 
@@ -203,8 +203,8 @@ export function calculateTradeStats(trades: FrontendTrade[]): FrontendTradeStats
   // If trade has duration, use it. If not, and we have entry/exit times? 
   // The interface has `duration?: number`.
   const validDurations = closedTrades.filter(t => t.duration !== undefined).map(t => t.duration as number);
-  const avgDuration = validDurations.length > 0 
-    ? validDurations.reduce((a, b) => a + b, 0) / validDurations.length 
+  const avgDuration = validDurations.length > 0
+    ? validDurations.reduce((a, b) => a + b, 0) / validDurations.length
     : 0;
 
   return {
