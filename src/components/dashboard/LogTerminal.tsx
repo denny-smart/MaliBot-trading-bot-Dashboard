@@ -56,7 +56,7 @@ export function LogTerminal() {
         try {
             const response = await api.monitor.logs();
             const logsData = response.data?.logs || [];
-            
+
             // Parse string logs into LogMessage objects
             const parsedLogs = logsData
                 .map((log: string, index: number) => parseLogString(log, index))
@@ -66,12 +66,12 @@ export function LogTerminal() {
             setLogs(prev => {
                 // If we have no previous logs, just use the new ones
                 if (prev.length === 0) return parsedLogs;
-                
+
                 // If the last log is different, or length is different, update
                 // This is a simple check to avoid unnecessary re-renders if data is identical
                 const lastPrev = prev[prev.length - 1];
                 const lastNew = parsedLogs[parsedLogs.length - 1];
-                
+
                 if (prev.length !== parsedLogs.length || lastPrev?.id !== lastNew?.id) {
                     return parsedLogs;
                 }
@@ -121,7 +121,7 @@ export function LogTerminal() {
         if (autoScroll && logsEndRef.current) {
             // Use a small timeout to ensure DOM has updated
             setTimeout(() => {
-                logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                logsEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }, 100);
         }
     }, [logs, autoScroll]);
@@ -144,7 +144,7 @@ export function LogTerminal() {
                             setAutoScroll(!autoScroll);
                             // If enabling, immediately scroll
                             if (!autoScroll && logsEndRef.current) {
-                                logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                                logsEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                             }
                         }}
                         title={autoScroll ? "Pause Scrolling" : "Resume Scrolling"}
