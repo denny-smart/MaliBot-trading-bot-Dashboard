@@ -17,6 +17,7 @@ import {
   Percent,
   RefreshCw,
   Shield,
+  Target,
 } from 'lucide-react';
 import { api } from '@/services/api';
 import { wsService } from '@/services/websocket';
@@ -64,7 +65,14 @@ export default function Dashboard() {
 
     // WebSocket listeners for real-time updates
     wsService.on('bot_status_update', (data: any) => {
-      setBotStatus((prev) => prev ? { ...prev, ...transformBotStatus(data) } : transformBotStatus(data));
+      setBotStatus((prev) => {
+        const newStatus = transformBotStatus(data);
+        // Preserve stake_amount if not present in update (assuming 0 means missing/default if we expect positive stake)
+        if (newStatus.stake_amount === 0 && prev?.stake_amount) {
+          newStatus.stake_amount = prev.stake_amount;
+        }
+        return prev ? { ...prev, ...newStatus } : newStatus;
+      });
     });
 
     wsService.on('new_trade', (data: any) => {
@@ -93,12 +101,17 @@ export default function Dashboard() {
       const hasKey = !!configRes.data?.deriv_api_key && configRes.data.deriv_api_key !== '';
       setHasApiKey(hasKey);
 
+      // Capture config-level settings as fallback
+      const configStake = configRes.data?.stake_amount;
+      const configStrategy = configRes.data?.active_strategy;
+
       if (!hasKey) {
         // If no key, reset EVERYTHING to default/empty state
         console.warn("No API key found. Resetting dashboard data.");
         setBotStatus({
           status: 'stopped',
           active_strategy: 'Unknown',
+          stake_amount: 0,
           uptime: 0,
           trades_today: 0,
           balance: 0,
@@ -117,6 +130,15 @@ export default function Dashboard() {
       // 2. Fetch all dashboard data (Only if key exists)
       const statusRes = await api.bot.status();
       const transformedStatus = transformBotStatus(statusRes.data);
+
+      // Merge config values if missing in status
+      if (!transformedStatus.stake_amount && configStake) {
+        transformedStatus.stake_amount = configStake;
+      }
+      if ((!transformedStatus.active_strategy || transformedStatus.active_strategy === 'Unknown') && configStrategy) {
+        transformedStatus.active_strategy = configStrategy;
+      }
+
       console.log('Transformed Status:', transformedStatus);
       setBotStatus(transformedStatus);
 
@@ -161,6 +183,7 @@ export default function Dashboard() {
         setBotStatus({
           status: 'stopped',
           active_strategy: 'Unknown',
+          stake_amount: 0,
           uptime: 0,
           trades_today: 0,
           balance: 0,
@@ -303,6 +326,12 @@ export default function Dashboard() {
             <Badge variant="outline" className="text-sm px-3 py-1 flex items-center gap-1">
               <Shield className="w-3 h-3" />
               Strategy: {botStatus.active_strategy}
+            </Badge>
+          )}
+          {botStatus?.stake_amount !== undefined && (
+            <Badge variant="outline" className="text-sm px-3 py-1 flex items-center gap-1">
+              <Target className="w-3 h-3" />
+              Stake: ${botStatus.stake_amount}
             </Badge>
           )}
         </div>

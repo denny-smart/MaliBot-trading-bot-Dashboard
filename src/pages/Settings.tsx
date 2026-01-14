@@ -281,34 +281,27 @@ export default function Settings() {
               </div>
             </div>
 
-            {/* Trading Parameters */}
+            {/* Trading Configuration */}
             <div className="stat-card">
-              <h3 className="font-semibold text-foreground mb-6">Trading Parameters</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <h3 className="font-semibold text-foreground mb-6">Trading Configuration</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="stake_amount">Trade Stake Amount ($)</Label>
                   <Input
                     id="stake_amount"
                     type="number"
+                    step="0.01"
+                    min="0"
                     {...register('stake_amount', { valueAsNumber: true })}
                   />
+                  <p className="text-xs text-muted-foreground">Amount to wager per trade.</p>
                   {errors.stake_amount && (
                     <p className="text-xs text-destructive">{errors.stake_amount.message}</p>
                   )}
                 </div>
 
-
-              </div>
-            </div>
-
-
-
-            {/* Strategy Settings */}
-            <div className="stat-card">
-              <h3 className="font-semibold text-foreground mb-6">Strategy Settings</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                  <Label>Strategy</Label>
+                  <Label>Active Strategy</Label>
                   <Select
                     value={watch('active_strategy')}
                     onValueChange={(value) => setValue('active_strategy', value)}
@@ -317,13 +310,16 @@ export default function Settings() {
                       <SelectValue placeholder="Select strategy" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Conservative">Conservative</SelectItem>
-                      <SelectItem value="Scalping">Scalping</SelectItem>
+                      <SelectItem value="Conservative">Conservative (Trend Following)</SelectItem>
+                      <SelectItem value="Scalping">Scalping (Coming Soon)</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {watch('active_strategy') === 'Scalping'
+                      ? "High Frequency Scalping - implementation pending."
+                      : "Top-Down Market Structure Analysis."}
+                  </p>
                 </div>
-
-
               </div>
             </div>
 
