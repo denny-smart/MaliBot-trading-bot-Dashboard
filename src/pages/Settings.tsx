@@ -33,7 +33,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const visibleConfigSchema = z.object({
-  stake_amount: z.number().min(0.1, "Stake amount must be at least 0.1"),
+  stake_amount: z.number().min(10, "Minimum stake amount is $10.00"),
   active_strategy: z.string().min(1, "Strategy is required"),
   deriv_api_key: z.string().optional(),
 });
@@ -60,7 +60,6 @@ export default function Settings() {
   } = useForm<ConfigForm>({
     resolver: zodResolver(visibleConfigSchema),
     defaultValues: {
-      stake_amount: 50,
       active_strategy: 'Conservative',
       deriv_api_key: '',
     },
@@ -79,7 +78,7 @@ export default function Settings() {
 
         // Only reset the visible fields
         reset({
-          stake_amount: response.data.stake_amount ?? 50,
+          stake_amount: response.data.stake_amount,
           active_strategy: response.data.active_strategy ?? 'Conservative',
           deriv_api_key: '', // Always clear API key input on load
         });
@@ -324,6 +323,31 @@ export default function Settings() {
                       : "Top-Down Market Structure Analysis."}
                   </p>
                 </div>
+              </div>
+
+              {/* Risk Limits (Informational) */}
+              <div className="mt-6 p-4 bg-secondary/30 rounded-lg border border-border">
+                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-primary" />
+                  Risk Limits (Calculated)
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="flex justify-between items-center p-2 bg-background rounded border">
+                    <span className="text-muted-foreground">Max Loss Per Trade (1x Stake)</span>
+                    <span className="font-mono font-medium">
+                      ${watch('stake_amount') ? Number(watch('stake_amount')).toFixed(2) : '0.00'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-2 bg-background rounded border">
+                    <span className="text-muted-foreground">Max Daily Loss (3x Stake)</span>
+                    <span className="font-mono font-medium">
+                      ${watch('stake_amount') ? (Number(watch('stake_amount')) * 3).toFixed(2) : '0.00'}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Risk limits are automatically enforced by the backend based on your stake amount.
+                </p>
               </div>
             </div>
 
