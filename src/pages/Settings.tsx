@@ -32,22 +32,13 @@ import {
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
-const configSchema = z.object({
-  stake_amount: z.number().min(1).max(1000),
-  max_daily_trades: z.number().min(1).max(100),
-  max_daily_loss: z.number().min(1).max(1000),
-  stop_loss_percent: z.number().min(0).max(100),
-  take_profit_percent: z.number().min(0).max(100),
-  trailing_stop_enabled: z.boolean(),
-  trailing_stop_distance: z.number().min(0).max(50),
-  max_consecutive_losses: z.number().min(1).max(20),
-  active_strategy: z.string(),
-  timeframe: z.string(),
-  signal_threshold: z.number().min(0).max(100),
+const visibleConfigSchema = z.object({
+  stake_amount: z.number().min(0.1, "Stake amount must be at least 0.1"),
+  active_strategy: z.string().min(1, "Strategy is required"),
   deriv_api_key: z.string().optional(),
 });
 
-type ConfigForm = z.infer<typeof configSchema>;
+type ConfigForm = z.infer<typeof visibleConfigSchema>;
 
 export default function Settings() {
   const { user } = useAuth();
@@ -58,27 +49,19 @@ export default function Settings() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditingToken, setIsEditingToken] = useState(false);
 
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, isValid }, // Track isValid
   } = useForm<ConfigForm>({
-    resolver: zodResolver(configSchema),
+    resolver: zodResolver(visibleConfigSchema),
     defaultValues: {
       stake_amount: 50,
-      max_daily_trades: 50,
-      max_daily_loss: 100,
-      stop_loss_percent: 5,
-      take_profit_percent: 10,
-      trailing_stop_enabled: false,
-      trailing_stop_distance: 2,
-      max_consecutive_losses: 5,
       active_strategy: 'Conservative',
-      timeframe: '1m',
-      signal_threshold: 70,
       deriv_api_key: '',
     },
   });
@@ -92,12 +75,25 @@ export default function Settings() {
     try {
       const response = await api.config.current();
       if (response.data) {
-        reset(response.data);
+
+
+        // Only reset the visible fields
+        reset({
+          stake_amount: response.data.stake_amount ?? 50,
+          active_strategy: response.data.active_strategy ?? 'Conservative',
+          deriv_api_key: '', // Always clear API key input on load
+        });
+
         // Check if there is a token (even if masked)
         setHasToken(!!response.data.deriv_api_key && response.data.deriv_api_key !== '');
       }
     } catch (error) {
       console.error('Failed to fetch config:', error);
+      toast({
+        title: 'Error loading settings',
+        description: 'Could not load current configuration.',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -106,24 +102,37 @@ export default function Settings() {
   const onSubmit = async (data: ConfigForm) => {
     setIsSaving(true);
     try {
-      // Filter out masked API key before sending
+      // Send only visible fields
       const payload = { ...data };
+
+      // Filter out masked API key before sending if it hasn't changed
       if (payload.deriv_api_key && payload.deriv_api_key.startsWith('*****')) {
         delete payload.deriv_api_key;
       }
 
+      // If API key is empty string (user didn't touch it), don't send it to avoid overwriting
+      if (payload.deriv_api_key === '') {
+        delete payload.deriv_api_key;
+      }
+
+      console.log('Saving config payload:', payload);
+
       await api.config.update(payload);
-      // If we saved a new key, update the state
-      if (payload.deriv_api_key) {
+
+
+
+      if (data.deriv_api_key) {
         setHasToken(true);
         setIsEditingToken(false);
         setValue('deriv_api_key', ''); // Clear input for security after save
       }
+
       toast({
         title: 'Settings saved',
         description: 'Your bot configuration has been updated.',
       });
     } catch (error: any) {
+      console.error('Save error:', error);
       toast({
         title: 'Failed to save settings',
         description: error.response?.data?.detail || 'An error occurred',
@@ -163,11 +172,6 @@ export default function Settings() {
       setIsDeletingToken(false);
     }
   };
-
-  const stopLossPercent = watch('stop_loss_percent');
-  const takeProfitPercent = watch('take_profit_percent');
-  const signalThreshold = watch('signal_threshold');
-  const trailingStopEnabled = watch('trailing_stop_enabled');
 
   if (isLoading) {
     return (
@@ -324,15 +328,6 @@ export default function Settings() {
             </div>
 
             {/* Actions */}
-            {/* Hidden Fields */}
-            <input type="hidden" {...register('max_daily_trades', { valueAsNumber: true })} />
-            <input type="hidden" {...register('max_daily_loss', { valueAsNumber: true })} />
-            <input type="hidden" {...register('stop_loss_percent', { valueAsNumber: true })} />
-            <input type="hidden" {...register('take_profit_percent', { valueAsNumber: true })} />
-            <input type="hidden" {...register('max_consecutive_losses', { valueAsNumber: true })} />
-            <input type="hidden" {...register('timeframe')} />
-            <input type="hidden" {...register('signal_threshold', { valueAsNumber: true })} />
-
             <div className="flex gap-4">
               <Button type="submit" disabled={isSaving} className="gap-2">
                 {isSaving ? (
