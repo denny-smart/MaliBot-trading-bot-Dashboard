@@ -187,6 +187,11 @@ export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUp
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                 />
+                {apiKey.length > 0 && !/^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{15,}$/.test(apiKey) && (
+                  <p className="text-xs text-destructive mt-1">
+                    Token must be at least 15 characters and contain both letters and numbers.
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -194,7 +199,7 @@ export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUp
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAction} disabled={isLoading !== null || (dialogAction === 'apikey' && !/^[a-zA-Z0-9]{15,}$/.test(apiKey))}>
+            <Button onClick={handleAction} disabled={isLoading !== null || (dialogAction === 'apikey' && !/^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{15,}$/.test(apiKey))}>
               {isLoading !== null ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />

@@ -35,7 +35,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 const visibleConfigSchema = z.object({
   stake_amount: z.number().min(10, "Minimum stake amount is $10.00"),
   active_strategy: z.string().min(1, "Strategy is required"),
-  deriv_api_key: z.string().optional(),
+  deriv_api_key: z.string().optional().refine((val) => {
+    if (!val) return true;
+    return /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{15,}$/.test(val);
+  }, "Token must be at least 15 characters and contain both letters and numbers"),
 });
 
 type ConfigForm = z.infer<typeof visibleConfigSchema>;
@@ -251,6 +254,9 @@ export default function Settings() {
                         </Button>
                       )}
                     </div>
+                    {errors.deriv_api_key && (
+                      <p className="text-xs text-destructive mt-1">{errors.deriv_api_key.message}</p>
+                    )}
                   </div>
                 )}
 
