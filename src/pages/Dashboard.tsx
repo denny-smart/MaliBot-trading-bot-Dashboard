@@ -6,6 +6,7 @@ import { RecentTrades } from '@/components/dashboard/RecentTrades';
 import { ProfitChart } from '@/components/dashboard/ProfitChart';
 import { LogTerminal } from '@/components/dashboard/LogTerminal';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,6 +51,7 @@ export default function Dashboard() {
   const [profitData, setProfitData] = useState<{ time: string; profit: number }[]>([]);
   const [tradeStats, setTradeStats] = useState<FrontendTradeStats | null>(null); // New state for overall stats
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
   const [hasApiKey, setHasApiKey] = useState(false);
@@ -93,6 +95,7 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
+      if (!isLoading) setIsRefreshing(true);
       setError(null);
       console.log('=== DASHBOARD FETCH START ===');
 
@@ -219,6 +222,7 @@ export default function Dashboard() {
       }
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -330,9 +334,10 @@ export default function Dashboard() {
             variant="outline"
             size="sm"
             className="gap-2"
+            disabled={isRefreshing}
           >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
+            <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
         </div>
 
