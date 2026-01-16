@@ -149,12 +149,31 @@ export default function Dashboard() {
       );
       setProfitData(chartData);
 
-      // 3. Fetch trades
+      // 3. Fetch trades (Merge Active + History)
       try {
-        const tradesRes = await api.trades.active();
-        console.log('Active Trades Response:', tradesRes.data);
-        const activeTrades = transformTrades(tradesRes.data);
-        setTrades(activeTrades.slice(0, 10));
+        const [activeTradesRes, historyTradesRes] = await Promise.all([
+          api.trades.active().catch(() => ({ data: [] })),
+          api.trades.history().catch(() => ({ data: [] }))
+        ]);
+
+        console.log('Active Trades Response:', activeTradesRes.data);
+        const activeTrades = transformTrades(activeTradesRes.data || []);
+        const historyTrades = transformTrades(historyTradesRes.data || []);
+
+        // Merge and deduplicate: Active trades take precedence over History
+        const tradeMap = new Map<string, FrontendTrade>();
+
+        // Load history first
+        historyTrades.forEach(t => tradeMap.set(t.id, t));
+
+        // Overwrite with active status (if any)
+        activeTrades.forEach(t => tradeMap.set(t.id, t));
+
+        const mergedTrades = Array.from(tradeMap.values())
+          .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+          .slice(0, 50);
+
+        setTrades(mergedTrades);
       } catch (tradeError) {
         console.warn("Failed to fetch trades:", tradeError);
       }
