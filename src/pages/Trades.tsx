@@ -160,11 +160,15 @@ export default function Trades() {
           {trade.direction}
         </Badge>
       </td>
-      <td className="py-3 px-4 font-mono text-sm">{formatCurrency(trade.entry_price)}</td>
+      <td className="py-3 px-4 font-mono text-sm">
+        {trade.entry_price ? formatCurrency(trade.entry_price) : '-'}
+      </td>
       <td className="py-3 px-4 font-mono text-sm">
         {trade.exit_price ? formatCurrency(trade.exit_price) : '-'}
       </td>
-      <td className="py-3 px-4 font-mono text-sm">{formatCurrency(trade.stake)}</td>
+      <td className="py-3 px-4 font-mono text-sm">
+        {trade.stake ? formatCurrency(trade.stake) : '-'}
+      </td>
       <td className="py-3 px-4">
         {trade.profit !== undefined ? (
           <span className={cn('font-mono font-medium', trade.profit >= 0 ? 'profit-positive' : 'profit-negative')}>
@@ -262,11 +266,11 @@ export default function Trades() {
                         <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                           <div>
                             <div className="text-muted-foreground text-xs">Entry</div>
-                            <div className="font-mono">{formatCurrency(trade.entry_price)}</div>
+                            <div className="font-mono">{trade.entry_price ? formatCurrency(trade.entry_price) : '-'}</div>
                           </div>
                           <div className="text-right">
                             <div className="text-muted-foreground text-xs">Stake</div>
-                            <div className="font-mono">{formatCurrency(trade.stake)}</div>
+                            <div className="font-mono">{trade.stake ? formatCurrency(trade.stake) : '-'}</div>
                           </div>
                         </div>
                         <div className="pt-3 border-t border-border flex justify-between items-center">
@@ -388,7 +392,7 @@ export default function Trades() {
                           </div>
                           <div>
                             <div className="text-muted-foreground text-xs">Entry</div>
-                            <div className="font-mono">{formatCurrency(trade.entry_price)}</div>
+                            <div className="font-mono">{trade.entry_price ? formatCurrency(trade.entry_price) : '-'}</div>
                           </div>
                           <div className="text-right">
                             <div className="text-muted-foreground text-xs">Exit</div>
@@ -397,7 +401,7 @@ export default function Trades() {
                         </div>
                         <div className="pt-3 border-t border-border flex justify-between items-center">
                           <div className="text-xs text-muted-foreground">
-                            Stake: {formatCurrency(trade.stake)}
+                            Stake: {trade.stake ? formatCurrency(trade.stake) : '-'}
                           </div>
                           {trade.profit !== undefined ? (
                             <span className={cn('font-mono font-bold text-base', trade.profit >= 0 ? 'profit-positive' : 'profit-negative')}>
