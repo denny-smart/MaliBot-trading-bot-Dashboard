@@ -74,11 +74,38 @@ export const formatTimeAgo = (date: string | Date): string => {
   const diffDays = Math.floor(diffHours / 24);
 
   if (diffSecs < 60) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  return `${diffDays}d ago`;
+  if (diffMins < 60) return `${diffMins}M ago`;
+  if (diffHours < 24) return `${diffHours}H ago`;
+  return `${diffDays}D ago`;
 };
 
 export const formatNumber = (num: number): string => {
   return new Intl.NumberFormat('en-US').format(num);
+};
+
+export const formatTime = (date: string | Date): string => {
+  // Handle format "YYYY-MM-DD HH:MM:SS" directly
+  if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}$/)) {
+    const isoString = date.replace(' ', 'T');
+    const parsed = new Date(isoString);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      });
+    }
+  }
+
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) {
+    return 'Invalid Time';
+  }
+  return parsed.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
 };

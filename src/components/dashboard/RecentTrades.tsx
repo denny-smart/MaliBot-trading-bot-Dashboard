@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { formatCurrency, formatTimeAgo } from '@/lib/formatters';
+import { formatCurrency, formatTimeAgo, formatTime } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import { type FrontendTrade } from '@/lib/tradeTransformers';
