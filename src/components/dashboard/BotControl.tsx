@@ -9,10 +9,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { rotatingRing } from '@/lib/animations';
 
 interface BotControlProps {
   status: 'running' | 'stopped' | 'loading';
@@ -84,22 +85,35 @@ export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUp
   const dialogContent = getDialogContent();
 
   return (
-    <div className="stat-card">
-      <div className="flex flex-col sm:flex-row items-center gap-6">
-        {/* Status Indicator */}
-        <div
-          className={cn(
-            'relative flex items-center justify-center w-24 h-24 rounded-full border-4 transition-all duration-300',
-            status === 'running'
-              ? 'border-success/50 bg-success/10 animate-glow'
-              : status === 'stopped'
-                ? 'border-destructive/50 bg-destructive/10'
-                : 'border-primary/50 bg-primary/10'
+    <div className="glass-card p-6 rounded-xl">
+      <div className="flex flex-col sm:flex-row items-center gap-8">
+        {/* Status Indicator - Animated */}
+        <div className="relative flex items-center justify-center w-24 h-24">
+          {/* Rotating Outer Ring for Active State */}
+          {status === 'running' && (
+            <motion.div
+              className="absolute inset-0 border-2 border-dashed border-success/30 rounded-full"
+              variants={rotatingRing}
+              animate="animate"
+            />
           )}
-        >
+
+          {/* Static/Pulse Background */}
           <div
             className={cn(
-              'w-12 h-12 rounded-full',
+              'absolute inset-2 rounded-full border-2 transition-all duration-500',
+              status === 'running'
+                ? 'border-success bg-success/10 shadow-[0_0_20px_rgba(0,255,157,0.2)]'
+                : status === 'stopped'
+                  ? 'border-destructive bg-destructive/10'
+                  : 'border-primary bg-primary/10'
+            )}
+          />
+
+          {/* Inner Core */}
+          <div
+            className={cn(
+              'w-12 h-12 rounded-full z-10 transition-all duration-300',
               status === 'running' && 'bg-success animate-pulse',
               status === 'stopped' && 'bg-destructive',
               status === 'loading' && 'bg-primary animate-pulse'
@@ -108,28 +122,27 @@ export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUp
         </div>
 
         {/* Status Text */}
-        <div className="text-center sm:text-left flex-1">
-          <p className="text-sm text-muted-foreground">Bot Status</p>
+        <div className="text-center sm:text-left flex-1 space-y-1">
+          <p className="text-sm font-mono text-muted-foreground uppercase tracking-wider">System Status</p>
           <p
             className={cn(
-              'text-2xl font-bold',
-              status === 'running' && 'text-success',
+              'text-3xl font-bold tracking-tight',
+              status === 'running' && 'text-success text-glow-accent',
               status === 'stopped' && 'text-destructive',
               status === 'loading' && 'text-primary'
             )}
           >
-            {status === 'running' ? 'Running' : status === 'stopped' ? 'Stopped' : 'Loading...'}
+            {status === 'running' ? 'OPERATIONAL' : status === 'stopped' ? 'TERMINATED' : 'INITIALIZING...'}
           </p>
+          {status === 'running' && <p className="text-xs text-success/80 font-mono">Running Strategy: SENTINEL_V1</p>}
         </div>
 
         {/* Control Buttons */}
         <div className="flex gap-3">
-
-
           <Button
             onClick={() => openDialog('start')}
             disabled={status === 'running' || isLoading !== null}
-            className="control-btn control-btn-start"
+            className="control-btn bg-success/10 hover:bg-success/20 text-success border border-success/20 hover:border-success/50"
           >
             {isLoading === 'start' ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -138,40 +151,40 @@ export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUp
             ) : (
               <Play className="w-4 h-4" />
             )}
-            <span className="hidden sm:inline">{!hasApiKey ? 'Configure API' : 'Start'}</span>
+            <span className="hidden sm:inline">{!hasApiKey ? 'Configure API' : 'Activate'}</span>
           </Button>
 
           <Button
             onClick={() => openDialog('stop')}
             disabled={status === 'stopped' || isLoading !== null}
-            className="control-btn control-btn-stop"
+            className="control-btn bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/20 hover:border-destructive/50"
           >
             {isLoading === 'stop' ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <Square className="w-4 h-4" />
             )}
-            <span className="hidden sm:inline">Stop</span>
+            <span className="hidden sm:inline">Terminate</span>
           </Button>
 
           <Button
             onClick={() => openDialog('restart')}
             disabled={isLoading !== null}
-            className="control-btn control-btn-restart"
+            className="control-btn bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 hover:border-primary/50"
           >
             {isLoading === 'restart' ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <RotateCw className="w-4 h-4" />
             )}
-            <span className="hidden sm:inline">Restart</span>
+            <span className="hidden sm:inline">Reboot</span>
           </Button>
         </div>
       </div>
 
       {/* Confirmation Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="glass-card border-primary/20">
           <DialogHeader>
             <DialogTitle>{dialogContent.title}</DialogTitle>
             <DialogDescription>{dialogContent.description}</DialogDescription>
@@ -186,6 +199,7 @@ export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUp
                   placeholder="Enter Deriv API Token"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
+                  className="bg-black/50 border-primary/20 focus:border-primary"
                 />
                 {apiKey.length > 0 && !/^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{15,}$/.test(apiKey) && (
                   <p className="text-xs text-destructive mt-1">
@@ -196,17 +210,17 @@ export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUp
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button variant="ghost" onClick={() => setDialogOpen(false)} className="hover:bg-white/5">
               Cancel
             </Button>
-            <Button onClick={handleAction} disabled={isLoading !== null || (dialogAction === 'apikey' && !/^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{15,}$/.test(apiKey))}>
+            <Button onClick={handleAction} disabled={isLoading !== null || (dialogAction === 'apikey' && !/^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{15,}$/.test(apiKey))} className="bg-primary text-primary-foreground hover:bg-primary/90">
               {isLoading !== null ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Processing...
                 </>
               ) : (
-                'Confirm'
+                'Confirm Protocol'
               )}
             </Button>
           </DialogFooter>

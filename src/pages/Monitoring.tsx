@@ -86,13 +86,13 @@ export default function Monitoring() {
   return (
     <DashboardLayout title="Monitoring">
       <Tabs defaultValue="signals" className="space-y-6">
-        <TabsList className="bg-secondary">
+        <TabsList className="glass-panel p-1">
           <TabsTrigger value="signals">Signals</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
         </TabsList>
 
         <TabsContent value="signals" className="space-y-4">
-          <div className="stat-card">
+          <div className="glass-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-foreground">Trading Signals</h3>
               <Badge variant="secondary" className="text-xs">Auto-refresh: 30s</Badge>
@@ -170,7 +170,7 @@ export default function Monitoring() {
         <TabsContent value="performance" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Uptime */}
-            <div className="stat-card">
+            <div className="glass-card p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">System Uptime</p>
@@ -185,7 +185,7 @@ export default function Monitoring() {
             </div>
 
             {/* CPU Usage */}
-            <div className="stat-card">
+            <div className="glass-card p-4">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm text-muted-foreground">CPU Usage</p>
                 <Cpu className="w-5 h-5 text-primary" />
@@ -204,7 +204,7 @@ export default function Monitoring() {
             </div>
 
             {/* Memory Usage */}
-            <div className="stat-card">
+            <div className="glass-card p-4">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm text-muted-foreground">Memory Usage</p>
                 <HardDrive className="w-5 h-5 text-primary" />
@@ -223,7 +223,7 @@ export default function Monitoring() {
             </div>
 
             {/* Active Connections */}
-            <div className="stat-card">
+            <div className="glass-card p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Active Connections</p>
@@ -238,7 +238,7 @@ export default function Monitoring() {
             </div>
 
             {/* Error Rate */}
-            <div className="stat-card">
+            <div className="glass-card p-4">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm text-muted-foreground">Error Rate</p>
                 <AlertCircle className="w-5 h-5 text-destructive" />
@@ -256,7 +256,7 @@ export default function Monitoring() {
             </div>
 
             {/* Success Rate */}
-            <div className="stat-card">
+            <div className="glass-card p-4">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm text-muted-foreground">Request Success Rate</p>
                 <Activity className="w-5 h-5 text-success" />

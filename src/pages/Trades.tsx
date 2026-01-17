@@ -23,19 +23,6 @@ import { cn } from '@/lib/utils';
 import { Download, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { transformTrades, calculateTradeStats, type FrontendTrade, type FrontendTradeStats } from '@/lib/tradeTransformers';
 
-interface Trade {
-  id: string;
-  time: string;
-  symbol: string;
-  direction: 'RISE' | 'FALL';
-  entry_price: number;
-  exit_price?: number;
-  stake: number;
-  profit?: number;
-  profit_percent?: number;
-  duration?: number;
-  status: 'open' | 'win' | 'loss';
-}
 
 interface TradeStats {
   total_trades: number;
@@ -128,8 +115,8 @@ export default function Trades() {
       <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
       <td className="py-3 px-4 text-muted-foreground text-sm">{formatDate(trade.time)}</td>
       <td className="py-3 px-4">
-        <Badge className={cn('text-xs', trade.direction === 'RISE' ? 'badge-rise' : 'badge-fall')}>
-          {trade.direction === 'RISE' ? (
+        <Badge className={cn('text-xs', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
+          {trade.direction === 'UP' ? (
             <ArrowUp className="w-3 h-3 mr-1" />
           ) : (
             <ArrowDown className="w-3 h-3 mr-1" />
@@ -184,14 +171,14 @@ export default function Trades() {
   return (
     <DashboardLayout title="Trades">
       <Tabs defaultValue="active" className="space-y-6">
-        <TabsList className="bg-secondary">
+        <TabsList className="glass-panel p-1">
           <TabsTrigger value="active">Active Trades</TabsTrigger>
           <TabsTrigger value="history">Trade History</TabsTrigger>
           <TabsTrigger value="stats">Statistics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="space-y-4">
-          <div className="stat-card overflow-hidden">
+          <div className="glass-card overflow-hidden p-6">
             <h3 className="font-semibold text-foreground mb-4">Open Positions</h3>
             <ScrollArea className="h-[500px]">
               {activeTrades.length === 0 ? (
@@ -231,8 +218,8 @@ export default function Trades() {
                             <span className="font-mono text-xs text-muted-foreground">#{trade.id}</span>
                             <div className="text-sm font-medium mt-1">{formatDate(trade.time)}</div>
                           </div>
-                          <Badge className={cn('text-xs', trade.direction === 'RISE' ? 'badge-rise' : 'badge-fall')}>
-                            {trade.direction === 'RISE' ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
+                          <Badge className={cn('text-xs', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
+                            {trade.direction === 'UP' ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
                             {trade.direction}
                           </Badge>
                         </div>
@@ -282,8 +269,8 @@ export default function Trades() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Directions</SelectItem>
-                <SelectItem value="RISE">Rise</SelectItem>
-                <SelectItem value="FALL">Fall</SelectItem>
+                <SelectItem value="UP">Rise (Up)</SelectItem>
+                <SelectItem value="DOWN">Fall (Down)</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -302,7 +289,7 @@ export default function Trades() {
             </Button>
           </div>
 
-          <div className="stat-card overflow-hidden">
+          <div className="glass-card overflow-hidden p-6">
             <ScrollArea className="h-[500px]">
               {filteredHistory.length === 0 ? (
                 <EmptyState
@@ -358,8 +345,8 @@ export default function Trades() {
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-sm mb-3">
                           <div className="flex items-center gap-1 col-span-2 mb-1">
-                            <Badge className={cn('text-[10px] h-5 px-1.5', trade.direction === 'RISE' ? 'badge-rise' : 'badge-fall')}>
-                              {trade.direction === 'RISE' ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
+                            <Badge className={cn('text-[10px] h-5 px-1.5', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
+                              {trade.direction === 'UP' ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
                               {trade.direction}
                             </Badge>
                           </div>

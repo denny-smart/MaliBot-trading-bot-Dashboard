@@ -7,7 +7,8 @@
 @layer base {
   :root {
     /* Cyber Dark Theme */
-    --background: 240 10% 4%; /* #09090b - Nearly black */
+    --background: 240 10% 4%;
+    /* #09090b - Nearly black */
     --foreground: 0 0% 98%;
 
     --card: 240 10% 6%;
@@ -16,30 +17,38 @@
     --popover: 240 10% 6%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 180 100% 50%; /* Electric Cyan #00F0FF */
+    --primary: 180 100% 50%;
+    /* Electric Cyan #00F0FF */
     --primary-foreground: 240 10% 4%;
 
-    --secondary: 270 100% 60%; /* Electric Violet */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 180 50% 15%;
+    /* Dark Cyber Cyan */
+    --secondary-foreground: 180 100% 50%;
+    /* Electric Cyan Text */
 
     --muted: 240 10% 12%;
     --muted-foreground: 240 5% 65%;
 
-    --accent: 150 100% 50%; /* Toxic Green #00FF9D */
+    --accent: 150 100% 50%;
+    /* Toxic Green #00FF9D */
     --accent-foreground: 240 10% 4%;
 
-    --destructive: 0 100% 60%; /* Neon Red */
+    --destructive: 0 100% 60%;
+    /* Neon Red */
     --destructive-foreground: 0 0% 100%;
 
-    --success: 150 100% 50%; /* Toxic Green */
+    --success: 150 100% 50%;
+    /* Toxic Green */
     --success-foreground: 240 10% 4%;
 
-    --warning: 60 100% 50%; /* Neon Yellow */
+    --warning: 60 100% 50%;
+    /* Neon Yellow */
     --warning-foreground: 240 10% 4%;
 
     --border: 240 10% 12%;
     --input: 240 10% 12%;
-    --ring: 180 100% 50%; /* Cyan Ring */
+    --ring: 180 100% 50%;
+    /* Cyan Ring */
 
     --radius: 0.5rem;
 
@@ -68,7 +77,7 @@
   body {
     @apply bg-background text-foreground font-sans antialiased overflow-x-hidden;
     font-family: 'Inter', system-ui, sans-serif;
-    background-image: 
+    background-image:
       radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.03) 0%, transparent 60%),
       radial-gradient(circle at 80% 80%, rgba(112, 0, 255, 0.03) 0%, transparent 50%);
   }
@@ -76,22 +85,22 @@
   .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
-  
+
   /* Custom Scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.2);
   }
@@ -107,7 +116,7 @@
   }
 
   .neon-border {
-    @apply border border-primary/50 shadow-[0_0_10px_rgba(0,240,255,0.2)];
+    @apply border border-primary/50 shadow-[0_0_10px_rgba(0, 240, 255, 0.2)];
   }
 
   .control-btn {
@@ -124,7 +133,7 @@
   .text-glow {
     text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
   }
-  
+
   .text-glow-accent {
     text-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
   }
@@ -134,13 +143,11 @@
   }
 
   .bg-scanlines {
-    background: linear-gradient(
-      to bottom,
-      rgba(255,255,255,0),
-      rgba(255,255,255,0) 50%,
-      rgba(0,0,0,0.1) 50%,
-      rgba(0,0,0,0.1)
-    );
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0),
+        rgba(255, 255, 255, 0) 50%,
+        rgba(0, 0, 0, 0.1) 50%,
+        rgba(0, 0, 0, 0.1));
     background-size: 100% 4px;
   }
 
@@ -151,9 +158,68 @@
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
+
+  .animate-scan-h {
+    animation: scan-horizontal 3s linear infinite;
+  }
+
+  .animate-signal {
+    animation: signal-travel 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .rotate-x-12 {
+    transform: rotateX(12deg);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes scan-horizontal {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes signal-travel {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
 }

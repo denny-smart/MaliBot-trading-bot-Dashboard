@@ -29,7 +29,7 @@ export function RecentTrades({ trades }: RecentTradesProps) {
             trades.map((trade) => (
               <div
                 key={trade.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
+                className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/5"
               >
                 <div className="flex items-center gap-3">
                   <div

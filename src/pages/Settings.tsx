@@ -189,7 +189,7 @@ export default function Settings() {
   return (
     <DashboardLayout title="Settings">
       <Tabs defaultValue="bot" className="space-y-6">
-        <TabsList className="bg-secondary">
+        <TabsList className="glass-panel p-1">
           <TabsTrigger value="bot">Bot Configuration</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
         </TabsList>
@@ -197,7 +197,7 @@ export default function Settings() {
         <TabsContent value="bot" className="space-y-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* API Configuration */}
-            <div className="stat-card">
+            <div className="glass-card p-6">
               <h3 className="font-semibold text-foreground mb-6">API Configuration</h3>
 
               <div className="space-y-4">
@@ -291,7 +291,7 @@ export default function Settings() {
             </div>
 
             {/* Trading Configuration */}
-            <div className="stat-card">
+            <div className="glass-card p-6">
               <h3 className="font-semibold text-foreground mb-6">Trading Configuration</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                 <div className="space-y-2">
