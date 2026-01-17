@@ -52,16 +52,16 @@ export function HeroCommandCenter() {
             className="text-4xl md:text-6xl font-bold tracking-tighter"
             variants={itemFadeIn}
           >
-            Autonomous <span className="text-primary text-glow">Artificial</span><br />
-            <span className="text-foreground/90">Trading Intelligence</span>
+            Autonomous Trading.<br />
+            <span className="text-primary text-glow">Real-Time Intelligence.</span>
           </motion.h1>
 
           <motion.p
             className="text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed"
             variants={itemFadeIn}
           >
-            Deploy institutional-grade algorithms to analyze market structure 24/7.
-            Secure, biometric-verified access only.
+            Execute institutional-grade strategies with the MaliBot Command Interface.
+            Reserved for approved operators only.
           </motion.p>
 
           <motion.div
