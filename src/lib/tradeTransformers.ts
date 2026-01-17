@@ -19,9 +19,9 @@ export interface FrontendTrade {
   id: string;
   time: string;
   direction: 'UP' | 'DOWN';
-  entry_price: number;
+  entry_price?: number;
   exit_price?: number;
-  stake: number;
+  stake?: number;
   profit?: number;
   profit_percent?: number;
   duration?: number;
@@ -109,9 +109,9 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
     id: backendTrade.contract_id || backendTrade.id || `trade-${index}`,
     time,
     direction: mappedDirection,
-    entry_price: Number(backendTrade.entry_price) || 0,
+    entry_price: Number(backendTrade.entry_price) || undefined,
     exit_price: backendTrade.exit_price ? Number(backendTrade.exit_price) : undefined,
-    stake: Number(backendTrade.stake) || 0,
+    stake: Number(backendTrade.stake) || undefined,
     profit: backendTrade.pnl !== null && backendTrade.pnl !== undefined ? Number(backendTrade.pnl) : undefined,
     profit_percent: backendTrade.pnl ? (Number(backendTrade.pnl) / Number(backendTrade.stake)) * 100 : undefined,
     duration: undefined,
