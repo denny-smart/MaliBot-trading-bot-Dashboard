@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, ArrowRight, Activity } from "lucide-react";
+import { ShieldCheck, ArrowRight, Activity, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   itemFadeIn,
@@ -71,8 +71,8 @@ export function HeroCommandCenter() {
             <Link to="/login" className="w-full sm:w-auto">
               <Button size="lg" className="w-full sm:w-auto control-btn bg-primary text-primary-foreground hover:bg-primary/90 group group-hover:scale-[1.02] transition-transform">
                 <span className="relative z-10 flex items-center gap-2">
-                  Request Secure Access
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  <Lock className="w-4 h-4" />
+                  Validating Access Protocol...
                 </span>
                 {/* Button Scan Effect */}
                 <motion.div
@@ -82,9 +82,6 @@ export function HeroCommandCenter() {
                 />
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="w-full sm:w-auto border-primary/20 hover:bg-primary/5 hover:text-primary">
-              System Documentation
-            </Button>
           </motion.div>
         </div>
 
