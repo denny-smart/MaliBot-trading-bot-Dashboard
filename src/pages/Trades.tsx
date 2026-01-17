@@ -18,6 +18,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/services/api';
+import { wsService } from '@/services/websocket';
 import { formatCurrency, formatDate, formatDuration } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { Download, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
@@ -48,10 +49,44 @@ export default function Trades() {
 
   useEffect(() => {
     fetchData();
+    wsService.connect();
+
+    // Set up auto-refresh every 10 seconds as backup
+    const interval = setInterval(fetchData, 10000);
+
+    wsService.on('new_trade', (data: any) => {
+      const transformedTrade = transformTrades([data])[0];
+      setActiveTrades((prev) => [transformedTrade, ...prev]);
+    });
+
+    wsService.on('trade_closed', (data: any) => {
+      // Move from active to history or just update status
+      // Best approach: Re-fetch active/history or handle optimistic update
+      // Given complexity of moving between lists, re-fetch is safest for consistency, 
+      // or we can manually update if we trust the payload.
+      // Let's manually update activeTrades to remove it, and add to historyTrades.
+      const transformedTrade = transformTrades([data])[0];
+
+      setActiveTrades((prev) => prev.filter(t => t.id !== transformedTrade.id));
+      setHistoryTrades((prev) => [transformedTrade, ...prev]);
+
+      // Also update stats if we can, but stats calculation is complex. 
+      // Simpler for now to just re-fetch data on close to keep everything perfectly synced including stats.
+      fetchData();
+    });
+
+    return () => {
+      wsService.disconnect();
+      clearInterval(interval);
+    };
   }, []);
 
   const fetchData = async () => {
-    setIsLoading(true);
+    // Only set loading on initial load, not background refreshes
+    if (activeTrades.length === 0 && historyTrades.length === 0) {
+      setIsLoading(true);
+    }
+
     try {
       const [activeRes, historyRes, configRes] = await Promise.all([
         api.trades.active(),
@@ -62,13 +97,13 @@ export default function Trades() {
       setHasApiKey(!!configRes.data?.deriv_api_key && configRes.data.deriv_api_key !== '');
 
       // Transform backend data to frontend format
-      const activeTrades = transformTrades(activeRes.data || []);
-      const historyTrades = transformTrades(historyRes.data || []);
-      const stats = calculateTradeStats(historyTrades);
+      const activeTradesData = transformTrades(activeRes.data || []);
+      const historyTradesData = transformTrades(historyRes.data || []);
+      const statsData = calculateTradeStats(historyTradesData);
 
-      setActiveTrades(activeTrades);
-      setHistoryTrades(historyTrades);
-      setStats(stats);
+      setActiveTrades(activeTradesData);
+      setHistoryTrades(historyTradesData);
+      setStats(statsData);
     } catch (error) {
       console.error('Failed to fetch trades:', error);
     } finally {
