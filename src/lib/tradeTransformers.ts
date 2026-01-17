@@ -76,11 +76,29 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
     console.log('First trade full data:', JSON.stringify(backendTrade, null, 2));
   }
 
-  // Map direction: CALL/BUY -> UP, PUT/SELL -> DOWN
+  // Map direction: Backend sends 'signal' field with UP/DOWN values
+  // Legacy support for: CALL/BUY -> UP, PUT/SELL -> DOWN
   let mappedDirection: 'UP' | 'DOWN' = 'UP';
-  const rawDirection = String(backendTrade.direction || backendTrade.contract_type || backendTrade.type || '').toUpperCase();
+  const rawDirection = String(backendTrade.signal || backendTrade.direction || backendTrade.contract_type || backendTrade.type || '').toUpperCase();
+
+  // DEBUG: Log direction mapping
+  if (index < 3) {
+    console.log('=== Trade Direction Debug ===');
+    console.log('Raw backend signal:', backendTrade.signal);
+    console.log('Raw backend direction:', backendTrade.direction);
+    console.log('Raw backend contract_type:', backendTrade.contract_type);
+    console.log('Raw backend type:', backendTrade.type);
+    console.log('Computed rawDirection:', rawDirection);
+    console.log('Trade ID:', backendTrade.contract_id || backendTrade.id);
+  }
+
   if (rawDirection === 'FALL' || rawDirection === 'SELL' || rawDirection === 'PUT' || rawDirection === 'DOWN') {
     mappedDirection = 'DOWN';
+  }
+
+  if (index < 3) {
+    console.log('Mapped to:', mappedDirection);
+    console.log('============================');
   }
 
   const time = backendTrade.time || backendTrade.timestamp || new Date().toISOString();
