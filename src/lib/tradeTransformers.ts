@@ -35,6 +35,11 @@ export interface BackendTradeStats {
   win_rate: number;
   total_pnl: number;
   daily_pnl: number;
+  avg_win?: number;
+  avg_loss?: number;
+  largest_win?: number;
+  largest_loss?: number;
+  profit_factor?: number;
 }
 
 export interface FrontendTradeStats {
@@ -138,28 +143,16 @@ export function transformTrades(backendTrades: (BackendTrade | any)[] | any): Fr
  * Transforms backend trade stats to frontend format
  */
 export function transformTradeStats(backendStats: BackendTradeStats): FrontendTradeStats {
-  const avgWin = backendStats.winning_trades > 0
-    ? backendStats.total_pnl / backendStats.winning_trades
-    : 0;
-
-  const avgLoss = backendStats.losing_trades > 0
-    ? backendStats.total_pnl / backendStats.losing_trades
-    : 0;
-
-  const profitFactor = avgLoss !== 0 && avgLoss < 0
-    ? Math.abs(avgWin / avgLoss)
-    : avgWin > 0 ? Infinity : 0;
-
   return {
     total_trades: backendStats.total_trades,
     win_rate: backendStats.win_rate,
     total_profit: backendStats.total_pnl,
-    avg_win: avgWin,
-    avg_loss: Math.abs(avgLoss),
-    largest_win: backendStats.total_pnl, // Placeholder - backend should provide this
-    largest_loss: -backendStats.total_pnl, // Placeholder - backend should provide this
+    avg_win: backendStats.avg_win || 0,
+    avg_loss: Math.abs(backendStats.avg_loss || 0),
+    largest_win: backendStats.largest_win || 0,
+    largest_loss: Math.abs(backendStats.largest_loss || 0),
     avg_duration: 0, // Backend doesn't provide this yet
-    profit_factor: profitFactor,
+    profit_factor: backendStats.profit_factor || 0,
   };
 }
 

@@ -22,7 +22,7 @@ import { wsService } from '@/services/websocket';
 import { formatCurrency, formatDate, formatDuration } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { Download, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
-import { transformTrades, calculateTradeStats, type FrontendTrade, type FrontendTradeStats } from '@/lib/tradeTransformers';
+import { transformTrades, calculateTradeStats, transformTradeStats, type FrontendTrade, type FrontendTradeStats } from '@/lib/tradeTransformers';
 
 
 interface TradeStats {
@@ -88,9 +88,10 @@ export default function Trades() {
     }
 
     try {
-      const [activeRes, historyRes, configRes] = await Promise.all([
+      const [activeRes, historyRes, statsRes, configRes] = await Promise.all([
         api.trades.active(),
         api.trades.history(),
+        api.trades.stats(),
         api.config.current(),
       ]);
 
@@ -99,7 +100,9 @@ export default function Trades() {
       // Transform backend data to frontend format
       const activeTradesData = transformTrades(activeRes.data || []);
       const historyTradesData = transformTrades(historyRes.data || []);
-      const statsData = calculateTradeStats(historyTradesData);
+
+      // Use backend stats
+      const statsData = transformTradeStats(statsRes.data);
 
       setActiveTrades(activeTradesData);
       setHistoryTrades(historyTradesData);
