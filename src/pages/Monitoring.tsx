@@ -92,78 +92,93 @@ export default function Monitoring() {
         </TabsList>
 
         <TabsContent value="signals" className="space-y-4">
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-foreground">Trading Signals</h3>
-              <Badge variant="secondary" className="text-xs">Auto-refresh: 30s</Badge>
+          <div className="glass-card p-6 flex flex-col h-[600px]">
+            <div className="flex items-center justify-between mb-6 flex-shrink-0">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Signal className="w-5 h-5 text-primary" />
+                Trading Signals
+              </h3>
+              <Badge variant="secondary" className="text-xs bg-white/5 hover:bg-white/10 text-muted-foreground border-white/5">
+                Auto-refresh: 30s
+              </Badge>
             </div>
-            <ScrollArea className="h-[500px]">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Time</th>
-                    <th>Signal Type</th>
-                    <th>Confidence</th>
-                    <th>Market Conditions</th>
-                    <th>Action Taken</th>
-                    <th>Result</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {signals.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No signals recorded
-                      </td>
-                    </tr>
-                  ) : (
-                    signals.map((signal) => (
-                      <tr key={signal.id} className="hover:bg-secondary/50 transition-colors">
-                        <td className="py-3 px-4 text-sm text-muted-foreground">
+
+            <div className="flex-1 min-h-0 relative rounded-lg border border-white/5 bg-white/5 overflow-hidden flex flex-col">
+              {/* Table Header */}
+              <div className="grid grid-cols-6 gap-4 p-4 border-b border-white/5 bg-white/5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <div>Time</div>
+                <div>Signal Type</div>
+                <div>Confidence</div>
+                <div>Market</div>
+                <div>Action</div>
+                <div className="text-right">Result</div>
+              </div>
+
+              {/* Table Body */}
+              <ScrollArea className="flex-1">
+                {signals.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-muted-foreground space-y-4 p-8">
+                    <div className="p-4 rounded-full bg-white/5 ring-1 ring-white/10">
+                      <Signal className="w-8 h-8 opacity-40" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-foreground">No signals detected</p>
+                      <p className="text-xs opacity-50 mt-1 max-w-[200px]">The system is monitoring the market for trading opportunities.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-white/5">
+                    {signals.map((signal) => (
+                      <div key={signal.id} className="grid grid-cols-6 gap-4 p-4 text-sm hover:bg-white/5 transition-colors items-center group">
+                        <div className="font-mono text-muted-foreground text-xs">
                           {formatDate(signal.timestamp)}
-                        </td>
-                        <td className="py-3 px-4">
+                        </div>
+                        <div>
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
+                            {signal.signal_type}
+                          </Badge>
+                        </div>
+                        <div>
                           <div className="flex items-center gap-2">
-                            <Signal className="w-4 h-4 text-primary" />
-                            <span className="text-sm font-medium">{signal.signal_type}</span>
+                            <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden w-24">
+                              <div
+                                className={cn(
+                                  "h-full rounded-full",
+                                  signal.confidence >= 70 ? "bg-success" :
+                                    signal.confidence >= 40 ? "bg-warning" : "bg-destructive"
+                                )}
+                                style={{ width: `${signal.confidence}%` }}
+                              />
+                            </div>
+                            <span className="text-xs font-mono">{signal.confidence}%</span>
                           </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <Progress
-                              value={signal.confidence}
-                              className={cn(
-                                'h-2 w-20',
-                                signal.confidence >= 70 && '[&>div]:bg-success',
-                                signal.confidence >= 40 && signal.confidence < 70 && '[&>div]:bg-warning',
-                                signal.confidence < 40 && '[&>div]:bg-destructive'
-                              )}
-                            />
-                            <span className="text-xs text-muted-foreground">{signal.confidence}%</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-sm">{signal.market_conditions}</td>
-                        <td className="py-3 px-4 text-sm">{signal.action_taken}</td>
-                        <td className="py-3 px-4">
+                        </div>
+                        <div className="text-muted-foreground">
+                          {signal.market_conditions}
+                        </div>
+                        <div className="font-medium text-foreground">
+                          {signal.action_taken}
+                        </div>
+                        <div className="text-right">
                           <Badge
                             variant="outline"
                             className={cn(
-                              'text-xs',
-                              (signal.result === 'success' || signal.result === 'Won') && 'border-success text-success',
-                              (signal.result === 'failed' || signal.result === 'Lost') && 'border-destructive text-destructive',
-                              (signal.result === 'pending' || signal.result === 'Pending') && 'border-warning text-warning',
-                              signal.result === 'Skipped' && 'border-muted text-muted-foreground'
+                              'text-[10px] px-2 py-0.5 border-0 font-medium',
+                              (signal.result === 'success' || signal.result === 'Won') && 'bg-success/10 text-success',
+                              (signal.result === 'failed' || signal.result === 'Lost') && 'bg-destructive/10 text-destructive',
+                              (signal.result === 'pending' || signal.result === 'Pending') && 'bg-warning/10 text-warning',
+                              signal.result === 'Skipped' && 'bg-muted text-muted-foreground opacity-70'
                             )}
                           >
-                            {signal.result}
+                            {signal.result.toUpperCase()}
                           </Badge>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </ScrollArea>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </div>
           </div>
         </TabsContent>
 
