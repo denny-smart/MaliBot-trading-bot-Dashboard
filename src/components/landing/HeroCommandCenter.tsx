@@ -1,8 +1,8 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, ArrowRight, Activity, Lock, AlertTriangle } from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowRight, Activity, ShieldCheck, Lock, AlertTriangle, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   itemFadeIn,
   containerStagger,
@@ -12,6 +12,7 @@ import {
 
 export function HeroCommandCenter() {
   const containerRef = useRef(null);
+  const [showVideo, setShowVideo] = useState(false);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden perspective-1000">
@@ -52,36 +53,47 @@ export function HeroCommandCenter() {
             className="text-4xl md:text-6xl font-bold tracking-tighter"
             variants={itemFadeIn}
           >
-            Autonomous Trading.<br />
-            <span className="text-primary text-glow">Real-Time Intelligence.</span>
+            Trade with rules,<br />
+            <span className="text-primary text-glow">not emotions.</span>
           </motion.h1>
 
           <motion.p
             className="text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed"
             variants={itemFadeIn}
           >
-            Execute institutional-grade strategies with the MaliBot Command Interface.
-            Reserved for approved operators only.
+            Automated trading designed to protect your capital. A system that waits for the right moment. Not every moment.
           </motion.p>
 
           <motion.div
             className="flex flex-col items-center sm:items-start gap-6 pt-4"
             variants={itemFadeIn}
           >
-            <Link to="/login" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto h-16 px-8 text-lg font-bold tracking-wide control-btn bg-primary text-primary-foreground hover:bg-primary/90 group group-hover:scale-[1.02] transition-all duration-300 shadow-[0_0_20px_rgba(0,255,157,0.3)]">
-                <span className="relative z-10 flex items-center gap-3">
-                  <Lock className="w-5 h-5" />
-                  Validating Access Protocol...
-                </span>
-                {/* Button Scan Effect */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
-                  animate={{ left: ["-100%", "200%"] }}
-                  transition={steadyLoop}
-                />
-              </Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+              <Link to="/login" className="w-full sm:w-auto">
+                <Button className="relative overflow-hidden w-full sm:w-auto h-16 px-8 text-lg font-bold tracking-wide control-btn bg-primary text-primary-foreground hover:bg-primary/90 group group-hover:scale-[1.02] transition-all duration-300 shadow-[0_0_20px_rgba(0,255,157,0.3)]">
+                  <span className="relative z-10 flex items-center gap-3">
+                    Start Automating Now
+                    <ArrowRight className="w-5 h-5" />
+                  </span>
+                  {/* Button Scan Effect */}
+                  <motion.div
+                    className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "200%" }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                  />
+                </Button>
+              </Link>
+
+              <div
+                onClick={() => setShowVideo(true)}
+                className="w-full sm:w-auto cursor-pointer"
+              >
+                <Button variant="outline" className="w-full sm:w-auto h-16 px-8 text-lg font-bold tracking-wide border-primary/20 text-primary hover:bg-primary/10">
+                  See How It Works
+                </Button>
+              </div>
+            </div>
 
             <div className="flex items-center gap-3 text-muted-foreground bg-black/40 px-4 py-2 rounded border border-white/5">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
@@ -192,6 +204,43 @@ export function HeroCommandCenter() {
 
         </motion.div>
       </motion.div>
+
+      {/* Video Modal */}
+      <AnimatePresence>
+        {showVideo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            onClick={() => setShowVideo(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-4xl aspect-video bg-black rounded-xl border border-primary/20 shadow-[0_0_50px_rgba(0,240,255,0.2)] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setShowVideo(false)}
+                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-white/20 text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <iframe
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/UTIHJUQ0wlE?autoplay=1"
+                title="How MaliBot Works"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

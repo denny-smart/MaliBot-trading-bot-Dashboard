@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { HeroCommandCenter } from '@/components/landing/HeroCommandCenter';
-import { IntelligenceModules } from '@/components/landing/IntelligenceModules';
-import { LiveMetricsTicker } from '@/components/landing/LiveMetricsTicker';
+import { HowItWorks } from '@/components/landing/HowItWorks';
+import { RiskProtection } from '@/components/landing/RiskProtection';
+import { LiveSystemActivity } from '@/components/landing/LiveSystemActivity';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
@@ -34,10 +36,10 @@ export default function Home() {
           </div>
 
           <nav className="hidden md:flex items-center gap-8 font-mono text-xs tracking-widest">
-            {['Modules', 'Metrics', 'Security'].map((item) => (
+            {['How It Works', 'Safety', 'Transparency'].map((item) => (
               <a
                 key={item}
-                href={`#${item.toLowerCase()}`}
+                href={`#${item.toLowerCase().replace(/ /g, '-')}`}
                 className="text-muted-foreground hover:text-primary transition-colors uppercase"
               >
                 {item}
@@ -46,9 +48,17 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-4">
-            <Link to="/login" className="hidden md:flex items-center gap-2 border border-primary/50 text-primary hover:bg-primary/10 px-6 py-2 rounded-none font-mono text-xs tracking-widest transition-all duration-300 relative group overflow-hidden">
-              <span className="relative z-10">INITIALIZE</span>
-              <div className="absolute inset-0 bg-primary/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
+            <Link to="/login" className="hidden md:flex relative items-center justify-center px-6 py-2 rounded-full border border-primary/50 text-primary bg-primary/5 overflow-hidden group transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:border-primary">
+              <span className="relative z-10 font-mono text-xs font-bold tracking-widest uppercase">
+                ACCESS DASHBOARD
+              </span>
+
+              {/* Surge Effect */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent skew-x-12"
+                animate={{ left: ["-100%", "200%"] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              />
             </Link>
           </div>
         </div>
@@ -56,14 +66,9 @@ export default function Home() {
 
       <main>
         <HeroCommandCenter />
-
-        <div id="metrics">
-          <LiveMetricsTicker />
-        </div>
-
-        <div id="modules">
-          <IntelligenceModules />
-        </div>
+        <HowItWorks />
+        <RiskProtection />
+        <LiveSystemActivity />
 
         {/* Final Conversion Section */}
         <section className="py-24 relative overflow-hidden bg-black">
