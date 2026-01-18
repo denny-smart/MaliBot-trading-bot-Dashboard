@@ -106,7 +106,10 @@ export function HeroCommandCenter() {
                 <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
                 <div className="w-2 h-2 rounded-full bg-green-500/50" />
               </div>
-              <span className="text-[10px] font-mono text-primary/70">MALIBOT_CORE.EXE</span>
+              <div className="flex items-center gap-2">
+                <img src="/favicon.png" alt="MaliBot" className="w-3 h-3 object-contain opacity-70" />
+                <span className="text-[10px] font-mono text-primary/70">MALIBOT_CORE.EXE</span>
+              </div>
             </div>
 
             <div className="p-6 space-y-4 relative">
