@@ -109,7 +109,7 @@ export default function Login() {
 
                 <div className="flex flex-col items-start">
                   <span className="text-xs font-mono tracking-widest uppercase">
-                    [ RETURN TO COMMAND ]
+                    Return to Command Center
                   </span>
 
                   {/* Secondary Tooltip Text */}
@@ -121,7 +121,7 @@ export default function Login() {
                     }}
                     transition={{ duration: 0.2, delay: 0.1 }}
                   >
-                    Revert to Main Interface
+                    Back to Home
                   </motion.span>
                 </div>
               </div>

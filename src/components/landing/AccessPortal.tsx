@@ -135,21 +135,21 @@ export function AccessPortal({ onAuth, isLoading }: AccessPortalProps) {
                                 animate={{ opacity: [1, 0.5, 1] }}
                                 transition={{ duration: 0.5, repeat: Infinity }}
                             >
-                                VALIDATING PROTOCOL...
+                                AUTHENTICATION IN PROGRESS
                             </motion.span>
                         ) : scanState === 'denied' ? (
-                            <span className="text-destructive">ACCESS DENIED</span>
+                            <span className="text-destructive">AUTHENTICATION FAILED</span>
                         ) : (
                             <motion.span
                                 animate={{ textShadow: ["0 0 5px rgba(0,240,255,0.5)", "0 0 15px rgba(0,240,255,0.2)", "0 0 5px rgba(0,240,255,0.5)"] }}
                                 transition={{ duration: 3, repeat: Infinity }}
                             >
-                                SECURE ACCESS POINT
+                                SECURE ACCESS
                             </motion.span>
                         )}
                     </h2>
                     <p className="text-xs text-primary/60 font-mono">
-                        {scanState === 'scanning' ? "Decrypting biometric signature..." : "MaliBot Protocol v2.5.0"}
+                        {scanState === 'scanning' ? "Verifying credentials..." : "Touch fingerprint to continue"}
                     </p>
                 </div>
 
@@ -158,13 +158,13 @@ export function AccessPortal({ onAuth, isLoading }: AccessPortalProps) {
                 <div className="mt-6 flex flex-col gap-1 text-[10px] text-muted-foreground font-mono uppercase w-full">
                     <div className="flex justify-between w-full border-t border-white/5 pt-2">
                         <span>ENCRYPTION</span>
-                        <span className="text-primary">AES-256-GCM</span>
+                        <span className="text-primary">Secure (AES-256-GCM)</span>
                     </div>
                     <div className="flex justify-between w-full">
-                        <span>STATUS</span>
+                        <span>SYSTEM STATUS</span>
                         <span className="flex items-center gap-1 text-primary">
                             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            ONLINE
+                            Online and Secure
                         </span>
                     </div>
                 </div>
