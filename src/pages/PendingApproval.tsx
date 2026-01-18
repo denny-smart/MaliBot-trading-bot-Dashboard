@@ -116,7 +116,7 @@ export default function PendingApproval() {
         {/* Card */}
         <div className="glass-card rounded-2xl p-8 animate-fade-in text-center" style={{ animationDelay: '0.1s' }}>
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/20 text-primary mb-4">
-            <Bot className="w-6 h-6" />
+            <img src="/favicon.png" alt="MaliBot Logo" className="w-8 h-8 object-contain" />
           </div>
 
           <h2 className="text-xl font-semibold text-foreground mb-4">Thanks for signing up!</h2>

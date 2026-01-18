@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { HeroCommandCenter } from '@/components/landing/HeroCommandCenter';
 import { IntelligenceModules } from '@/components/landing/IntelligenceModules';
 import { LiveMetricsTicker } from '@/components/landing/LiveMetricsTicker';
-import { Bot, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 
@@ -27,7 +27,7 @@ export default function Home() {
             className="flex items-center gap-3 hover:opacity-90 transition-opacity cursor-pointer text-glow"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            <Bot className="w-8 h-8 text-primary" />
+            <img src="/favicon.png" alt="MaliBot" className="w-8 h-8 object-contain" />
             <span className="text-xl font-bold tracking-widest uppercase">
               Mali<span className="text-primary">Bot</span>
             </span>
@@ -96,7 +96,7 @@ export default function Home() {
       <footer className="bg-black border-t border-primary/10 py-12 px-6">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-muted-foreground text-xs font-mono">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
-            <Bot className="w-4 h-4 text-primary" />
+            <img src="/favicon.png" alt="MaliBot" className="w-4 h-4 object-contain" />
             <span>MALIBOT // SYSTEM V2.5</span>
           </div>
           <div className="flex gap-8 uppercase tracking-widest">

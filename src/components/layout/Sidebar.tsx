@@ -50,7 +50,7 @@ export function Sidebar() {
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 py-6 border-b border-sidebar-border">
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/20 text-primary">
-            <Bot className="w-6 h-6" />
+            <img src="/favicon.png" alt="MaliBot Logo" className="w-8 h-8 object-contain" />
           </div>
           {!collapsed && (
             <div className="animate-fade-in text-left">

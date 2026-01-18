@@ -61,7 +61,7 @@ export default function Login() {
         {/* Logo / Header */}
         <div className="text-center mb-12 animate-fade-in">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-black/50 border border-primary/20 text-primary mb-6 shadow-[0_0_30px_rgba(0,240,255,0.2)]">
-            <Bot className="w-10 h-10 animate-pulse-slow" />
+            <img src="/favicon.png" alt="MaliBot Logo" className="w-10 h-10 animate-pulse-slow object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-white tracking-widest uppercase">MaliBot</h1>
           <div className="flex items-center justify-center gap-2 mt-2">
