@@ -68,18 +68,11 @@ export function HeroCommandCenter() {
           >
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <Link to="/login" className="w-full sm:w-auto">
-                <Button className="relative overflow-hidden w-full sm:w-auto h-16 px-8 text-lg font-bold tracking-wide control-btn bg-primary text-primary-foreground hover:bg-primary/90 group group-hover:scale-[1.02] transition-all duration-300 shadow-[0_0_20px_rgba(0,255,157,0.3)]">
+                <Button className="relative overflow-hidden w-full sm:w-auto h-16 px-8 text-lg font-bold tracking-wide control-btn bg-black/60 backdrop-blur-md text-primary hover:bg-primary/10 group rounded-full border border-primary/50 hover:border-primary shadow-[0_0_20px_theme('colors.primary.DEFAULT')] hover:shadow-[0_0_40px_theme('colors.primary.DEFAULT')] transition-all duration-300">
                   <span className="relative z-10 flex items-center gap-3">
                     Start Automating Now
                     <ArrowRight className="w-5 h-5" />
                   </span>
-                  {/* Button Scan Effect */}
-                  <motion.div
-                    className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/60 to-transparent skew-x-12"
-                    initial={{ x: "-100%" }}
-                    animate={{ x: "200%" }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                  />
                 </Button>
               </Link>
 
