@@ -128,8 +128,23 @@ export default function Dashboard() {
 
     wsService.on('trade_closed', (data: any) => {
       const transformedTrade = transformTrades([data])[0];
+
+      // Update trades list
       queryClient.setQueryData(['trades'], (prev: FrontendTrade[] | undefined) => {
         return prev?.map((t) => (t.id === transformedTrade.id ? { ...t, ...transformedTrade } : t)) ?? [];
+      });
+
+      // Update bot status (balance and profit)
+      queryClient.setQueryData(['botStatus'], (prev: FrontendBotStatus | undefined) => {
+        if (!prev) return undefined;
+
+        const tradeProfit = transformedTrade.profit || 0;
+
+        return {
+          ...prev,
+          balance: prev.balance + tradeProfit,
+          profit: prev.profit + tradeProfit
+        };
       });
     });
 
