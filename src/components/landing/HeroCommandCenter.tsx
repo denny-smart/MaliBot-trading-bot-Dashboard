@@ -1,13 +1,11 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Activity, ShieldCheck, Lock, AlertTriangle, X } from "lucide-react";
+import { ArrowRight, Activity, ShieldCheck, Lock, AlertTriangle, X, Play } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   itemFadeIn,
-  containerStagger,
-  scanlineVertical,
-  steadyLoop
+  containerStagger
 } from "@/lib/animations";
 
 export function HeroCommandCenter() {
@@ -85,14 +83,7 @@ export function HeroCommandCenter() {
                 </Button>
               </Link>
 
-              <div
-                onClick={() => setShowVideo(true)}
-                className="w-full sm:w-auto cursor-pointer"
-              >
-                <Button variant="outline" className="w-full sm:w-auto h-16 px-8 text-lg font-bold tracking-wide border-primary/20 text-primary hover:bg-primary/10">
-                  See How It Works
-                </Button>
-              </div>
+
             </div>
 
             <div className="flex items-center gap-3 text-muted-foreground bg-black/40 px-4 py-2 rounded border border-white/5">
@@ -104,82 +95,49 @@ export function HeroCommandCenter() {
           </motion.div>
         </div>
 
-        {/* Visual Terminal / HUD */}
+        {/* Visual Terminal / HUD Replacement - Video Trigger */}
         <motion.div
-          className="relative lg:h-[500px] w-full flex items-center justify-center rotate-x-12"
+          className="relative lg:h-[500px] w-full flex items-center justify-center perspective-1000"
           variants={itemFadeIn}
         >
-          {/* Main HUD Container */}
-          <div className="relative w-full max-w-md aspect-square rounded-2xl border border-primary/20 bg-black/40 backdrop-blur-md overflow-hidden shadow-2xl">
-            {/* Header */}
-            <div className="h-8 border-b border-primary/20 flex items-center px-4 bg-primary/5 justify-between">
-              <div className="flex gap-2">
-                <div className="w-2 h-2 rounded-full bg-red-500/50" />
-                <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
-                <div className="w-2 h-2 rounded-full bg-green-500/50" />
+          {/* Main Video Trigger Box */}
+          <div
+            onClick={() => setShowVideo(true)}
+            className="relative w-full max-w-lg aspect-video rounded-2xl border border-primary/20 bg-black/40 backdrop-blur-md overflow-hidden shadow-2xl cursor-pointer group hover:border-primary/50 transition-all duration-500 rotate-y-12 hover:rotate-0"
+          >
+            {/* Ambient Glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+
+            {/* Grid Pattern */}
+            <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(ellipse_at_center,black,transparent)]" />
+
+            {/* Play Button Center */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-10">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+                <div className="w-20 h-20 rounded-full bg-black/50 border border-primary/50 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:bg-primary text-primary group-hover:text-black transition-all duration-300 shadow-[0_0_30px_rgba(0,255,157,0.3)]">
+                  <Play className="w-8 h-8 fill-current ml-1" />
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <img src="/favicon.png" alt="MaliBot" className="w-3 h-3 object-contain opacity-70" />
-                <span className="text-[10px] font-mono text-primary/70">MALIBOT_CORE.EXE</span>
-              </div>
+              <span className="font-mono text-sm tracking-[0.2em] text-primary group-hover:text-white transition-colors uppercase font-bold">
+                Watch System Demo
+              </span>
             </div>
 
-            <div className="p-6 space-y-4 relative">
-              {/* Scanline Overlay */}
-              <motion.div
-                className="absolute left-0 right-0 h-[2px] bg-primary/30 z-20 shadow-[0_0_10px_rgba(0,240,255,0.5)]"
-                variants={scanlineVertical}
-                initial="initial"
-                animate="animate"
-              />
+            {/* Corner Accents */}
+            <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-primary/30 rounded-tl-2xl group-hover:border-primary transition-colors" />
+            <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-primary/30 rounded-br-2xl group-hover:border-primary transition-colors" />
 
-              {/* Data Rows */}
-              {['M1', 'M5', 'H1'].map((tf, i) => (
-                <div key={tf} className="space-y-2">
-                  <div className="flex justify-between text-xs font-mono text-muted-foreground">
-                    <span>TIMEFRAME {tf}</span>
-                    <span className="text-primary">ACTIVE</span>
-                  </div>
-                  <div className="h-1 w-full bg-primary/10 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-primary"
-                      initial={{ width: "0%" }}
-                      animate={{ width: `${60 + i * 10}%` }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Infinity,
-                        repeatType: "reverse",
-                        ease: "easeInOut",
-                        delay: i * 0.2
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-
-              {/* Sim Chart */}
-              <div className="mt-8 border border-primary/10 rounded p-4 h-32 relative bg-primary/5 flex items-end gap-1">
-                {Array.from({ length: 20 }).map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="flex-1 bg-primary/40 rounded-t-sm"
-                    animate={{ height: ["20%", "80%", "40%"] }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatType: "reverse",
-                      ease: "easeInOut",
-                      delay: i * 0.1
-                    }}
-                  />
-                ))}
-              </div>
+            {/* Status Lines */}
+            <div className="absolute bottom-6 left-8 right-8 flex justify-between text-[10px] font-mono text-primary/60 uppercase">
+              <span>System Status: Online</span>
+              <span>v2.5.0</span>
             </div>
           </div>
 
           {/* Floating Badges */}
           <motion.div
-            className="absolute -right-4 top-10 p-3 glass-card rounded-lg flex items-center gap-3 z-20"
+            className="absolute -right-4 top-20 p-3 glass-card rounded-lg flex items-center gap-3 z-20 pointer-events-none"
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
@@ -191,7 +149,7 @@ export function HeroCommandCenter() {
           </motion.div>
 
           <motion.div
-            className="absolute -left-4 bottom-20 p-3 glass-card rounded-lg flex items-center gap-3 z-20"
+            className="absolute -left-4 bottom-20 p-3 glass-card rounded-lg flex items-center gap-3 z-20 pointer-events-none"
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           >
@@ -201,7 +159,6 @@ export function HeroCommandCenter() {
               <div className="text-xs font-bold text-secondary">ENABLED</div>
             </div>
           </motion.div>
-
         </motion.div>
       </motion.div>
 
@@ -231,7 +188,7 @@ export function HeroCommandCenter() {
               <iframe
                 width="100%"
                 height="100%"
-                src="https://www.youtube.com/embed/UTIHJUQ0wlE?autoplay=1"
+                src="https://www.youtube.com/embed/13TMtT3WZw0?autoplay=1"
                 title="How MaliBot Works"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
