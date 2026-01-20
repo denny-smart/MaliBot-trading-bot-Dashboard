@@ -98,7 +98,7 @@ export default function Home() {
 
               <div className="relative z-10 inline-block group">
                 <Button
-                  className="relative rounded-full bg-black/60 backdrop-blur-md text-primary px-12 py-8 text-lg font-bold tracking-widest overflow-hidden transition-all duration-300 hover:scale-105 border-none"
+                  className="relative rounded-full bg-black/60 backdrop-blur-md text-primary px-12 py-8 text-lg font-bold tracking-widest overflow-hidden transition-all duration-300 hover:scale-105 hover:text-black hover:bg-primary/80 border-none"
                   asChild
                 >
                   <Link to="/login" className="relative block h-full w-full">
