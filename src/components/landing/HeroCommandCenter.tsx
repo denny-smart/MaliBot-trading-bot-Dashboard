@@ -43,7 +43,7 @@ export function HeroCommandCenter() {
           <motion.div variants={itemFadeIn}>
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-mono mb-4">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              NEXT GEN TRADING LOGIC
+              LIVE NOW
             </span>
           </motion.div>
 
