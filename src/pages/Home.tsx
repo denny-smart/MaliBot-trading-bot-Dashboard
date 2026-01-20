@@ -125,8 +125,8 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mt-8 flex items-center gap-2 text-primary/60 text-xs font-mono uppercase">
-              <CheckCircle2 className="w-3 h-3" /> Encryption Enabled · Admin Approval Required
+            <div className="mt-8 flex items-center gap-2 text-primary text-sm font-mono uppercase font-semibold transition-all duration-300 hover:drop-shadow-[0_0_8px_rgba(139,92,246,0.6)] cursor-pointer">
+              <CheckCircle2 className="w-5 h-5" /> Encryption Enabled · Admin Approval Required
             </div>
           </div>
         </section>
