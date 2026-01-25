@@ -4,19 +4,27 @@
 
 export interface BackendTrade {
   contract_id: string;
-  direction: 'BUY' | 'SELL';
+  symbol: string;
+  direction: string; // "CALL" | "PUT" | "BUY" | "SELL"
   stake: number;
   entry_price: number;
-  take_profit?: number;
-  stop_loss?: number;
-  status: 'open' | 'closed' | 'win' | 'loss';
-  pnl: number | null;
-  exit_price?: number;
+  exit_price: number;
+  take_profit: number;
+  stop_loss: number;
+  status: string; // "won", "lost", "sold"
+  pnl: number;
+  timestamp: string;
+  duration?: number;
+  // Legacy fields for backward compatibility during migration
+  id?: string;
+  signal?: string;
+  profit?: number;
   time?: string;
 }
 
 export interface FrontendTrade {
   id: string;
+  symbol: string;
   time: string;
   direction: 'UP' | 'DOWN';
   entry_price?: number;
@@ -63,6 +71,7 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
     console.warn('Invalid trade data received:', backendTrade);
     return {
       id: `unknown-${index}`,
+      symbol: 'Unknown',
       time: new Date().toISOString(),
       direction: 'UP',
       entry_price: 0,
@@ -73,39 +82,23 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
 
   if (index === 0) {
     console.log('First trade structure - Available fields:', Object.keys(backendTrade));
-    console.log('First trade full data:', JSON.stringify(backendTrade, null, 2));
   }
 
-  // Map direction: Backend sends 'signal' field with UP/DOWN values
-  // Legacy support for: CALL/BUY -> UP, PUT/SELL -> DOWN
+  // Map direction: Backend sends 'direction' (or 'signal' in legacy)
+  // Maps CALL/BUY -> UP, PUT/SELL -> DOWN
   let mappedDirection: 'UP' | 'DOWN' = 'UP';
-  const rawDirection = String(backendTrade.signal || backendTrade.direction || backendTrade.contract_type || backendTrade.type || '').toUpperCase();
-
-  // DEBUG: Log direction mapping
-  if (index < 3) {
-    console.log('=== Trade Direction Debug ===');
-    console.log('Raw backend signal:', backendTrade.signal);
-    console.log('Raw backend direction:', backendTrade.direction);
-    console.log('Raw backend contract_type:', backendTrade.contract_type);
-    console.log('Raw backend type:', backendTrade.type);
-    console.log('Computed rawDirection:', rawDirection);
-    console.log('Trade ID:', backendTrade.contract_id || backendTrade.id);
-  }
+  const rawDirection = String(backendTrade.direction || backendTrade.signal || backendTrade.contract_type || backendTrade.type || '').toUpperCase();
 
   if (rawDirection === 'FALL' || rawDirection === 'SELL' || rawDirection === 'PUT' || rawDirection === 'DOWN') {
     mappedDirection = 'DOWN';
   }
 
-  if (index < 3) {
-    console.log('Mapped to:', mappedDirection);
-    console.log('============================');
-  }
-
-  const time = backendTrade.time || backendTrade.timestamp || new Date().toISOString();
+  // Map timestamp
+  const time = backendTrade.timestamp || backendTrade.time || new Date().toISOString();
 
   // Map status: won -> win, lost -> loss, sold -> closed
   let status: 'open' | 'win' | 'loss' | 'closed' = 'open';
-  const rawStatus = String(backendTrade.status || 'open');
+  const rawStatus = String(backendTrade.status || 'open').toLowerCase();
 
   if (rawStatus === 'won' || rawStatus === 'win') {
     status = 'win';
@@ -119,19 +112,21 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
       status = 'closed';
     }
   } else if (backendTrade.pnl !== null && backendTrade.pnl !== undefined && rawStatus !== 'open') {
-    // Fallback if status matches none but we have PnL
     status = backendTrade.pnl >= 0 ? 'win' : 'loss';
   }
 
   const transformed: FrontendTrade = {
     id: backendTrade.contract_id || backendTrade.id || `trade-${index}`,
+    symbol: backendTrade.symbol || 'Unknown',
     time,
     direction: mappedDirection,
     entry_price: Number(backendTrade.entry_price) || undefined,
     exit_price: backendTrade.exit_price ? Number(backendTrade.exit_price) : undefined,
     stake: Number(backendTrade.stake) || undefined,
     profit: backendTrade.pnl !== null && backendTrade.pnl !== undefined ? Number(backendTrade.pnl) : (backendTrade.profit !== null && backendTrade.profit !== undefined ? Number(backendTrade.profit) : undefined),
-    profit_percent: backendTrade.pnl ? (Number(backendTrade.pnl) / Number(backendTrade.stake)) * 100 : undefined,
+    profit_percent: (backendTrade.pnl || backendTrade.profit) && backendTrade.stake
+      ? (Number(backendTrade.pnl || backendTrade.profit) / Number(backendTrade.stake)) * 100
+      : undefined,
     duration: backendTrade.duration !== null && backendTrade.duration !== undefined ? Number(backendTrade.duration) : undefined,
     status,
   };
