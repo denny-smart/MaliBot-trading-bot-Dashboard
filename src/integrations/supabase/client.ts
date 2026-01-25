@@ -6,8 +6,9 @@ const supabaseUrl = typeof window !== 'undefined'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 if (!supabaseAnonKey) {
-  console.warn('Missing Supabase environment variables. Please set VITE_SUPABASE_ANON_KEY');
+  console.error('Missing Supabase environment variables. Please set VITE_SUPABASE_ANON_KEY');
+  throw new Error('VITE_SUPABASE_ANON_KEY is required');
 }
 
 // Use a fallback key to prevent crash, though requests will fail if key is invalid
-export const supabase = createClient(supabaseUrl, supabaseAnonKey || 'fallback-key');
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

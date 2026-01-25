@@ -117,7 +117,7 @@ export default function Settings() {
         delete payload.deriv_api_key;
       }
 
-      console.log('Saving config payload:', payload);
+      // console.log('Saving config payload:', payload);
 
       await api.config.update(payload);
 
