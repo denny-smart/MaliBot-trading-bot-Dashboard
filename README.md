@@ -63,92 +63,6 @@ VITE_API_BASE_URL=https://r-25v1.onrender.com
 
 **Important:** Never commit `.env.local` to version control. It's already included in `.gitignore`.
 
-### 4. Supabase Setup
-
-#### Database Schema
-
-Run the following SQL in your Supabase SQL Editor to set up the required tables and triggers:
-
-```sql
--- Create profiles table
-CREATE TABLE IF NOT EXISTS public.profiles (
-  id UUID REFERENCES auth.users(id) PRIMARY KEY,
-  email TEXT NOT NULL,
-  full_name TEXT,
-  avatar_url TEXT,
-  role TEXT DEFAULT 'user' CHECK (role IN ('admin', 'user')),
-  is_approved BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Enable Row Level Security
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-
--- Create policies
-CREATE POLICY "Users can view their own profile"
-  ON public.profiles FOR SELECT
-  USING (auth.uid() = id);
-
-CREATE POLICY "Admins can view all profiles"
-  ON public.profiles FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
-
-CREATE POLICY "Admins can update all profiles"
-  ON public.profiles FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
-
--- Create trigger function to auto-create profile
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.profiles (id, email, full_name, avatar_url)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    NEW.raw_user_meta_data->>'full_name',
-    NEW.raw_user_meta_data->>'avatar_url'
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Create trigger
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-```
-
-#### Google OAuth Configuration
-
-1. Go to your Supabase project dashboard
-2. Navigate to **Authentication** → **Providers**
-3. Enable **Google** provider
-4. Add your Google OAuth credentials (Client ID and Secret)
-5. Add authorized redirect URLs:
-   - `http://localhost:5173/dashboard` (development)
-   - `https://your-production-domain.com/dashboard` (production)
-
-### 5. Backend API Setup
-
-Ensure the backend API is running and accessible at the URL specified in `VITE_API_BASE_URL`. The frontend expects the following endpoints:
-
-- `GET /api/v1/bot/status` - Bot status
-- `GET /api/v1/trades/active` - Active trades
-- `GET /api/v1/trades/history` - Trade history
-- `GET /api/v1/monitor/signals` - Trading signals
-- `GET /api/v1/auth/me` - Current user profile with approval status
-
 ## 🚦 Running the Application
 
 ### Development Mode
@@ -315,24 +229,20 @@ Unapproved users are redirected to `/pending-approval`
 
 ### Common Issues
 
-**Issue: "Supabase client error"**
-- Ensure `.env.local` has correct Supabase credentials
-- Verify Supabase project is active and accessible
+**Issue: "Environment variables not loading"**
+- Ensure `.env.local` exists in the root directory
+- Verify all required `VITE_*` prefixed variables are set
+- Restart the development server after changing `.env.local`
 
-**Issue: "API connection failed"**
-- Check if backend API is running
-- Verify `VITE_API_BASE_URL` is correct
-- Check CORS configuration on backend
-
-**Issue: "Google OAuth not working"**
-- Verify Google OAuth is enabled in Supabase
+**Issue: "Authentication redirects not working"**
+- Clear browser cache and cookies
 - Check redirect URLs are correctly configured
-- Ensure Google credentials are valid
+- Verify you're using the correct Google account
 
-**Issue: "User stuck on pending approval"**
-- Check database: `SELECT * FROM profiles WHERE email = 'user@example.com'`
-- Verify `is_approved` flag is set to `true`
-- Clear browser cache and re-login
+**Issue: "User stuck on pending approval page"**
+- Log out and log back in to refresh user session
+- Clear browser cache and local storage
+- Contact admin to verify approval status
 
 ## 📄 License
 
