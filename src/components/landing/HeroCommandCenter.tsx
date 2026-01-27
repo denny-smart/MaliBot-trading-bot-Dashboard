@@ -75,8 +75,10 @@ export function HeroCommandCenter() {
                   </span>
                 </Button>
               </Link>
+            </div>
 
-
+            <div className="text-sm text-muted-foreground font-mono pl-2">
+              New to MaliBot? <Link to="/docs" className="text-primary hover:underline underline-offset-4 decoration-primary/50 transition-all font-bold">Start Here</Link>
             </div>
 
             <div className="flex items-center gap-3 text-muted-foreground bg-black/40 px-4 py-2 rounded border border-white/5">

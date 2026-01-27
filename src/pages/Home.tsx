@@ -140,9 +140,9 @@ export default function Home() {
             <span>MALIBOT // SYSTEM V2.5</span>
           </div>
           <div className="flex gap-8 uppercase tracking-widest">
-            <a href="#" className="hover:text-primary transition-colors">Protocol</a>
-            <a href="#" className="hover:text-primary transition-colors">Privacy</a>
-            <a href="#" className="hover:text-primary transition-colors">Docs</a>
+
+            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link to="/docs" className="hover:text-primary transition-colors">Docs</Link>
           </div>
         </div>
       </footer>

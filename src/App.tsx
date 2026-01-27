@@ -17,6 +17,9 @@ import Settings from "@/pages/Settings";
 import Users from "@/pages/Users";
 import NotFound from "@/pages/NotFound";
 
+import Privacy from "@/pages/Privacy";
+import Docs from "@/pages/Docs";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -79,6 +82,9 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/docs" element={<Docs />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
