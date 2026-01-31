@@ -23,9 +23,15 @@ class WebSocketService {
       throw new Error('WebSocket URL not configured. Please set VITE_WS_URL environment variable.');
     }
 
+    // Check if we are already connected with the SAME user
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
-      console.log('WebSocket already connected or connecting');
-      return;
+      if (this.currentUserId === userId) {
+        console.debug('WebSocket already connected or connecting for this user');
+        return;
+      }
+      // If user changed, we need to close and reconnect
+      console.log('Switching user - reconnecting WebSocket...');
+      this.ws.close();
     }
 
     const wsUrl = `${WS_BASE}/ws/live`;
