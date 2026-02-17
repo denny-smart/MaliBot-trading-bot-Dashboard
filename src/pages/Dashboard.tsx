@@ -343,6 +343,7 @@ export default function Dashboard() {
         <BotControl
           status={botStatus?.status || 'stopped'}
           hasApiKey={hasApiKey}
+          activeStrategy={botStatus?.active_strategy}
           onStart={handleStart}
           onStop={handleStop}
           onRestart={handleRestart}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,7 @@ type ConfigForm = z.infer<typeof visibleConfigSchema>;
 
 export default function Settings() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasToken, setHasToken] = useState(false);
@@ -120,6 +122,10 @@ export default function Settings() {
       // console.log('Saving config payload:', payload);
 
       await api.config.update(payload);
+
+      // Invalidate queries to refresh dashboard with new strategy
+      await queryClient.invalidateQueries({ queryKey: ['config'] });
+      await queryClient.invalidateQueries({ queryKey: ['botStatus'] });
 
 
 

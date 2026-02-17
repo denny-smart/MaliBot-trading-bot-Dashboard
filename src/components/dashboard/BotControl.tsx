@@ -18,13 +18,14 @@ import { rotatingRing } from '@/lib/animations';
 interface BotControlProps {
   status: 'running' | 'stopped' | 'loading';
   hasApiKey: boolean;
+  activeStrategy?: string;
   onStart: () => Promise<void>;
   onStop: () => Promise<void>;
   onRestart: () => Promise<void>;
   onUpdateApiKey: (key: string) => Promise<void>;
 }
 
-export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUpdateApiKey }: BotControlProps) {
+export function BotControl({ status, hasApiKey, activeStrategy, onStart, onStop, onRestart, onUpdateApiKey }: BotControlProps) {
   const [isLoading, setIsLoading] = useState<'start' | 'stop' | 'restart' | 'apikey' | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogAction, setDialogAction] = useState<'start' | 'stop' | 'restart' | 'apikey' | null>(null);
@@ -134,7 +135,7 @@ export function BotControl({ status, hasApiKey, onStart, onStop, onRestart, onUp
           >
             {status === 'running' ? 'OPERATIONAL' : status === 'stopped' ? 'TERMINATED' : 'INITIALIZING...'}
           </p>
-          {status === 'running' && <p className="text-xs text-success/80 font-mono">Running Strategy: SENTINEL_V1</p>}
+          {status === 'running' && activeStrategy && <p className="text-xs text-success/80 font-mono">Running Strategy: {activeStrategy}</p>}
         </div>
 
         {/* Control Buttons */}
