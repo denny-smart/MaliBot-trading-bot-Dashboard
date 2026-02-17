@@ -61,7 +61,7 @@ export function transformBotStatus(backendStatus: BackendBotStatus | any): Front
   // Handle different possible field names from backend
   // Status fields
   const uptime = backendStatus.uptime_seconds ?? backendStatus.uptime ?? 0;
-  const activeStrategy = backendStatus.active_strategy ?? 'Conservative';
+  const activeStrategy = backendStatus.active_strategy ?? 'Unknown';
   const stakeAmount = backendStatus.stake_amount ?? 0;
 
   // Trades/Stats fields (from statistics object or top level)
