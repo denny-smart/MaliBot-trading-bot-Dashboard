@@ -34,33 +34,36 @@ apiClient.interceptors.response.use(
 
 export const api = {
   auth: {
-    checkApproval: () => apiClient.get('/api/v1/auth/check-approval'),
-    me: () => apiClient.get('/api/v1/auth/me'),
-    status: () => apiClient.get('/api/v1/auth/status'),
-    requestApproval: () => apiClient.post('/api/v1/auth/request-approval'),
+    checkApproval: () => apiClient.get<{ approved: boolean }>('/api/v1/auth/check-approval'),
+    me: () => apiClient.get<{ user: Record<string, unknown> }>('/api/v1/auth/me'),
+    status: () => apiClient.get<{ status: string }>('/api/v1/auth/status'),
+    requestApproval: () => apiClient.post<{ success: boolean }>('/api/v1/auth/request-approval'),
   },
   bot: {
-    start: () => apiClient.post('/api/v1/bot/start'),
-    stop: () => apiClient.post('/api/v1/bot/stop'),
-    restart: () => apiClient.post('/api/v1/bot/restart'),
-    status: () => apiClient.get('/api/v1/bot/status'),
+    start: () => apiClient.post<{ success: boolean }>('/api/v1/bot/start'),
+    stop: () => apiClient.post<{ success: boolean }>('/api/v1/bot/stop'),
+    restart: () => apiClient.post<{ success: boolean }>('/api/v1/bot/restart'),
+    status: () => apiClient.get<{ running: boolean; pid?: number; strategy?: string }>('/api/v1/bot/status'),
   },
   trades: {
-    active: () => apiClient.get('/api/v1/trades/active'),
-    history: (params?: Record<string, unknown>) => apiClient.get('/api/v1/trades/history', { params }),
-    stats: () => apiClient.get('/api/v1/trades/stats'),
-    statsDebug: () => apiClient.get('/api/v1/trades/stats/debug'),
+    active: () => apiClient.get<Record<string, unknown>[]>('/api/v1/trades/active'),
+    history: (params?: Record<string, unknown>) => apiClient.get<Record<string, unknown>[]>('/api/v1/trades/history', { params }),
+    stats: () => apiClient.get<{ total_trades: number; win_rate: number; total_profit: number; profit_factor: number; avg_win: number; avg_loss: number; largest_win: number; largest_loss: number }>('/api/v1/trades/stats'),
+    statsDebug: () => apiClient.get<Record<string, unknown>>('/api/v1/trades/stats/debug'),
   },
   monitor: {
-    signals: () => apiClient.get('/api/v1/monitor/signals'),
-    performance: () => apiClient.get('/api/v1/monitor/performance'),
-    logs: () => apiClient.get('/api/v1/monitor/logs'),
+    signals: () => apiClient.get<Record<string, unknown>[]>('/api/v1/monitor/signals'),
+    performance: () => apiClient.get<Record<string, unknown>>('/api/v1/monitor/performance'),
+    logs: () => apiClient.get<string[]>('/api/v1/monitor/logs'),
   },
   config: {
-    current: () => apiClient.get('/api/v1/config/current'),
-    update: (config: Record<string, unknown>) => apiClient.put('/api/v1/config/update', config),
+    current: () => apiClient.get<{ deriv_api_key?: string; strategy?: string; [k: string]: unknown }>('/api/v1/config/current'),
+    update: (config: Record<string, unknown>) => apiClient.put<{ success: boolean }>('/api/v1/config/update', config),
+    setStrategy: (strategy: string) => apiClient.put<{ success: boolean; strategy: string }>('/api/v1/config/strategy', { strategy }),
+    getStrategyParams: () => apiClient.get<{ params: Record<string, unknown> }>('/api/v1/config/strategy-params'),
+    updateStrategyParams: (params: Record<string, unknown>) => apiClient.put<{ success: boolean; params: Record<string, unknown> }>('/api/v1/config/strategy-params', params),
   },
-  health: () => apiClient.get('/health'),
+  health: () => apiClient.get<{ status: 'ok' | 'degraded' | 'down' }>('/health'),
 };
 
 export default api;

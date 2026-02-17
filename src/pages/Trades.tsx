@@ -46,6 +46,7 @@ export default function Trades() {
   const [searchTerm, setSearchTerm] = useState('');
   const [directionFilter, setDirectionFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [strategyFilter, setStrategyFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchData();
@@ -118,11 +119,15 @@ export default function Trades() {
     }
   };
 
-  const filteredHistory = historyTrades.filter((trade) => {
+  type TradeWithStrategy = FrontendTrade & { strategy_type?: string | null };
+  const filteredHistory = historyTrades.filter((t) => {
+    const trade = t as TradeWithStrategy;
     const matchesSearch = trade.id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDirection = directionFilter === 'all' || trade.direction === directionFilter;
     const matchesStatus = statusFilter === 'all' || trade.status === statusFilter;
-    return matchesSearch && matchesDirection && matchesStatus;
+    const strategy = (trade.strategy_type ?? '').toString();
+    const matchesStrategy = strategyFilter === 'all' || strategy === strategyFilter;
+    return matchesSearch && matchesDirection && matchesStatus && matchesStrategy;
   });
 
   const exportToCSV = () => {
@@ -327,6 +332,16 @@ export default function Trades() {
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="win">Win</SelectItem>
                 <SelectItem value="loss">Loss</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={strategyFilter} onValueChange={setStrategyFilter}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Strategy" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Strategies</SelectItem>
+                <SelectItem value="Conservative">Conservative (Trend Following)</SelectItem>
+                <SelectItem value="Scalping">Scalping (High Frequency)</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" className="gap-2" onClick={exportToCSV} disabled={filteredHistory.length === 0}>
