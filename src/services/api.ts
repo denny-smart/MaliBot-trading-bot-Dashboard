@@ -56,7 +56,7 @@ export const api = {
   monitor: {
     signals: () => apiClient.get<BackendSignal[]>('/api/v1/monitor/signals'),
     performance: () => apiClient.get<BackendPerformance>('/api/v1/monitor/performance'),
-    logs: () => apiClient.get<string[]>('/api/v1/monitor/logs'),
+    logs: () => apiClient.get<{ logs: string[]; total_lines: number; showing: number }>('/api/v1/monitor/logs'),
   },
   config: {
     current: () => apiClient.get<{ deriv_api_key?: string; strategy?: string; stake_amount: number; active_strategy?: string;[k: string]: unknown }>('/api/v1/config/current'),

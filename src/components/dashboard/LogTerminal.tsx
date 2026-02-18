@@ -31,8 +31,13 @@ export function LogTerminal() {
 
     // Parse log string from API into LogMessage format
     const parseLogString = (logString: string, index: number): LogMessage | null => {
-        // Format: "2026-01-12 14:30:05 | INFO | [user_123] Message content"
-        const match = logString.match(/^(.+?)\s*\|\s*([A-Z]+)\s*\|\s*(.+)$/);
+        // Format A (3-field): "2026-01-12 14:30:05 | INFO | [user_123] Message content"
+        // Format B (4-field): "2026-01-12 14:30:05 | risefallbot | INFO | Message content"
+        // Try 4-field format first (with logger name between timestamp and level)
+        const match4 = logString.match(/^(.+?)\s*\|\s*\S+\s*\|\s*([A-Z]+)\s*\|\s*(.+)$/);
+        // Then try 3-field format
+        const match3 = logString.match(/^(.+?)\s*\|\s*([A-Z]+)\s*\|\s*(.+)$/);
+        const match = match4 || match3;
         if (match) {
             const [, timestamp, level, message] = match;
             // Clean user tags like [user_123] or [None] from the message
