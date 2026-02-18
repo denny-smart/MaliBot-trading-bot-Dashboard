@@ -162,6 +162,13 @@ export default function Trades() {
       <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
       <td className="py-3 px-4 text-muted-foreground text-sm">{formatDate(trade.time)}</td>
       <td className="py-3 px-4">
+        {trade.strategy_type ? (
+          <Badge variant="secondary" className="text-[10px] bg-secondary/50 text-muted-foreground border-border/50 font-normal">
+            {trade.strategy_type}
+          </Badge>
+        ) : '-'}
+      </td>
+      <td className="py-3 px-4">
         <Badge className={cn('text-xs', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
           {trade.direction === 'UP' ? (
             <ArrowUp className="w-3 h-3 mr-1" />
@@ -247,6 +254,7 @@ export default function Trades() {
                         <tr>
                           <th>Trade ID</th>
                           <th>Time Opened</th>
+                          <th>Strategy</th>
                           <th>Direction</th>
                           <th>Entry Price</th>
                           <th>Current Price</th>
@@ -269,10 +277,17 @@ export default function Trades() {
                             <span className="font-mono text-xs text-muted-foreground">#{trade.id}</span>
                             <div className="text-sm font-medium mt-1">{formatDate(trade.time)}</div>
                           </div>
-                          <Badge className={cn('text-xs', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
-                            {trade.direction === 'UP' ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
-                            {trade.direction}
-                          </Badge>
+                          <div className="flex flex-col items-end gap-1">
+                            <Badge className={cn('text-xs', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
+                              {trade.direction === 'UP' ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
+                              {trade.direction}
+                            </Badge>
+                            {trade.strategy_type && (
+                              <Badge variant="secondary" className="text-[9px] bg-secondary/50 text-muted-foreground font-normal">
+                                {trade.strategy_type}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                           <div>
@@ -368,6 +383,7 @@ export default function Trades() {
                         <tr>
                           <th>Trade ID</th>
                           <th>Date/Time</th>
+                          <th>Strategy</th>
                           <th>Direction</th>
                           <th>Entry Price</th>
                           <th>Exit Price</th>
@@ -408,6 +424,11 @@ export default function Trades() {
                               {trade.direction === 'UP' ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
                               {trade.direction}
                             </Badge>
+                            {trade.strategy_type && (
+                              <Badge variant="secondary" className="text-[10px] h-5 px-1.5 bg-secondary/50 text-muted-foreground font-normal">
+                                {trade.strategy_type}
+                              </Badge>
+                            )}
                           </div>
                           <div>
                             <div className="text-muted-foreground text-xs">Entry</div>

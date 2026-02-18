@@ -61,6 +61,11 @@ export function RecentTrades({ trades }: RecentTradesProps) {
                       >
                         {trade.direction}
                       </Badge>
+                      {trade.strategy_type && (
+                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-5 bg-white/5 text-muted-foreground border-white/5/50 font-normal">
+                          {trade.strategy_type}
+                        </Badge>
+                      )}
                       <span className="text-xs text-muted-foreground">
                         {formatTimeAgo(trade.time)}
                       </span>

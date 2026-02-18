@@ -34,6 +34,7 @@ export interface FrontendTrade {
   profit_percent?: number;
   duration?: number;
   status: 'open' | 'win' | 'loss' | 'closed';
+  strategy_type?: string;
 }
 
 export interface BackendTradeStats {
@@ -130,6 +131,7 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
       : undefined,
     duration: backendTrade.duration !== null && backendTrade.duration !== undefined ? Number(backendTrade.duration) : undefined,
     status,
+    strategy_type: backendTrade.strategy_type || backendTrade.strategy || undefined,
   };
 
   return transformed;

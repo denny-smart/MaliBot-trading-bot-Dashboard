@@ -9,8 +9,9 @@ import { api } from '@/services/api';
 import { formatDate, formatDuration } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { Signal, Cpu, HardDrive, Activity, Wifi, CheckCircle2, AlertCircle } from 'lucide-react';
-import { transformSignals, transformPerformance, type FrontendSignal, type FrontendPerformance } from '@/lib/monitoringTransformers';
+import { transformSignals, transformPerformance, transformSignal, type FrontendSignal, type FrontendPerformance } from '@/lib/monitoringTransformers';
 import { transformBotStatus } from '@/lib/dashboardTransformers';
+import { wsService } from '@/services/websocket';
 
 interface SignalData {
   id: string;
@@ -38,8 +39,45 @@ export default function Monitoring() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchData, 30000); // Keep polling as fallback and for system metrics
+
+    // WebSocket Listeners
+    const handleSignal = (data: any) => {
+      setSignals(prev => {
+        // Transform the incoming signal
+        const newSignal = transformSignal(data, 0); // index 0 is fine for single signal id
+
+        // Deduplicate: check if this signal timestamp already exists
+        const exists = prev.some(s =>
+          s.timestamp === newSignal.timestamp &&
+          s.signal_type === newSignal.signal_type
+        );
+
+        if (exists) return prev;
+
+        // Add to the top and keep top 50
+        return [newSignal, ...prev].slice(0, 50);
+      });
+    };
+
+    const handleBotStatus = (data: any) => {
+      const botStatus = transformBotStatus(data);
+      if (botStatus.uptime > 0) {
+        setPerformance(prev => prev ? {
+          ...prev,
+          uptime: formatDuration(botStatus.uptime)
+        } : null);
+      }
+    };
+
+    wsService.on('signal', handleSignal);
+    wsService.on('bot_status', handleBotStatus);
+
+    return () => {
+      clearInterval(interval);
+      wsService.off('signal', handleSignal);
+      wsService.off('bot_status', handleBotStatus);
+    };
   }, []);
 
   const fetchData = async () => {
@@ -56,14 +94,23 @@ export default function Monitoring() {
       const botStatus = transformBotStatus(botStatusRes.data);
 
       // Override uptime with reliable data from bot status
-      if (botStatus.uptime > 0) {
+      if (botStatus && botStatus.uptime > 0) {
         transformedPerformance.uptime = formatDuration(botStatus.uptime);
-      } else if (botStatusRes.data?.uptime !== undefined) {
-        // Fallback: try raw uptime if it exists (e.g. if simpler response)
-        transformedPerformance.uptime = formatDuration(typeof botStatusRes.data.uptime === 'number' ? botStatusRes.data.uptime : 0);
       }
 
-      setSignals(transformedSignals);
+      // Merge signals with deduplication
+      setSignals(prev => {
+        const merged = [...transformedSignals];
+        // Add localized WS signals if they aren't in the fetch result
+        prev.forEach(wsSignal => {
+          if (!merged.some(s => s.timestamp === wsSignal.timestamp && s.signal_type === wsSignal.signal_type)) {
+            merged.push(wsSignal);
+          }
+        });
+        // Re-sort by timestamp descending
+        return merged.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 50);
+      });
+
       setPerformance(transformedPerformance);
     } catch (error) {
       console.error('Failed to fetch monitoring data:', error);
@@ -99,7 +146,7 @@ export default function Monitoring() {
                 Trading Signals
               </h3>
               <Badge variant="secondary" className="text-xs bg-white/5 hover:bg-white/10 text-muted-foreground border-white/5">
-                Auto-refresh: 30s
+                Real-time updates enabled
               </Badge>
             </div>
 

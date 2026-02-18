@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { supabase } from '@/integrations/supabase/client';
+import { type BackendSignal, type BackendPerformance } from '@/lib/monitoringTransformers';
+import { type BackendBotStatus } from '@/lib/dashboardTransformers';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string) ?? '';
 
@@ -43,7 +45,7 @@ export const api = {
     start: () => apiClient.post<{ success: boolean }>('/api/v1/bot/start'),
     stop: () => apiClient.post<{ success: boolean }>('/api/v1/bot/stop'),
     restart: () => apiClient.post<{ success: boolean }>('/api/v1/bot/restart'),
-    status: () => apiClient.get<{ running: boolean; pid?: number; strategy?: string }>('/api/v1/bot/status'),
+    status: () => apiClient.get<BackendBotStatus>('/api/v1/bot/status'),
   },
   trades: {
     active: () => apiClient.get<Record<string, unknown>[]>('/api/v1/trades/active'),
@@ -52,8 +54,8 @@ export const api = {
     statsDebug: () => apiClient.get<Record<string, unknown>>('/api/v1/trades/stats/debug'),
   },
   monitor: {
-    signals: () => apiClient.get<Record<string, unknown>[]>('/api/v1/monitor/signals'),
-    performance: () => apiClient.get<Record<string, unknown>>('/api/v1/monitor/performance'),
+    signals: () => apiClient.get<BackendSignal[]>('/api/v1/monitor/signals'),
+    performance: () => apiClient.get<BackendPerformance>('/api/v1/monitor/performance'),
     logs: () => apiClient.get<string[]>('/api/v1/monitor/logs'),
   },
   config: {
