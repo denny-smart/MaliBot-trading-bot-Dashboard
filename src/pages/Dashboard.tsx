@@ -148,12 +148,17 @@ export default function Dashboard() {
       });
     };
 
-    wsService.on('bot_status_update', handleBotStatus);
+    wsService.on('bot_status', handleBotStatus);
+    wsService.on('statistics', (data: any) => {
+      queryClient.setQueryData(['tradeStats'], (prev: any) => {
+        return data.stats || prev;
+      });
+    });
     wsService.on('new_trade', handleNewTrade);
     wsService.on('trade_closed', handleTradeClosed);
 
     return () => {
-      wsService.off('bot_status_update', handleBotStatus);
+      wsService.off('bot_status', handleBotStatus);
       wsService.off('new_trade', handleNewTrade);
       wsService.off('trade_closed', handleTradeClosed);
     };
