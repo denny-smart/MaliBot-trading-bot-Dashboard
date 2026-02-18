@@ -109,11 +109,22 @@ export default function Dashboard() {
     // Connection is now managed by NotificationContext/Global
 
     const handleBotStatus = (data: any) => {
+      console.log('Dashboard received bot_status event:', data);
+      
       queryClient.setQueryData(['botStatus'], (prev: FrontendBotStatus | undefined) => {
         const newStatus = transformBotStatus(data);
+        
+        // Explicitly preserve and update balance from event
+        if (data.balance !== undefined && data.balance !== null) {
+          newStatus.balance = Number(data.balance);
+          console.log('Updated balance from websocket:', newStatus.balance);
+        }
+        
         if (newStatus.stake_amount === 0 && prev?.stake_amount) {
           newStatus.stake_amount = prev.stake_amount;
         }
+        
+        console.log('Final transformed bot status:', newStatus);
         return prev ? { ...prev, ...newStatus } : newStatus;
       });
     };
@@ -150,9 +161,13 @@ export default function Dashboard() {
 
     wsService.on('bot_status', handleBotStatus);
     wsService.on('statistics', (data: any) => {
+      console.log('Dashboard received statistics event:', data);
       queryClient.setQueryData(['tradeStats'], (prev: any) => {
+        console.log('Updated trade stats from websocket:', data.stats);
         return data.stats || prev;
       });
+      // Also invalidate to trigger fresh fetch
+      queryClient.invalidateQueries({ queryKey: ['tradeStats'] });
     });
     wsService.on('new_trade', handleNewTrade);
     wsService.on('trade_closed', handleTradeClosed);

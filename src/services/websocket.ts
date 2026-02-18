@@ -66,14 +66,22 @@ class WebSocketService {
         }
 
         // MULTI-USER FILTERING: Only process events for current user
-        // Skip filtering for global events (connected, disconnected, error)
+        // Skip filtering for global events and user-specific dashboard events
         const globalEvents = ['connected', 'disconnected', 'error'];
-        if (!globalEvents.includes(data.type)) {
+        const userSpecificEvents = ['bot_status', 'statistics', 'signal', 'new_trade', 'trade_closed'];
+        
+        const eventType = data.type as string;
+        
+        // Don't filter global or user-specific events
+        if (!globalEvents.includes(eventType) && !userSpecificEvents.includes(eventType)) {
           // If event has account_id, only process if it matches current user
           if (data.account_id && data.account_id !== this.currentUserId) {
-            console.debug(`Filtered out event for other user: ${data.type} (account_id: ${data.account_id})`);
+            console.debug(`Filtered out event for other user: ${eventType} (account_id: ${data.account_id})`);
             return;
           }
+        } else if (userSpecificEvents.includes(eventType)) {
+          // For user-specific events, also log matching for debugging
+          console.debug(`Processing user-specific event: ${eventType} for user ${this.currentUserId}`);
         }
 
         this.emit(data.type, data);
