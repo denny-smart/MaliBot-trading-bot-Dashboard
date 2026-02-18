@@ -121,6 +121,8 @@ export default function Docs() {
                                             <strong>Conservative:</strong> Trend-following logic with strict confirmation.
                                             <br />
                                             <strong>Scalping:</strong> High-frequency execution targeting small price movements.
+                                            <br />
+                                            <strong>Rise/Fall:</strong> Binary options with triple-confirmation signals (EMA + RSI + Stochastic).
                                         </p>
                                     </div>
                                 </div>

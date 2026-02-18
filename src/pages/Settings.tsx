@@ -327,12 +327,15 @@ export default function Settings() {
                     <SelectContent>
                       <SelectItem value="Conservative">Conservative (Trend Following)</SelectItem>
                       <SelectItem value="Scalping">Scalping (High Frequency)</SelectItem>
+                      <SelectItem value="RiseFall">Rise/Fall (Binary Options)</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
                     {watch('active_strategy') === 'Scalping'
                       ? "High frequency scalping with 2-minute stagnation exit and tighter risk limits."
-                      : "Top-Down Market Structure Analysis with dynamic TP/SL."}
+                      : watch('active_strategy') === 'RiseFall'
+                        ? "Rise/Fall contracts with triple-confirmation signals (EMA + RSI + Stochastic)."
+                        : "Top-Down Market Structure Analysis with dynamic TP/SL."}
                   </p>
                 </div>
               </div>

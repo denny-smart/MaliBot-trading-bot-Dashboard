@@ -57,7 +57,7 @@ export const api = {
     logs: () => apiClient.get<string[]>('/api/v1/monitor/logs'),
   },
   config: {
-    current: () => apiClient.get<{ deriv_api_key?: string; strategy?: string; [k: string]: unknown }>('/api/v1/config/current'),
+    current: () => apiClient.get<{ deriv_api_key?: string; strategy?: string; stake_amount: number; active_strategy?: string;[k: string]: unknown }>('/api/v1/config/current'),
     update: (config: Record<string, unknown>) => apiClient.put<{ success: boolean }>('/api/v1/config/update', config),
     setStrategy: (strategy: string) => apiClient.put<{ success: boolean; strategy: string }>('/api/v1/config/strategy', { strategy }),
     getStrategyParams: () => apiClient.get<{ params: Record<string, unknown> }>('/api/v1/config/strategy-params'),

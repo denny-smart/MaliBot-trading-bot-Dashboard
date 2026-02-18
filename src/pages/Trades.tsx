@@ -102,8 +102,8 @@ export default function Trades() {
       const activeTradesData = transformTrades(activeRes.data || []);
       const historyTradesData = transformTrades(historyRes.data || []);
 
-      // Use backend stats
-      const statsData = transformTradeStats(statsRes.data);
+      // Use backend stats (guard against null/undefined response)
+      const statsData = statsRes.data ? transformTradeStats(statsRes.data) : null;
 
       setActiveTrades(activeTradesData);
       setHistoryTrades(historyTradesData);
@@ -342,6 +342,7 @@ export default function Trades() {
                 <SelectItem value="all">All Strategies</SelectItem>
                 <SelectItem value="Conservative">Conservative (Trend Following)</SelectItem>
                 <SelectItem value="Scalping">Scalping (High Frequency)</SelectItem>
+                <SelectItem value="RiseFall">Rise/Fall (Binary Options)</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" className="gap-2" onClick={exportToCSV} disabled={filteredHistory.length === 0}>
