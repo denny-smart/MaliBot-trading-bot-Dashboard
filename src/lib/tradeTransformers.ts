@@ -38,11 +38,12 @@ export interface FrontendTrade {
 
 export interface BackendTradeStats {
   total_trades: number;
-  winning_trades: number;
-  losing_trades: number;
+  winning_trades?: number;
+  losing_trades?: number;
   win_rate: number;
-  total_pnl: number;
-  daily_pnl: number;
+  total_pnl?: number;
+  total_profit?: number;
+  daily_pnl?: number;
   avg_win?: number;
   avg_loss?: number;
   largest_win?: number;
@@ -159,7 +160,7 @@ export function transformTradeStats(backendStats: BackendTradeStats): FrontendTr
   return {
     total_trades: backendStats.total_trades,
     win_rate: backendStats.win_rate,
-    total_profit: backendStats.total_pnl,
+    total_profit: backendStats.total_pnl ?? backendStats.total_profit ?? 0,
     avg_win: backendStats.avg_win || 0,
     avg_loss: Math.abs(backendStats.avg_loss || 0),
     largest_win: backendStats.largest_win || 0,
