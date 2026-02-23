@@ -131,10 +131,11 @@ export default function Trades() {
   });
 
   const exportToCSV = () => {
-    const headers = ['Trade ID', 'Date/Time', 'Direction', 'Entry Price', 'Exit Price', 'Stake', 'Profit/Loss', 'Duration (s)', 'Status'];
+    const headers = ['Trade ID', 'Date/Time', 'Strategy', 'Direction', 'Entry Price', 'Exit Price', 'Stake', 'Profit/Loss', 'Duration (s)', 'Status'];
     const rows = filteredHistory.map((trade) => [
       trade.id,
       trade.time,
+      trade.strategy_type ?? '',
       trade.direction,
       trade.entry_price,
       trade.exit_price ?? '',

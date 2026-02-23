@@ -2,6 +2,7 @@ import axios from 'axios';
 import { supabase } from '@/integrations/supabase/client';
 import { type BackendSignal, type BackendPerformance } from '@/lib/monitoringTransformers';
 import { type BackendBotStatus } from '@/lib/dashboardTransformers';
+import { type BackendTrade } from '@/lib/tradeTransformers';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string) ?? '';
 
@@ -48,8 +49,8 @@ export const api = {
     status: () => apiClient.get<BackendBotStatus>('/api/v1/bot/status'),
   },
   trades: {
-    active: () => apiClient.get<Record<string, unknown>[]>('/api/v1/trades/active'),
-    history: (params?: Record<string, unknown>) => apiClient.get<Record<string, unknown>[]>('/api/v1/trades/history', { params }),
+    active: () => apiClient.get<BackendTrade[]>('/api/v1/trades/active'),
+    history: (params?: Record<string, unknown>) => apiClient.get<BackendTrade[]>('/api/v1/trades/history', { params }),
     stats: () => apiClient.get<{ total_trades: number; win_rate: number; total_profit: number; profit_factor: number; avg_win: number; avg_loss: number; largest_win: number; largest_loss: number }>('/api/v1/trades/stats'),
     statsDebug: () => apiClient.get<Record<string, unknown>>('/api/v1/trades/stats/debug'),
   },

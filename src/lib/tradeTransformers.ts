@@ -5,21 +5,26 @@
 export interface BackendTrade {
   contract_id: string;
   symbol: string;
-  direction: string; // "CALL" | "PUT" | "BUY" | "SELL"
-  stake: number;
-  entry_price: number;
-  exit_price: number;
-  take_profit: number;
-  stop_loss: number;
-  status: string; // "won", "lost", "sold"
-  pnl: number;
-  timestamp: string;
-  duration?: number;
+  direction: string; // normalized by backend, usually "UP" | "DOWN"
+  status: string;
+  strategy_type?: string | null;
+  stake?: number | string | null;
+  entry_price?: number | string | null;
+  exit_price?: number | string | null;
+  take_profit?: number | string | null;
+  stop_loss?: number | string | null;
+  pnl?: number | string | null;
+  timestamp?: string | null;
+  duration?: number | null;
   // Legacy fields for backward compatibility during migration
   id?: string;
   signal?: string;
-  profit?: number;
+  profit?: number | string | null;
   time?: string;
+  strategyType?: string | null;
+  strategy?: string | null;
+  strategy_name?: string | null;
+  active_strategy?: string | null;
 }
 
 export interface FrontendTrade {
@@ -117,6 +122,18 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
     status = backendTrade.pnl >= 0 ? 'win' : 'loss';
   }
 
+  // Accept common backend key variants for strategy name
+  const strategyRaw =
+    backendTrade.strategy_type ??
+    backendTrade.strategyType ??
+    backendTrade.strategy ??
+    backendTrade.strategy_name ??
+    backendTrade.active_strategy;
+  const strategyType =
+    strategyRaw !== null && strategyRaw !== undefined
+      ? String(strategyRaw).trim()
+      : undefined;
+
   const transformed: FrontendTrade = {
     id: backendTrade.contract_id || backendTrade.id || `trade-${index}`,
     symbol: backendTrade.symbol || 'Unknown',
@@ -131,7 +148,7 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
       : undefined,
     duration: backendTrade.duration !== null && backendTrade.duration !== undefined ? Number(backendTrade.duration) : undefined,
     status,
-    strategy_type: backendTrade.strategy_type || backendTrade.strategy || undefined,
+    strategy_type: strategyType || undefined,
   };
 
   return transformed;
