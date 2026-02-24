@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { supabase } from '@/integrations/supabase/client';
+import { wsService } from '@/services/websocket';
 import { type BackendSignal, type BackendPerformance } from '@/lib/monitoringTransformers';
 import { type BackendBotStatus } from '@/lib/dashboardTransformers';
 import { type BackendTrade } from '@/lib/tradeTransformers';
@@ -11,25 +12,92 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+const AUTH_OPTIONAL_PATHS = new Set([
+  '/health',
+  '/api/v1/auth/status',
+  '/api/v1/auth/check-approval',
+]);
+
+let handlingAuthFailure = false;
+
+function normalizePath(url?: string): string {
+  if (!url) return '';
+  try {
+    const path = url.startsWith('http') ? new URL(url).pathname : url;
+    return path.split('?')[0];
+  } catch {
+    return url.split('?')[0];
+  }
+}
+
+function isProtectedApiPath(path: string): boolean {
+  return path.startsWith('/api/v1/') && !AUTH_OPTIONAL_PATHS.has(path);
+}
+
+type AxiosAuthErrorShape = {
+  response?: {
+    status?: number;
+    data?: {
+      detail?: unknown;
+    };
+  };
+};
+
+function isAuthFailure(error: unknown): boolean {
+  const shapedError = error as AxiosAuthErrorShape;
+  const status = shapedError.response?.status;
+  const detail = String(shapedError.response?.data?.detail ?? '').toLowerCase();
+
+  if (status === 401) return true;
+  if (status !== 403) return false;
+
+  // Keep 403 for not-approved accounts as a valid app state (no forced signout).
+  if (detail.includes('not approved')) return false;
+
+  return (
+    detail.includes('not authenticated') ||
+    detail.includes('invalid token') ||
+    detail.includes('jwt') ||
+    detail.includes('session')
+  );
+}
+
+async function handleAuthFailureOnce(): Promise<void> {
+  if (handlingAuthFailure) return;
+  handlingAuthFailure = true;
+  wsService.disconnect();
+  try {
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error('Failed to sign out after auth failure:', error);
+  } finally {
+    window.setTimeout(() => {
+      handlingAuthFailure = false;
+    }, 1000);
+  }
+}
+
 // Add Supabase token to all requests
 apiClient.interceptors.request.use(async (config) => {
+  const path = normalizePath(config.url);
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
 
   if (token) {
-    // console.log('Attaching Token to request:', config.url);
     config.headers.Authorization = `Bearer ${token}`;
-  } else {
-    console.warn('No token found for request:', config.url);
+  } else if (isProtectedApiPath(path)) {
+    await handleAuthFailureOnce();
+    throw new axios.CanceledError(`Skipped unauthenticated request: ${path}`);
   }
+
   return config;
 });
 
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      supabase.auth.signOut();
+    if (!axios.isCancel(error) && isAuthFailure(error)) {
+      void handleAuthFailureOnce();
     }
     return Promise.reject(error);
   }

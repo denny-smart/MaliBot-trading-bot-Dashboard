@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { api } from '@/services/api';
+import { wsService } from '@/services/websocket';
 
 interface AuthContextType {
   user: User | null;
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Reset approval status on logout
         if (!session) {
+          wsService.disconnect();
           setIsApproved(null);
           setRole(null);
           setIsLoading(false); // Immediately set loading to false on logout
@@ -105,6 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      // Stop websocket reconnect loop immediately before auth state transitions.
+      wsService.disconnect();
       await supabase.auth.signOut();
     } catch (error) {
       console.error('Logout error:', error);

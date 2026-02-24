@@ -8,29 +8,66 @@ class WebSocketService {
   private maxReconnectAttempts = 5;
   private reconnectDelay = 3000;
   private currentUserId: string | null = null;
+  private allowReconnect = true;
+  private manualClose = false;
+  private reconnectTimeout: number | null = null;
+
+  private clearReconnectTimeout() {
+    if (this.reconnectTimeout !== null) {
+      window.clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+  }
+
+  private scheduleReconnect() {
+    if (!this.allowReconnect) return;
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) return;
+
+    this.reconnectAttempts++;
+    console.log(`Reconnecting... Attempt ${this.reconnectAttempts}`);
+    this.reconnectTimeout = window.setTimeout(() => {
+      this.reconnectTimeout = null;
+      void this.connect();
+    }, this.reconnectDelay);
+  }
 
   async connect() {
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
     const userId = data.session?.user?.id;
     const WS_BASE = import.meta.env.VITE_WS_URL as string;
-
-    // Store current user ID for filtering
-    this.currentUserId = userId || null;
+    const previousUserId = this.currentUserId;
 
     if (!WS_BASE) {
       console.error('VITE_WS_URL environment variable is not set');
       throw new Error('WebSocket URL not configured. Please set VITE_WS_URL environment variable.');
     }
 
+    // If user is logged out, do not create unauthenticated websocket connections.
+    if (!token || !userId) {
+      this.allowReconnect = false;
+      this.currentUserId = null;
+      this.clearReconnectTimeout();
+      if (this.ws) {
+        this.manualClose = true;
+        this.ws.close();
+        this.ws = null;
+      }
+      return;
+    }
+
+    this.allowReconnect = true;
+    this.clearReconnectTimeout();
+
     // Check if we are already connected with the SAME user
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
-      if (this.currentUserId === userId) {
+      if (previousUserId === userId) {
         console.debug('WebSocket already connected or connecting for this user');
         return;
       }
       // If user changed, we need to close and reconnect
       console.log('Switching user - reconnecting WebSocket...');
+      this.manualClose = true;
       this.ws.close();
     }
 
@@ -38,10 +75,12 @@ class WebSocketService {
 
     // Close existing connection if any (e.g. closing or closed state but not null)
     if (this.ws) {
+      this.manualClose = true;
       this.ws.close();
     }
 
-    this.ws = token ? new WebSocket(wsUrl, [token]) : new WebSocket(wsUrl);
+    this.currentUserId = userId;
+    this.ws = new WebSocket(wsUrl, [token]);
 
     this.ws.onopen = () => {
       console.log('WebSocket connected');
@@ -94,15 +133,23 @@ class WebSocketService {
       }
     };
 
-    this.ws.onclose = () => {
+    this.ws.onclose = (event) => {
       console.log('WebSocket disconnected');
       this.emit('disconnected', {});
 
-      if (this.reconnectAttempts < this.maxReconnectAttempts) {
-        this.reconnectAttempts++;
-        console.log(`Reconnecting... Attempt ${this.reconnectAttempts}`);
-        setTimeout(() => this.connect(), this.reconnectDelay);
+      // Avoid reconnect loops on explicit disconnect/log out or auth-required close.
+      const authCloseCodes = new Set([4001, 4003, 1008]);
+      if (this.manualClose) {
+        this.manualClose = false;
+        return;
       }
+      if (authCloseCodes.has(event.code)) {
+        this.allowReconnect = false;
+        console.log(`WebSocket closed due to auth state (code ${event.code}); reconnect disabled.`);
+        return;
+      }
+
+      this.scheduleReconnect();
     };
 
     this.ws.onerror = (error) => {
@@ -140,7 +187,12 @@ class WebSocketService {
   }
 
   disconnect() {
+    this.allowReconnect = false;
+    this.reconnectAttempts = 0;
+    this.clearReconnectTimeout();
+
     if (this.ws) {
+      this.manualClose = true;
       this.ws.close();
       this.ws = null;
     }
