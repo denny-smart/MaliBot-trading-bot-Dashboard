@@ -131,9 +131,10 @@ export default function Trades() {
   });
 
   const exportToCSV = () => {
-    const headers = ['Trade ID', 'Date/Time', 'Strategy', 'Direction', 'Entry Price', 'Exit Price', 'Stake', 'Profit/Loss', 'Duration (s)', 'Status'];
+    const headers = ['Trade ID', 'Symbol', 'Date/Time', 'Strategy', 'Direction', 'Entry Price', 'Exit Price', 'Stake', 'Profit/Loss', 'Duration (s)', 'Status'];
     const rows = filteredHistory.map((trade) => [
       trade.id,
+      trade.symbol ?? '',
       trade.time,
       trade.strategy_type ?? '',
       trade.direction,
@@ -161,6 +162,7 @@ export default function Trades() {
   const TradeRow = ({ trade }: { trade: FrontendTrade }) => (
     <tr className="hover:bg-secondary/50 transition-colors">
       <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
+      <td className="py-3 px-4 text-sm text-muted-foreground">{trade.symbol || '-'}</td>
       <td className="py-3 px-4 text-muted-foreground text-sm">{formatDate(trade.time)}</td>
       <td className="py-3 px-4">
         {trade.strategy_type ? (
@@ -254,6 +256,7 @@ export default function Trades() {
                       <thead>
                         <tr>
                           <th>Trade ID</th>
+                          <th>Symbol</th>
                           <th>Time Opened</th>
                           <th>Strategy</th>
                           <th>Direction</th>
@@ -276,6 +279,7 @@ export default function Trades() {
                         <div className="flex justify-between items-start mb-3">
                           <div>
                             <span className="font-mono text-xs text-muted-foreground">#{trade.id}</span>
+                            <div className="text-xs text-muted-foreground mt-1">{trade.symbol || '-'}</div>
                             <div className="text-sm font-medium mt-1">{formatDate(trade.time)}</div>
                           </div>
                           <div className="flex flex-col items-end gap-1">
@@ -383,6 +387,7 @@ export default function Trades() {
                       <thead>
                         <tr>
                           <th>Trade ID</th>
+                          <th>Symbol</th>
                           <th>Date/Time</th>
                           <th>Strategy</th>
                           <th>Direction</th>
@@ -405,6 +410,7 @@ export default function Trades() {
                         <div className="flex justify-between items-start mb-3">
                           <div>
                             <span className="font-mono text-xs text-muted-foreground">#{trade.id}</span>
+                            <div className="text-xs text-muted-foreground mt-1">{trade.symbol || '-'}</div>
                             <div className="text-sm font-medium mt-1">{formatDate(trade.time)}</div>
                           </div>
                           <Badge
