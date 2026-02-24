@@ -54,8 +54,12 @@ export default function Logs() {
   }, [autoRefresh]);
 
   const parseLogString = (logString: string, index: number): LogEntry => {
-    // Format: "2025-12-17 10:19:06 | INFO | [OK] Fetched 150 candles (60s)"
-    const match = logString.match(/^(.+?)\s*\|\s*([A-Z]+)\s*\|\s*(.+)$/);
+    // Format A (3-field): "2026-01-12 14:30:05 | INFO | [user_123] Message content"
+    // Format B (4-field): "2026-01-12 14:30:05 | risefallbot | INFO | Message content"
+    // Try 4-field first so logger names are never swallowed into timestamp.
+    const match4 = logString.match(/^(.+?)\s*\|\s*\S+\s*\|\s*([A-Z]+)\s*\|\s*(.+)$/);
+    const match3 = logString.match(/^(.+?)\s*\|\s*([A-Z]+)\s*\|\s*(.+)$/);
+    const match = match4 || match3;
     if (match) {
       const [, timestamp, level, message] = match;
       // Clean user tags like [user_123] or [None] from the message

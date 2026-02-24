@@ -29,6 +29,28 @@ export function LogTerminal() {
         return `${timestamp}-${message.substring(0, 20)}-${index}`;
     };
 
+    const parseTimestampToUnix = (rawTimestamp: string): number => {
+        let ts = rawTimestamp.trim();
+        if (ts.includes("|")) {
+            const head = ts.split("|")[0]?.trim();
+            if (head && /^\d{4}-\d{2}-\d{2}/.test(head)) {
+                ts = head;
+            }
+        }
+
+        const parsed = new Date(ts);
+        if (!isNaN(parsed.getTime())) {
+            return parsed.getTime() / 1000;
+        }
+
+        const normalized = new Date(ts.replace(" ", "T"));
+        if (!isNaN(normalized.getTime())) {
+            return normalized.getTime() / 1000;
+        }
+
+        return Date.now() / 1000;
+    };
+
     // Parse log string from API into LogMessage format
     const parseLogString = (logString: string, index: number): LogMessage | null => {
         // Format A (3-field): "2026-01-12 14:30:05 | INFO | [user_123] Message content"
@@ -44,8 +66,7 @@ export function LogTerminal() {
             const cleanMessage = message.replace(/^\[.*?\]\s*/, '').trim();
 
             // Parse timestamp to Unix timestamp (seconds)
-            const date = new Date(timestamp.trim().replace(' ', 'T'));
-            const unixTimestamp = date.getTime() / 1000;
+            const unixTimestamp = parseTimestampToUnix(timestamp);
 
             return {
                 id: generateLogId(unixTimestamp, cleanMessage, index),
@@ -107,6 +128,13 @@ export function LogTerminal() {
                 // Use a generic index since we don't have the full list context here
                 const parsedLog = parseLogString(data.message, Date.now());
                 if (parsedLog) {
+                    const wsTsMs = Number(data.timestamp_unix_ms);
+                    const wsTsIso = typeof data.timestamp === "string" ? new Date(data.timestamp) : null;
+                    if (!isNaN(wsTsMs)) {
+                        parsedLog.timestamp = wsTsMs / 1000;
+                    } else if (wsTsIso && !isNaN(wsTsIso.getTime())) {
+                        parsedLog.timestamp = wsTsIso.getTime() / 1000;
+                    }
                     setLogs((prev) => {
                         const newLogs = [...prev, parsedLog];
                         return newLogs.slice(-200);

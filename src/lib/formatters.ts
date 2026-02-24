@@ -31,50 +31,70 @@ export const formatDuration = (seconds: number): string => {
   return `${days}d ${remainingHours}h`;
 };
 
+const parseDateValue = (value: string | Date): Date | null => {
+  if (value instanceof Date) {
+    return isNaN(value.getTime()) ? null : value;
+  }
+
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  let raw = value.trim();
+  if (!raw) {
+    return null;
+  }
+
+  // Defensively handle malformed values like "2026-02-24T16:03:02Z | risefallbot".
+  if (raw.includes('|')) {
+    const head = raw.split('|')[0]?.trim();
+    if (head && /^\d{4}-\d{2}-\d{2}/.test(head)) {
+      raw = head;
+    }
+  }
+
+  // Unix timestamps as strings.
+  if (/^\d{13}$/.test(raw)) {
+    const parsedMs = new Date(Number(raw));
+    return isNaN(parsedMs.getTime()) ? null : parsedMs;
+  }
+  if (/^\d{10}$/.test(raw)) {
+    const parsedSec = new Date(Number(raw) * 1000);
+    return isNaN(parsedSec.getTime()) ? null : parsedSec;
+  }
+
+  // PostgreSQL / logger format with optional timezone.
+  if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[+-]\d{2}(?::\d{2})?)?$/.test(raw)) {
+    let iso = raw.replace(' ', 'T');
+    if (/[+-]\d{2}$/.test(iso)) {
+      iso += ':00';
+    }
+    const sqlParsed = new Date(iso);
+    if (!isNaN(sqlParsed.getTime())) {
+      return sqlParsed;
+    }
+  }
+
+  const direct = new Date(raw);
+  if (!isNaN(direct.getTime())) {
+    return direct;
+  }
+
+  const normalized = new Date(raw.replace(' ', 'T'));
+  if (!isNaN(normalized.getTime())) {
+    return normalized;
+  }
+
+  return null;
+};
+
 export const formatDate = (date: string | Date): string => {
-  // Handle PostgreSQL format with timezone: "YYYY-MM-DD HH:MM:SS+00" or "YYYY-MM-DD HH:MM:SS+00:00"
-  if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}[+-]\d{2}(:\d{2})?$/)) {
-    // PostgreSQL format with timezone - convert to ISO 8601
-    // Replace space with T and ensure proper timezone format
-    let isoString = date.replace(' ', 'T');
-    // If timezone is just +00 or -05, convert to +00:00 format
-    if (isoString.match(/[+-]\d{2}$/)) {
-      isoString += ':00';
+  const parsed = parseDateValue(date);
+  if (!parsed) {
+    if (typeof date === 'string' && date.trim()) {
+      return date.trim();
     }
-    const parsed = new Date(isoString);
-    if (!isNaN(parsed.getTime())) {
-      return parsed.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-      });
-    }
-  }
-  // Handle format "YYYY-MM-DD HH:MM:SS" directly (without timezone)
-  if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}$/)) {
-    // Replace space with T to make it ISO 8601 compatible
-    const isoString = date.replace(' ', 'T');
-    const parsed = new Date(isoString);
-    if (!isNaN(parsed.getTime())) {
-      return parsed.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-      });
-    }
-  }
-  // Fallback for other date formats
-  const parsed = new Date(date);
-  if (isNaN(parsed.getTime())) {
-    return 'Invalid Date';
+    return 'Unknown Time';
   }
   return parsed.toLocaleString('en-US', {
     month: 'short',
