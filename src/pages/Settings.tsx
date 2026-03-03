@@ -34,7 +34,10 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const visibleConfigSchema = z.object({
-  stake_amount: z.number().min(10, "Minimum stake amount is $10.00"),
+  stake_amount: z
+    .number()
+    .min(2, "Minimum stake amount is $2.00")
+    .max(100, "Maximum stake amount is $100.00"),
   active_strategy: z.string().min(1, "Strategy is required"),
   deriv_api_key: z.string().optional().refine((val) => {
     if (!val) return true;
@@ -306,7 +309,8 @@ export default function Settings() {
                     id="stake_amount"
                     type="number"
                     step="0.01"
-                    min="0"
+                    min="2"
+                    max="100"
                     {...register('stake_amount', { valueAsNumber: true })}
                   />
                   <p className="text-xs text-muted-foreground">Amount to wager per trade.</p>
