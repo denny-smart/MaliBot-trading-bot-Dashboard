@@ -25,6 +25,45 @@ import { cn } from '@/lib/utils';
 import { Download, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { transformTrades, transformTradeStats, type FrontendTrade, type FrontendTradeStats } from '@/lib/tradeTransformers';
 
+const getDisplayStatus = (trade: FrontendTrade): FrontendTrade['status'] => {
+  if (trade.status === 'open' && typeof trade.profit === 'number' && trade.profit !== 0) {
+    return trade.profit > 0 ? 'win' : 'loss';
+  }
+  return trade.status;
+};
+
+const normalizeTradeStatus = (trade: FrontendTrade): FrontendTrade => {
+  const derivedStatus = getDisplayStatus(trade);
+  if (derivedStatus === trade.status) {
+    return trade;
+  }
+  return { ...trade, status: derivedStatus };
+};
+
+const isClosedTrade = (trade: FrontendTrade): boolean => {
+  const status = getDisplayStatus(trade);
+  return status === 'win' || status === 'loss' || status === 'closed';
+};
+
+const mergeHistoryTrades = (
+  existingHistory: FrontendTrade[],
+  incomingTrades: FrontendTrade[]
+): FrontendTrade[] => {
+  const tradeMap = new Map<string, FrontendTrade>();
+
+  existingHistory.forEach((trade) => {
+    tradeMap.set(trade.id, normalizeTradeStatus(trade));
+  });
+
+  incomingTrades.forEach((trade) => {
+    tradeMap.set(trade.id, normalizeTradeStatus(trade));
+  });
+
+  return Array.from(tradeMap.values()).sort(
+    (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
+  );
+};
+
 export default function Trades() {
   const [activeTrades, setActiveTrades] = useState<FrontendTrade[]>([]);
   const [historyTrades, setHistoryTrades] = useState<FrontendTrade[]>([]);
@@ -53,6 +92,14 @@ export default function Trades() {
     }
     return undefined;
   };
+
+  const getStatusBadgeClassName = (status: FrontendTrade['status']) =>
+    cn(
+      'text-xs',
+      status === 'win' && 'border-success text-success',
+      status === 'loss' && 'border-destructive text-destructive',
+      status === 'open' && 'border-primary text-primary'
+    );
 
   const getToggleKey = (contractId: string, field: ExitControlField): string =>
     `${contractId}:${field}`;
@@ -142,19 +189,25 @@ export default function Trades() {
 
     const handleNewTrade = (data: any) => {
       const transformedTrade = transformTrades([data])[0];
-      setActiveTrades((prev) => [transformedTrade, ...prev]);
+      if (!transformedTrade) return;
+
+      const normalizedTrade = normalizeTradeStatus(transformedTrade);
+      if (isClosedTrade(normalizedTrade)) {
+        setActiveTrades((prev) => prev.filter((t) => t.id !== normalizedTrade.id));
+        setHistoryTrades((prev) => mergeHistoryTrades(prev, [normalizedTrade]));
+        return;
+      }
+
+      setActiveTrades((prev) => [normalizedTrade, ...prev.filter((t) => t.id !== normalizedTrade.id)]);
     };
 
     const handleTradeClosed = (data: any) => {
-      // Move from active to history or just update status
-      // Best approach: Re-fetch active/history or handle optimistic update
-      // Given complexity of moving between lists, re-fetch is safest for consistency, 
-      // or we can manually update if we trust the payload.
-      // Let's manually update activeTrades to remove it, and add to historyTrades.
       const transformedTrade = transformTrades([data])[0];
+      if (!transformedTrade) return;
 
-      setActiveTrades((prev) => prev.filter(t => t.id !== transformedTrade.id));
-      setHistoryTrades((prev) => [transformedTrade, ...prev]);
+      const normalizedTrade = normalizeTradeStatus(transformedTrade);
+      setActiveTrades((prev) => prev.filter((t) => t.id !== normalizedTrade.id));
+      setHistoryTrades((prev) => mergeHistoryTrades(prev, [normalizedTrade]));
 
       // Also update stats if we can, but stats calculation is complex. 
       // Simpler for now to just re-fetch data on close to keep everything perfectly synced including stats.
@@ -189,12 +242,16 @@ export default function Trades() {
       // Transform backend data to frontend format
       const activeTradesData = transformTrades(activeRes.data || []);
       const historyTradesData = transformTrades(historyRes.data || []);
+      const normalizedActiveTrades = activeTradesData.map((trade) => normalizeTradeStatus(trade));
+      const closedFromActive = normalizedActiveTrades.filter((trade) => isClosedTrade(trade));
+      const stillOpenTrades = normalizedActiveTrades.filter((trade) => !isClosedTrade(trade));
+      const mergedHistoryTrades = mergeHistoryTrades(historyTradesData, closedFromActive);
 
       // Use backend stats (guard against null/undefined response)
       const statsData = statsRes.data ? transformTradeStats(statsRes.data) : null;
 
-      setActiveTrades(activeTradesData);
-      setHistoryTrades(historyTradesData);
+      setActiveTrades(stillOpenTrades);
+      setHistoryTrades(mergedHistoryTrades);
       setStats(statsData);
     } catch (error) {
       console.error('Failed to fetch trades:', {
@@ -247,8 +304,11 @@ export default function Trades() {
     URL.revokeObjectURL(url);
   };
 
-  const TradeRow = ({ trade }: { trade: FrontendTrade }) => (
-    <tr className="hover:bg-secondary/50 transition-colors">
+  const TradeRow = ({ trade }: { trade: FrontendTrade }) => {
+    const displayStatus = getDisplayStatus(trade);
+
+    return (
+      <tr className="hover:bg-secondary/50 transition-colors">
       <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
       <td className="py-3 px-4 text-sm text-muted-foreground">{trade.symbol || '-'}</td>
       <td className="py-3 px-4 text-muted-foreground text-sm">{formatDate(trade.time)}</td>
@@ -293,18 +353,14 @@ export default function Trades() {
       <td className="py-3 px-4">
         <Badge
           variant="outline"
-          className={cn(
-            'text-xs',
-            trade.status === 'win' && 'border-success text-success',
-            trade.status === 'loss' && 'border-destructive text-destructive',
-            trade.status === 'open' && 'border-primary text-primary'
-          )}
+          className={getStatusBadgeClassName(displayStatus)}
         >
-          {trade.status.charAt(0).toUpperCase() + trade.status.slice(1)}
+          {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
         </Badge>
       </td>
-    </tr>
-  );
+      </tr>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -358,7 +414,9 @@ export default function Trades() {
                         </tr>
                       </thead>
                       <tbody>
-                        {activeTrades.map((trade) => (
+                        {activeTrades.map((trade) => {
+                          const displayStatus = getDisplayStatus(trade);
+                          return (
                           <tr key={trade.id} className="hover:bg-secondary/50 transition-colors">
                             <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
                             <td className="py-3 px-4 text-sm text-muted-foreground">{trade.symbol || '-'}</td>
@@ -404,14 +462,9 @@ export default function Trades() {
                             <td className="py-3 px-4">
                               <Badge
                                 variant="outline"
-                                className={cn(
-                                  'text-xs',
-                                  trade.status === 'win' && 'border-success text-success',
-                                  trade.status === 'loss' && 'border-destructive text-destructive',
-                                  trade.status === 'open' && 'border-primary text-primary'
-                                )}
+                                className={getStatusBadgeClassName(displayStatus)}
                               >
-                                {trade.status.charAt(0).toUpperCase() + trade.status.slice(1)}
+                                {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
                               </Badge>
                             </td>
                             <td className="py-3 px-4">
@@ -439,7 +492,7 @@ export default function Trades() {
                               </div>
                             </td>
                           </tr>
-                        ))}
+                        )})}
                       </tbody>
                     </table>
                   </div>
@@ -597,7 +650,9 @@ export default function Trades() {
                     </table>
                   </div>
                   <div className="md:hidden space-y-4">
-                    {filteredHistory.map((trade) => (
+                    {filteredHistory.map((trade) => {
+                      const displayStatus = getDisplayStatus(trade);
+                      return (
                       <Card key={trade.id} className="p-4 bg-card border-border">
                         <div className="flex justify-between items-start mb-3">
                           <div>
@@ -607,14 +662,9 @@ export default function Trades() {
                           </div>
                           <Badge
                             variant="outline"
-                            className={cn(
-                              'text-xs',
-                              trade.status === 'win' && 'border-success text-success',
-                              trade.status === 'loss' && 'border-destructive text-destructive',
-                              trade.status === 'open' && 'border-primary text-primary'
-                            )}
+                            className={getStatusBadgeClassName(displayStatus)}
                           >
-                            {trade.status.toUpperCase()}
+                            {displayStatus.toUpperCase()}
                           </Badge>
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-sm mb-3">
@@ -649,7 +699,7 @@ export default function Trades() {
                           ) : '-'}
                         </div>
                       </Card>
-                    ))}
+                    )})}
                   </div>
                 </>
               )}
