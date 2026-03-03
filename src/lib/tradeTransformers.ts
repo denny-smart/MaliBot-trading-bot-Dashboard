@@ -73,6 +73,21 @@ export interface FrontendTradeStats {
   profit_factor: number;
 }
 
+function parseBooleanFlag(value: unknown): boolean | undefined {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') {
+    if (value === 1) return true;
+    if (value === 0) return false;
+    return undefined;
+  }
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on') return true;
+    if (normalized === 'false' || normalized === '0' || normalized === 'no' || normalized === 'off') return false;
+  }
+  return undefined;
+}
+
 /**
  * Transforms a single backend trade to frontend format
  */
@@ -139,7 +154,7 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
       : undefined;
 
   const transformed: FrontendTrade = {
-    id: backendTrade.contract_id || backendTrade.id || `trade-${index}`,
+    id: String(backendTrade.contract_id || backendTrade.id || `trade-${index}`),
     symbol: backendTrade.symbol || 'Unknown',
     time,
     direction: mappedDirection,
@@ -153,14 +168,8 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
     duration: backendTrade.duration !== null && backendTrade.duration !== undefined ? Number(backendTrade.duration) : undefined,
     status,
     strategy_type: strategyType || undefined,
-    trailing_enabled:
-      backendTrade.trailing_enabled !== null && backendTrade.trailing_enabled !== undefined
-        ? Boolean(backendTrade.trailing_enabled)
-        : undefined,
-    stagnation_enabled:
-      backendTrade.stagnation_enabled !== null && backendTrade.stagnation_enabled !== undefined
-        ? Boolean(backendTrade.stagnation_enabled)
-        : undefined,
+    trailing_enabled: parseBooleanFlag(backendTrade.trailing_enabled),
+    stagnation_enabled: parseBooleanFlag(backendTrade.stagnation_enabled),
   };
 
   return transformed;

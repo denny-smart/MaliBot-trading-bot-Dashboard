@@ -19,6 +19,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/services/api';
 import { wsService } from '@/services/websocket';
+import { toast } from '@/hooks/use-toast';
 import { formatCurrency, formatDate, formatDuration } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { Download, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
@@ -37,6 +38,21 @@ export default function Trades() {
   const [exitToggleLoading, setExitToggleLoading] = useState<Record<string, boolean>>({});
 
   type ExitControlField = 'trailing_enabled' | 'stagnation_enabled';
+
+  const parseBooleanFlag = (value: unknown): boolean | undefined => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') {
+      if (value === 1) return true;
+      if (value === 0) return false;
+      return undefined;
+    }
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on') return true;
+      if (normalized === 'false' || normalized === '0' || normalized === 'no' || normalized === 'off') return false;
+    }
+    return undefined;
+  };
 
   const getToggleKey = (contractId: string, field: ExitControlField): string =>
     `${contractId}:${field}`;
@@ -81,9 +97,22 @@ export default function Trades() {
         : { stagnation_enabled: checked };
 
       const response = await api.trades.updateExitControls(contractId, payload);
-      setTradeControlLocal(contractId, {
-        trailing_enabled: response.data.trailing_enabled,
-        stagnation_enabled: response.data.stagnation_enabled,
+      const responseData = response.data as unknown as Record<string, unknown>;
+      const normalizedTrailing = parseBooleanFlag(responseData.trailing_enabled);
+      const normalizedStagnation = parseBooleanFlag(responseData.stagnation_enabled);
+      const nextState = {
+        trailing_enabled: normalizedTrailing ?? (field === 'trailing_enabled' ? checked : (trade.trailing_enabled ?? true)),
+        stagnation_enabled: normalizedStagnation ?? (field === 'stagnation_enabled' ? checked : (trade.stagnation_enabled ?? true)),
+      };
+      setTradeControlLocal(contractId, nextState);
+
+      const fieldLabel = field === 'trailing_enabled' ? 'Trailing exit' : 'Stagnation exit';
+      const finalValue = field === 'trailing_enabled'
+        ? nextState.trailing_enabled
+        : nextState.stagnation_enabled;
+      toast({
+        title: `${fieldLabel} ${finalValue ? 'enabled' : 'disabled'}`,
+        description: `${fieldLabel} turned ${finalValue ? 'on' : 'off'} for trade ${contractId}.`,
       });
     } catch (error) {
       console.error(`Failed to update ${field} for trade ${contractId}:`, error);
@@ -92,6 +121,12 @@ export default function Trades() {
           ? { trailing_enabled: fallbackCurrent }
           : { stagnation_enabled: fallbackCurrent };
       setTradeControlLocal(contractId, rollbackPatch);
+      const fieldLabel = field === 'trailing_enabled' ? 'Trailing exit' : 'Stagnation exit';
+      toast({
+        title: `Failed to update ${fieldLabel.toLowerCase()}`,
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setExitToggleLoading((prev) => {
         const next = { ...prev };
