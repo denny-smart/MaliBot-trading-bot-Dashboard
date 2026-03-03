@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ClipboardList, History, ArrowRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -8,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -22,20 +22,7 @@ import { wsService } from '@/services/websocket';
 import { formatCurrency, formatDate, formatDuration } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { Download, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
-import { transformTrades, calculateTradeStats, transformTradeStats, type FrontendTrade, type FrontendTradeStats } from '@/lib/tradeTransformers';
-
-
-interface TradeStats {
-  total_trades: number;
-  win_rate: number;
-  total_profit: number;
-  avg_win: number;
-  avg_loss: number;
-  largest_win: number;
-  largest_loss: number;
-  avg_duration: number;
-  profit_factor: number;
-}
+import { transformTrades, transformTradeStats, type FrontendTrade, type FrontendTradeStats } from '@/lib/tradeTransformers';
 
 export default function Trades() {
   const [activeTrades, setActiveTrades] = useState<FrontendTrade[]>([]);
@@ -47,6 +34,72 @@ export default function Trades() {
   const [directionFilter, setDirectionFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [strategyFilter, setStrategyFilter] = useState<string>('all');
+  const [exitToggleLoading, setExitToggleLoading] = useState<Record<string, boolean>>({});
+
+  type ExitControlField = 'trailing_enabled' | 'stagnation_enabled';
+
+  const getToggleKey = (contractId: string, field: ExitControlField): string =>
+    `${contractId}:${field}`;
+
+  const isToggleLoading = (contractId: string, field: ExitControlField): boolean =>
+    !!exitToggleLoading[getToggleKey(contractId, field)];
+
+  const setTradeControlLocal = (
+    contractId: string,
+    patch: Pick<FrontendTrade, 'trailing_enabled' | 'stagnation_enabled'>
+  ) => {
+    setActiveTrades((prev) =>
+      prev.map((trade) =>
+        trade.id === contractId
+          ? { ...trade, ...patch }
+          : trade
+      )
+    );
+  };
+
+  const handleExitControlToggle = async (
+    trade: FrontendTrade,
+    field: ExitControlField,
+    checked: boolean
+  ) => {
+    const contractId = trade.id;
+    const loadingKey = getToggleKey(contractId, field);
+    const fallbackCurrent = field === 'trailing_enabled'
+      ? (trade.trailing_enabled ?? true)
+      : (trade.stagnation_enabled ?? true);
+    const optimisticPatch: Pick<FrontendTrade, 'trailing_enabled' | 'stagnation_enabled'> =
+      field === 'trailing_enabled'
+        ? { trailing_enabled: checked }
+        : { stagnation_enabled: checked };
+
+    setExitToggleLoading((prev) => ({ ...prev, [loadingKey]: true }));
+    setTradeControlLocal(contractId, optimisticPatch);
+
+    try {
+      const payload = field === 'trailing_enabled'
+        ? { trailing_enabled: checked }
+        : { stagnation_enabled: checked };
+
+      const response = await api.trades.updateExitControls(contractId, payload);
+      setTradeControlLocal(contractId, {
+        trailing_enabled: response.data.trailing_enabled,
+        stagnation_enabled: response.data.stagnation_enabled,
+      });
+    } catch (error) {
+      console.error(`Failed to update ${field} for trade ${contractId}:`, error);
+      const rollbackPatch: Pick<FrontendTrade, 'trailing_enabled' | 'stagnation_enabled'> =
+        field === 'trailing_enabled'
+          ? { trailing_enabled: fallbackCurrent }
+          : { stagnation_enabled: fallbackCurrent };
+      setTradeControlLocal(contractId, rollbackPatch);
+    } finally {
+      setExitToggleLoading((prev) => {
+        const next = { ...prev };
+        delete next[loadingKey];
+        return next;
+      });
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -266,10 +319,92 @@ export default function Trades() {
                           <th>Unrealized P/L</th>
                           <th>Duration</th>
                           <th>Status</th>
+                          <th>Exit Controls</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {activeTrades.map((trade) => <TradeRow key={trade.id} trade={trade} />)}
+                        {activeTrades.map((trade) => (
+                          <tr key={trade.id} className="hover:bg-secondary/50 transition-colors">
+                            <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
+                            <td className="py-3 px-4 text-sm text-muted-foreground">{trade.symbol || '-'}</td>
+                            <td className="py-3 px-4 text-muted-foreground text-sm">{formatDate(trade.time)}</td>
+                            <td className="py-3 px-4">
+                              {trade.strategy_type ? (
+                                <Badge variant="secondary" className="text-[10px] bg-secondary/50 text-muted-foreground border-border/50 font-normal">
+                                  {trade.strategy_type}
+                                </Badge>
+                              ) : '-'}
+                            </td>
+                            <td className="py-3 px-4">
+                              <Badge className={cn('text-xs', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
+                                {trade.direction === 'UP' ? (
+                                  <ArrowUp className="w-3 h-3 mr-1" />
+                                ) : (
+                                  <ArrowDown className="w-3 h-3 mr-1" />
+                                )}
+                                {trade.direction}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-4 font-mono text-sm">
+                              {trade.entry_price ? formatCurrency(trade.entry_price) : '-'}
+                            </td>
+                            <td className="py-3 px-4 font-mono text-sm">
+                              {trade.exit_price ? formatCurrency(trade.exit_price) : '-'}
+                            </td>
+                            <td className="py-3 px-4 font-mono text-sm">
+                              {trade.stake ? formatCurrency(trade.stake) : '-'}
+                            </td>
+                            <td className="py-3 px-4">
+                              {trade.profit !== undefined ? (
+                                <span className={cn('font-mono font-medium', trade.profit >= 0 ? 'profit-positive' : 'profit-negative')}>
+                                  {trade.profit >= 0 ? '+' : ''}{formatCurrency(trade.profit)}
+                                </span>
+                              ) : (
+                                '-'
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-muted-foreground">
+                              {trade.duration ? formatDuration(trade.duration) : '-'}
+                            </td>
+                            <td className="py-3 px-4">
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'text-xs',
+                                  trade.status === 'win' && 'border-success text-success',
+                                  trade.status === 'loss' && 'border-destructive text-destructive',
+                                  trade.status === 'open' && 'border-primary text-primary'
+                                )}
+                              >
+                                {trade.status.charAt(0).toUpperCase() + trade.status.slice(1)}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-col gap-2 min-w-[150px]">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-xs text-muted-foreground">Trailing</span>
+                                  <Switch
+                                    checked={trade.trailing_enabled ?? true}
+                                    disabled={isToggleLoading(trade.id, 'trailing_enabled')}
+                                    onCheckedChange={(checked) =>
+                                      handleExitControlToggle(trade, 'trailing_enabled', checked)
+                                    }
+                                  />
+                                </div>
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-xs text-muted-foreground">Stagnation</span>
+                                  <Switch
+                                    checked={trade.stagnation_enabled ?? true}
+                                    disabled={isToggleLoading(trade.id, 'stagnation_enabled')}
+                                    onCheckedChange={(checked) =>
+                                      handleExitControlToggle(trade, 'stagnation_enabled', checked)
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -311,6 +446,28 @@ export default function Trades() {
                               {trade.profit >= 0 ? '+' : ''}{formatCurrency(trade.profit)}
                             </span>
                           ) : '-'}
+                        </div>
+                        <div className="pt-3 mt-3 border-t border-border space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">Trailing</span>
+                            <Switch
+                              checked={trade.trailing_enabled ?? true}
+                              disabled={isToggleLoading(trade.id, 'trailing_enabled')}
+                              onCheckedChange={(checked) =>
+                                handleExitControlToggle(trade, 'trailing_enabled', checked)
+                              }
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">Stagnation</span>
+                            <Switch
+                              checked={trade.stagnation_enabled ?? true}
+                              disabled={isToggleLoading(trade.id, 'stagnation_enabled')}
+                              onCheckedChange={(checked) =>
+                                handleExitControlToggle(trade, 'stagnation_enabled', checked)
+                              }
+                            />
+                          </div>
                         </div>
                       </Card>
                     ))}

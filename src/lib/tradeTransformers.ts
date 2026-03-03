@@ -16,6 +16,8 @@ export interface BackendTrade {
   pnl?: number | string | null;
   timestamp?: string | null;
   duration?: number | null;
+  trailing_enabled?: boolean | null;
+  stagnation_enabled?: boolean | null;
   // Legacy fields for backward compatibility during migration
   id?: string;
   signal?: string;
@@ -40,6 +42,8 @@ export interface FrontendTrade {
   duration?: number;
   status: 'open' | 'win' | 'loss' | 'closed';
   strategy_type?: string;
+  trailing_enabled?: boolean;
+  stagnation_enabled?: boolean;
 }
 
 export interface BackendTradeStats {
@@ -149,6 +153,14 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
     duration: backendTrade.duration !== null && backendTrade.duration !== undefined ? Number(backendTrade.duration) : undefined,
     status,
     strategy_type: strategyType || undefined,
+    trailing_enabled:
+      backendTrade.trailing_enabled !== null && backendTrade.trailing_enabled !== undefined
+        ? Boolean(backendTrade.trailing_enabled)
+        : undefined,
+    stagnation_enabled:
+      backendTrade.stagnation_enabled !== null && backendTrade.stagnation_enabled !== undefined
+        ? Boolean(backendTrade.stagnation_enabled)
+        : undefined,
   };
 
   return transformed;

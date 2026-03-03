@@ -5,6 +5,17 @@ import { type BackendSignal, type BackendPerformance } from '@/lib/monitoringTra
 import { type BackendBotStatus } from '@/lib/dashboardTransformers';
 import { type BackendTrade } from '@/lib/tradeTransformers';
 
+interface ExitControlsUpdatePayload {
+  trailing_enabled?: boolean;
+  stagnation_enabled?: boolean;
+}
+
+interface ExitControlsResponse {
+  contract_id: string;
+  trailing_enabled: boolean;
+  stagnation_enabled: boolean;
+}
+
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string) ?? '';
 
 const apiClient = axios.create({
@@ -121,6 +132,8 @@ export const api = {
     history: (params?: Record<string, unknown>) => apiClient.get<BackendTrade[]>('/api/v1/trades/history', { params }),
     stats: () => apiClient.get<{ total_trades: number; win_rate: number; total_profit: number; profit_factor: number; avg_win: number; avg_loss: number; largest_win: number; largest_loss: number }>('/api/v1/trades/stats'),
     statsDebug: () => apiClient.get<Record<string, unknown>>('/api/v1/trades/stats/debug'),
+    updateExitControls: (contractId: string, payload: ExitControlsUpdatePayload) =>
+      apiClient.patch<ExitControlsResponse>(`/api/v1/trades/active/${contractId}/exit-controls`, payload),
   },
   monitor: {
     signals: () => apiClient.get<BackendSignal[]>('/api/v1/monitor/signals'),
