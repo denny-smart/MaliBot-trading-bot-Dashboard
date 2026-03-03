@@ -40,6 +40,14 @@ export function NotificationBell() {
         }
     };
 
+    const getNotificationLabel = (notification: AppNotification) => {
+        if (notification.title === 'Trade Lost') {
+            return 'LOSS';
+        }
+
+        return notification.type.toUpperCase();
+    };
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -95,7 +103,7 @@ export function NotificationBell() {
                                 >
                                     <div className="flex items-start justify-between w-full">
                                         <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full border", getNotificationColor(notification.type))}>
-                                            {notification.type.toUpperCase()}
+                                            {getNotificationLabel(notification)}
                                         </span>
                                         <span className="text-xs text-muted-foreground">
                                             {formatDistanceToNow(notification.timestamp, { addSuffix: true })}

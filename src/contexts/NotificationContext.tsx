@@ -86,7 +86,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             addNotification({
                 title: isWin ? 'Trade Won' : 'Trade Lost',
                 message: `${data.symbol} closed. Profit: ${formattedProfit}`,
-                type: isWin ? 'success' : 'error',
+                type: isWin ? 'success' : 'warning',
             });
         };
 
@@ -139,7 +139,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                     addNotification({
                         title: 'Pending Approvals',
                         message: `${data.length} users are waiting for approval.`,
-                        type: 'warning',
+                        type: 'info',
                         link: '/users'
                     })
                 }
@@ -161,7 +161,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                     addNotification({
                         title: 'New User Signup',
                         message: `New user registered: ${payload.new.email}`,
-                        type: 'warning',
+                        type: 'info',
                         link: '/users',
                     });
                 }
