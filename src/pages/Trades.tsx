@@ -247,29 +247,20 @@ export default function Trades() {
     const handleTradeClosed = (data: any) => {
       const transformedTrade = transformTrades([data])[0];
       if (!transformedTrade) {
-        void fetchData();
         return;
       }
 
       const normalizedTrade = normalizeTradeStatus(transformedTrade);
       setActiveTrades((prev) => prev.filter((t) => t.id !== normalizedTrade.id));
       setHistoryTrades((prev) => mergeHistoryTrades(prev, [normalizedTrade]));
-
-      // Also update stats if we can, but stats calculation is complex. 
-      // Simpler for now to just re-fetch data on close to keep everything perfectly synced including stats.
-      fetchData();
     };
 
     wsService.on('new_trade', handleNewTrade);
     wsService.on('trade_closed', handleTradeClosed);
-    const refreshIntervalId = window.setInterval(() => {
-      void fetchData();
-    }, 15000);
 
     return () => {
       wsService.off('new_trade', handleNewTrade);
       wsService.off('trade_closed', handleTradeClosed);
-      window.clearInterval(refreshIntervalId);
     };
   }, []);
 
