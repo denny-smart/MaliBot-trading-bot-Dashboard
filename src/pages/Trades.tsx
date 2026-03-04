@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { ClipboardList, History, ArrowRight } from 'lucide-react';
+import { ClipboardList, History } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,26 +17,13 @@ import {
 } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { api, type ManualTradeRegistrationPayload } from '@/services/api';
+import { api } from '@/services/api';
 import { wsService } from '@/services/websocket';
 import { toast } from '@/hooks/use-toast';
 import { formatCurrency, formatDate, formatDuration } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { Download, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { transformTrades, transformTradeStats, type FrontendTrade, type FrontendTradeStats } from '@/lib/tradeTransformers';
-
-export const ACTIVE_SYMBOLS = [
-  'R_25',
-  'R_50',
-  'R_75',
-  'R_100',
-  '1HZ25V',
-  '1HZ50V',
-  '1HZ75V',
-  '1HZ90V',
-  'stpRNG5',
-  'stpRNG4',
-] as const;
 
 export const getDisplayStatus = (trade: FrontendTrade): FrontendTrade['status'] => {
   if (trade.status === 'open' && typeof trade.profit === 'number' && trade.profit !== 0) {
@@ -88,12 +75,7 @@ export default function Trades() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [strategyFilter, setStrategyFilter] = useState<string>('all');
   const [exitToggleLoading, setExitToggleLoading] = useState<Record<string, boolean>>({});
-  const [manualContractId, setManualContractId] = useState('');
-  const [manualSymbol, setManualSymbol] = useState('R_50');
-  const [manualDirection, setManualDirection] = useState<'UP' | 'DOWN' | undefined>(undefined);
-  const [manualStake, setManualStake] = useState('');
-  const [manualEntryPrice, setManualEntryPrice] = useState('');
-  const [manualSubmitting, setManualSubmitting] = useState(false);
+  const [syncSubmitting, setSyncSubmitting] = useState(false);
   const [accountStrategy, setAccountStrategy] = useState('Conservative');
 
   type ExitControlField = 'trailing_enabled' | 'stagnation_enabled';
@@ -111,13 +93,6 @@ export default function Trades() {
       if (normalized === 'false' || normalized === '0' || normalized === 'no' || normalized === 'off') return false;
     }
     return undefined;
-  };
-
-  const parseOptionalNumber = (value: string): number | undefined => {
-    const normalized = value.trim();
-    if (!normalized) return undefined;
-    const parsed = Number(normalized);
-    return Number.isFinite(parsed) ? parsed : undefined;
   };
 
   const getStatusBadgeClassName = (status: FrontendTrade['status']) =>
@@ -210,48 +185,29 @@ export default function Trades() {
     }
   };
 
-  const handleManualContractSubmit = async () => {
-    const contractId = manualContractId.trim();
-    const symbol = manualSymbol.trim();
-    if (!contractId || !symbol || !manualDirection) {
-      toast({
-        title: 'Missing required fields',
-        description: 'Open Contract ID, Symbol, and Direction are required.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const payload: ManualTradeRegistrationPayload = {
-      open_contract_id: contractId,
-      symbol,
-      direction: manualDirection,
-    };
-    const stake = parseOptionalNumber(manualStake);
-    if (stake !== undefined) payload.stake = stake;
-    const entryPrice = parseOptionalNumber(manualEntryPrice);
-    if (entryPrice !== undefined) payload.entry_price = entryPrice;
-
-    setManualSubmitting(true);
+  const handleSyncTrades = async () => {
+    setSyncSubmitting(true);
     try {
-      await api.trades.registerManualActiveTrade(payload);
-      toast({
-        title: 'Manual contract registered',
-        description: `Contract ${contractId} is now tracked for ${accountStrategy}.`,
-      });
-      setManualContractId('');
-      setManualDirection(undefined);
-      setManualStake('');
-      setManualEntryPrice('');
+      const response = await api.trades.syncActiveTrades();
+      const syncResult = response.data;
       await fetchData();
+
+      const importedCount = Number(syncResult?.imported_count || 0);
+      const skippedCount = Number(syncResult?.skipped_non_multiplier_ids?.length || 0);
+      const failedCount = Number(syncResult?.failed_contract_ids?.length || 0);
+
+      toast({
+        title: importedCount > 0 ? 'Sync complete' : 'No new trades to import',
+        description: `Imported ${importedCount}, skipped ${skippedCount} non-multiplier, failed ${failedCount}.`,
+      });
     } catch (error: any) {
       toast({
-        title: 'Failed to register contract',
-        description: error?.response?.data?.detail || 'Could not register manual contract.',
+        title: 'Sync failed',
+        description: error?.response?.data?.detail || 'Could not sync open contracts from broker.',
         variant: 'destructive',
       });
     } finally {
-      setManualSubmitting(false);
+      setSyncSubmitting(false);
     }
   };
 
@@ -459,58 +415,18 @@ export default function Trades() {
 
         <TabsContent value="active" className="space-y-4">
           <div className="glass-card p-6 space-y-4">
-            <div className="space-y-1">
-              <h3 className="font-semibold text-foreground">Track Manual Broker Contract</h3>
-              <p className="text-sm text-muted-foreground">
-                Add an already-open broker contract ID so the bot can monitor it under your current strategy.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-              <Input
-                value={manualContractId}
-                onChange={(e) => setManualContractId(e.target.value)}
-                placeholder="Open Contract ID"
-              />
-              <Select value={manualSymbol} onValueChange={setManualSymbol}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Symbol" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ACTIVE_SYMBOLS.map((symbol) => (
-                    <SelectItem key={symbol} value={symbol}>
-                      {symbol}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={manualDirection} onValueChange={(value) => setManualDirection(value as 'UP' | 'DOWN')}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select direction" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="UP">UP / CALL</SelectItem>
-                  <SelectItem value="DOWN">DOWN / PUT</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input
-                value={manualStake}
-                onChange={(e) => setManualStake(e.target.value)}
-                placeholder="Stake (optional)"
-                inputMode="decimal"
-              />
-              <Input
-                value={manualEntryPrice}
-                onChange={(e) => setManualEntryPrice(e.target.value)}
-                placeholder="Entry Price (optional)"
-                inputMode="decimal"
-              />
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs text-muted-foreground">
-                Strategy context: <span className="font-medium text-foreground">{accountStrategy}</span>
-              </p>
-              <Button onClick={handleManualContractSubmit} disabled={manualSubmitting || !manualDirection}>
-                {manualSubmitting ? 'Registering...' : 'Register Manual Contract'}
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="space-y-1">
+                <h3 className="font-semibold text-foreground">Broker Contract Sync</h3>
+                <p className="text-sm text-muted-foreground">
+                  Detect open multiplier contracts on Deriv and import missing ones into active tracking.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Strategy context: <span className="font-medium text-foreground">{accountStrategy}</span>
+                </p>
+              </div>
+              <Button onClick={handleSyncTrades} disabled={syncSubmitting}>
+                {syncSubmitting ? 'Syncing...' : 'Sync Open Trades'}
               </Button>
             </div>
           </div>
@@ -554,11 +470,18 @@ export default function Trades() {
                             <td className="py-3 px-4 text-sm text-muted-foreground">{trade.symbol || '-'}</td>
                             <td className="py-3 px-4 text-muted-foreground text-sm">{formatDate(trade.time)}</td>
                             <td className="py-3 px-4">
-                              {trade.strategy_type ? (
-                                <Badge variant="secondary" className="text-[10px] bg-secondary/50 text-muted-foreground border-border/50 font-normal">
-                                  {trade.strategy_type}
-                                </Badge>
-                              ) : '-'}
+                              <div className="flex flex-wrap items-center gap-1">
+                                {trade.strategy_type ? (
+                                  <Badge variant="secondary" className="text-[10px] bg-secondary/50 text-muted-foreground border-border/50 font-normal">
+                                    {trade.strategy_type}
+                                  </Badge>
+                                ) : '-'}
+                                {trade.entry_source === 'manual_imported' && (
+                                  <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
+                                    Active and Tracked
+                                  </Badge>
+                                )}
+                              </div>
                             </td>
                             <td className="py-3 px-4">
                               <Badge className={cn('text-xs', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
@@ -645,6 +568,11 @@ export default function Trades() {
                             {trade.strategy_type && (
                               <Badge variant="secondary" className="text-[9px] bg-secondary/50 text-muted-foreground font-normal">
                                 {trade.strategy_type}
+                              </Badge>
+                            )}
+                            {trade.entry_source === 'manual_imported' && (
+                              <Badge variant="outline" className="text-[9px] border-primary/40 text-primary">
+                                Active and Tracked
                               </Badge>
                             )}
                           </div>

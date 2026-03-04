@@ -16,13 +16,16 @@ interface ExitControlsResponse {
   stagnation_enabled: boolean;
 }
 
-export interface ManualTradeRegistrationPayload {
-  open_contract_id: string;
-  symbol: string;
-  direction: string;
-  stake?: number;
-  entry_price?: number;
-  strategy_type?: string;
+export interface TradeSyncResponsePayload {
+  checked_contracts: number;
+  existing_count: number;
+  missing_count: number;
+  imported_count: number;
+  runtime_registered_count: number;
+  imported_contract_ids: string[];
+  skipped_non_multiplier_ids: string[];
+  failed_contract_ids: string[];
+  message: string;
 }
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string) ?? '';
@@ -141,8 +144,7 @@ export const api = {
     history: (params?: Record<string, unknown>) => apiClient.get<BackendTrade[]>('/api/v1/trades/history', { params }),
     stats: () => apiClient.get<{ total_trades: number; win_rate: number; total_profit: number; profit_factor: number; avg_win: number; avg_loss: number; largest_win: number; largest_loss: number }>('/api/v1/trades/stats'),
     statsDebug: () => apiClient.get<Record<string, unknown>>('/api/v1/trades/stats/debug'),
-    registerManualActiveTrade: (payload: ManualTradeRegistrationPayload) =>
-      apiClient.post<BackendTrade>('/api/v1/trades/active/manual', payload),
+    syncActiveTrades: () => apiClient.post<TradeSyncResponsePayload>('/api/v1/trades/active/sync'),
     updateExitControls: (contractId: string, payload: ExitControlsUpdatePayload) =>
       apiClient.patch<ExitControlsResponse>(`/api/v1/trades/active/${contractId}/exit-controls`, payload),
   },

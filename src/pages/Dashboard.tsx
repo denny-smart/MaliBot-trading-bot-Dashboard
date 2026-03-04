@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { BotControl } from '@/components/dashboard/BotControl';
@@ -38,6 +38,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 export default function Dashboard() {
   const { role } = useAuth();
   const queryClient = useQueryClient();
+  const [syncingTrades, setSyncingTrades] = useState(false);
 
   // 1. Fetch Config (Base requirement)
   const { data: configData } = useQuery({
@@ -244,6 +245,27 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ['tradeStats'] });
   };
 
+  const handleSyncTrades = async () => {
+    setSyncingTrades(true);
+    try {
+      const res = await api.trades.syncActiveTrades();
+      const importedCount = Number(res.data?.imported_count || 0);
+      handleRefresh();
+      toast({
+        title: importedCount > 0 ? 'Trade sync complete' : 'No new trades found',
+        description: `Imported ${importedCount} open contract(s) from broker.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Trade sync failed',
+        description: error?.response?.data?.detail || 'Could not sync open contracts.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSyncingTrades(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout title="Dashboard">
@@ -277,15 +299,27 @@ export default function Dashboard() {
           <div className="flex-1">
             {/* Error handling usually at query level now, but we can check isError */}
           </div>
-          <Button
-            onClick={handleRefresh}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <RefreshCw className={cn("w-4 h-4", isStatusLoading && "animate-spin")} />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleSyncTrades}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={syncingTrades}
+            >
+              <RefreshCw className={cn("w-4 h-4", syncingTrades && "animate-spin")} />
+              {syncingTrades ? 'Syncing...' : 'Sync'}
+            </Button>
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <RefreshCw className={cn("w-4 h-4", isStatusLoading && "animate-spin")} />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {/* Role Badge & Status */}
