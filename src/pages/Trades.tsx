@@ -25,14 +25,27 @@ import { cn } from '@/lib/utils';
 import { Download, Search, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { transformTrades, transformTradeStats, type FrontendTrade, type FrontendTradeStats } from '@/lib/tradeTransformers';
 
-const getDisplayStatus = (trade: FrontendTrade): FrontendTrade['status'] => {
+export const ACTIVE_SYMBOLS = [
+  'R_25',
+  'R_50',
+  'R_75',
+  'R_100',
+  '1HZ25V',
+  '1HZ50V',
+  '1HZ75V',
+  '1HZ90V',
+  'stpRNG5',
+  'stpRNG4',
+] as const;
+
+export const getDisplayStatus = (trade: FrontendTrade): FrontendTrade['status'] => {
   if (trade.status === 'open' && typeof trade.profit === 'number' && trade.profit !== 0) {
     return trade.profit > 0 ? 'win' : 'loss';
   }
   return trade.status;
 };
 
-const normalizeTradeStatus = (trade: FrontendTrade): FrontendTrade => {
+export const normalizeTradeStatus = (trade: FrontendTrade): FrontendTrade => {
   const derivedStatus = getDisplayStatus(trade);
   if (derivedStatus === trade.status) {
     return trade;
@@ -40,12 +53,12 @@ const normalizeTradeStatus = (trade: FrontendTrade): FrontendTrade => {
   return { ...trade, status: derivedStatus };
 };
 
-const isClosedTrade = (trade: FrontendTrade): boolean => {
+export const isClosedTrade = (trade: FrontendTrade): boolean => {
   const status = getDisplayStatus(trade);
   return status === 'win' || status === 'loss' || status === 'closed';
 };
 
-const mergeHistoryTrades = (
+export const mergeHistoryTrades = (
   existingHistory: FrontendTrade[],
   incomingTrades: FrontendTrade[]
 ): FrontendTrade[] => {
@@ -77,7 +90,7 @@ export default function Trades() {
   const [exitToggleLoading, setExitToggleLoading] = useState<Record<string, boolean>>({});
   const [manualContractId, setManualContractId] = useState('');
   const [manualSymbol, setManualSymbol] = useState('R_50');
-  const [manualDirection, setManualDirection] = useState<'UP' | 'DOWN'>('UP');
+  const [manualDirection, setManualDirection] = useState<'UP' | 'DOWN' | undefined>(undefined);
   const [manualStake, setManualStake] = useState('');
   const [manualEntryPrice, setManualEntryPrice] = useState('');
   const [manualSubmitting, setManualSubmitting] = useState(false);
@@ -199,11 +212,11 @@ export default function Trades() {
 
   const handleManualContractSubmit = async () => {
     const contractId = manualContractId.trim();
-    const symbol = manualSymbol.trim().toUpperCase();
-    if (!contractId || !symbol) {
+    const symbol = manualSymbol.trim();
+    if (!contractId || !symbol || !manualDirection) {
       toast({
         title: 'Missing required fields',
-        description: 'Open Contract ID and Symbol are required.',
+        description: 'Open Contract ID, Symbol, and Direction are required.',
         variant: 'destructive',
       });
       return;
@@ -227,6 +240,7 @@ export default function Trades() {
         description: `Contract ${contractId} is now tracked for ${accountStrategy}.`,
       });
       setManualContractId('');
+      setManualDirection(undefined);
       setManualStake('');
       setManualEntryPrice('');
       await fetchData();
@@ -457,14 +471,21 @@ export default function Trades() {
                 onChange={(e) => setManualContractId(e.target.value)}
                 placeholder="Open Contract ID"
               />
-              <Input
-                value={manualSymbol}
-                onChange={(e) => setManualSymbol(e.target.value)}
-                placeholder="Symbol (e.g. R_50)"
-              />
+              <Select value={manualSymbol} onValueChange={setManualSymbol}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Symbol" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACTIVE_SYMBOLS.map((symbol) => (
+                    <SelectItem key={symbol} value={symbol}>
+                      {symbol}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Select value={manualDirection} onValueChange={(value) => setManualDirection(value as 'UP' | 'DOWN')}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Direction" />
+                  <SelectValue placeholder="Select direction" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="UP">UP / CALL</SelectItem>
@@ -488,7 +509,7 @@ export default function Trades() {
               <p className="text-xs text-muted-foreground">
                 Strategy context: <span className="font-medium text-foreground">{accountStrategy}</span>
               </p>
-              <Button onClick={handleManualContractSubmit} disabled={manualSubmitting}>
+              <Button onClick={handleManualContractSubmit} disabled={manualSubmitting || !manualDirection}>
                 {manualSubmitting ? 'Registering...' : 'Register Manual Contract'}
               </Button>
             </div>
