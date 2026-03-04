@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { api } from '@/services/api';
+import { api, type ManualTradeRegistrationPayload } from '@/services/api';
 import { wsService } from '@/services/websocket';
 import { toast } from '@/hooks/use-toast';
 import { formatCurrency, formatDate, formatDuration } from '@/lib/formatters';
@@ -75,6 +75,13 @@ export default function Trades() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [strategyFilter, setStrategyFilter] = useState<string>('all');
   const [exitToggleLoading, setExitToggleLoading] = useState<Record<string, boolean>>({});
+  const [manualContractId, setManualContractId] = useState('');
+  const [manualSymbol, setManualSymbol] = useState('R_50');
+  const [manualDirection, setManualDirection] = useState<'UP' | 'DOWN'>('UP');
+  const [manualStake, setManualStake] = useState('');
+  const [manualEntryPrice, setManualEntryPrice] = useState('');
+  const [manualSubmitting, setManualSubmitting] = useState(false);
+  const [accountStrategy, setAccountStrategy] = useState('Conservative');
 
   type ExitControlField = 'trailing_enabled' | 'stagnation_enabled';
 
@@ -91,6 +98,13 @@ export default function Trades() {
       if (normalized === 'false' || normalized === '0' || normalized === 'no' || normalized === 'off') return false;
     }
     return undefined;
+  };
+
+  const parseOptionalNumber = (value: string): number | undefined => {
+    const normalized = value.trim();
+    if (!normalized) return undefined;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : undefined;
   };
 
   const getStatusBadgeClassName = (status: FrontendTrade['status']) =>
@@ -183,6 +197,50 @@ export default function Trades() {
     }
   };
 
+  const handleManualContractSubmit = async () => {
+    const contractId = manualContractId.trim();
+    const symbol = manualSymbol.trim().toUpperCase();
+    if (!contractId || !symbol) {
+      toast({
+        title: 'Missing required fields',
+        description: 'Open Contract ID and Symbol are required.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const payload: ManualTradeRegistrationPayload = {
+      open_contract_id: contractId,
+      symbol,
+      direction: manualDirection,
+    };
+    const stake = parseOptionalNumber(manualStake);
+    if (stake !== undefined) payload.stake = stake;
+    const entryPrice = parseOptionalNumber(manualEntryPrice);
+    if (entryPrice !== undefined) payload.entry_price = entryPrice;
+
+    setManualSubmitting(true);
+    try {
+      await api.trades.registerManualActiveTrade(payload);
+      toast({
+        title: 'Manual contract registered',
+        description: `Contract ${contractId} is now tracked for ${accountStrategy}.`,
+      });
+      setManualContractId('');
+      setManualStake('');
+      setManualEntryPrice('');
+      await fetchData();
+    } catch (error: any) {
+      toast({
+        title: 'Failed to register contract',
+        description: error?.response?.data?.detail || 'Could not register manual contract.',
+        variant: 'destructive',
+      });
+    } finally {
+      setManualSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
     // Connection managed by Global Context
@@ -238,6 +296,9 @@ export default function Trades() {
       ]);
 
       setHasApiKey(!!configRes.data?.deriv_api_key && configRes.data.deriv_api_key !== '');
+      if (configRes.data?.active_strategy) {
+        setAccountStrategy(String(configRes.data.active_strategy));
+      }
 
       // Transform backend data to frontend format
       const activeTradesData = transformTrades(activeRes.data || []);
@@ -383,6 +444,56 @@ export default function Trades() {
         </TabsList>
 
         <TabsContent value="active" className="space-y-4">
+          <div className="glass-card p-6 space-y-4">
+            <div className="space-y-1">
+              <h3 className="font-semibold text-foreground">Track Manual Broker Contract</h3>
+              <p className="text-sm text-muted-foreground">
+                Add an already-open broker contract ID so the bot can monitor it under your current strategy.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+              <Input
+                value={manualContractId}
+                onChange={(e) => setManualContractId(e.target.value)}
+                placeholder="Open Contract ID"
+              />
+              <Input
+                value={manualSymbol}
+                onChange={(e) => setManualSymbol(e.target.value)}
+                placeholder="Symbol (e.g. R_50)"
+              />
+              <Select value={manualDirection} onValueChange={(value) => setManualDirection(value as 'UP' | 'DOWN')}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Direction" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UP">UP / CALL</SelectItem>
+                  <SelectItem value="DOWN">DOWN / PUT</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                value={manualStake}
+                onChange={(e) => setManualStake(e.target.value)}
+                placeholder="Stake (optional)"
+                inputMode="decimal"
+              />
+              <Input
+                value={manualEntryPrice}
+                onChange={(e) => setManualEntryPrice(e.target.value)}
+                placeholder="Entry Price (optional)"
+                inputMode="decimal"
+              />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs text-muted-foreground">
+                Strategy context: <span className="font-medium text-foreground">{accountStrategy}</span>
+              </p>
+              <Button onClick={handleManualContractSubmit} disabled={manualSubmitting}>
+                {manualSubmitting ? 'Registering...' : 'Register Manual Contract'}
+              </Button>
+            </div>
+          </div>
+
           <div className="glass-card overflow-hidden p-6">
             <h3 className="font-semibold text-foreground mb-4">Open Positions</h3>
             <ScrollArea className="h-[500px]">

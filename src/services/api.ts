@@ -16,6 +16,15 @@ interface ExitControlsResponse {
   stagnation_enabled: boolean;
 }
 
+export interface ManualTradeRegistrationPayload {
+  open_contract_id: string;
+  symbol: string;
+  direction: string;
+  stake?: number;
+  entry_price?: number;
+  strategy_type?: string;
+}
+
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string) ?? '';
 
 const apiClient = axios.create({
@@ -132,6 +141,8 @@ export const api = {
     history: (params?: Record<string, unknown>) => apiClient.get<BackendTrade[]>('/api/v1/trades/history', { params }),
     stats: () => apiClient.get<{ total_trades: number; win_rate: number; total_profit: number; profit_factor: number; avg_win: number; avg_loss: number; largest_win: number; largest_loss: number }>('/api/v1/trades/stats'),
     statsDebug: () => apiClient.get<Record<string, unknown>>('/api/v1/trades/stats/debug'),
+    registerManualActiveTrade: (payload: ManualTradeRegistrationPayload) =>
+      apiClient.post<BackendTrade>('/api/v1/trades/active/manual', payload),
     updateExitControls: (contractId: string, payload: ExitControlsUpdatePayload) =>
       apiClient.patch<ExitControlsResponse>(`/api/v1/trades/active/${contractId}/exit-controls`, payload),
   },
