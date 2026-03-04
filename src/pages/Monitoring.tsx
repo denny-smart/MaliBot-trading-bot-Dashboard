@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/services/api';
 import { formatDate, formatDuration } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
-import { Signal, Cpu, HardDrive, Activity, Wifi, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Signal, Cpu, HardDrive, Activity, Wifi, CheckCircle2, AlertCircle, TerminalSquare } from 'lucide-react';
 import { transformSignals, transformPerformance, transformSignal, type FrontendSignal, type FrontendPerformance } from '@/lib/monitoringTransformers';
 import { transformBotStatus } from '@/lib/dashboardTransformers';
 import { wsService } from '@/services/websocket';
@@ -32,9 +32,38 @@ interface PerformanceData {
   request_success_rate: number;
 }
 
+interface MonitoringLogEntry {
+  id: string;
+  timestamp: string;
+  level: 'INFO' | 'WARNING' | 'ERROR' | 'DEBUG';
+  message: string;
+}
+
+const parseMonitoringLogLine = (raw: string, index: number): MonitoringLogEntry => {
+  const match4 = raw.match(/^(.+?)\s*\|\s*\S+\s*\|\s*([A-Z]+)\s*\|\s*(.+)$/);
+  const match3 = raw.match(/^(.+?)\s*\|\s*([A-Z]+)\s*\|\s*(.+)$/);
+  const match = match4 || match3;
+  if (match) {
+    const [, timestamp, level, message] = match;
+    return {
+      id: `monitor-log-${Date.now()}-${index}`,
+      timestamp: timestamp.trim(),
+      level: (level.trim() as MonitoringLogEntry['level']) || 'INFO',
+      message: message.replace(/^\[.*?\]\s*/, '').trim(),
+    };
+  }
+  return {
+    id: `monitor-log-${Date.now()}-${index}`,
+    timestamp: new Date().toISOString(),
+    level: 'INFO',
+    message: raw,
+  };
+};
+
 export default function Monitoring() {
   const [signals, setSignals] = useState<FrontendSignal[]>([]);
   const [performance, setPerformance] = useState<FrontendPerformance | null>(null);
+  const [monitorLogs, setMonitorLogs] = useState<MonitoringLogEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -82,16 +111,18 @@ export default function Monitoring() {
 
   const fetchData = async () => {
     try {
-      const [signalsRes, performanceRes, botStatusRes] = await Promise.all([
+      const [signalsRes, performanceRes, botStatusRes, logsRes] = await Promise.all([
         api.monitor.signals(),
         api.monitor.performance(),
         api.bot.status(),
+        api.monitor.logs(),
       ]);
 
       // Transform backend data to frontend format
       const transformedSignals = transformSignals(signalsRes.data || []);
       const transformedPerformance = transformPerformance(performanceRes.data);
       const botStatus = transformBotStatus(botStatusRes.data);
+      const logsData = (logsRes.data?.logs || []) as string[];
 
       // Override uptime with reliable data from bot status
       if (botStatus && botStatus.uptime > 0) {
@@ -112,6 +143,10 @@ export default function Monitoring() {
       });
 
       setPerformance(transformedPerformance);
+      const parsedLogs = logsData
+        .map((line, index) => parseMonitoringLogLine(line, index))
+        .slice(-300);
+      setMonitorLogs(parsedLogs);
     } catch (error) {
       console.error('Failed to fetch monitoring data:', error);
     } finally {
@@ -136,6 +171,7 @@ export default function Monitoring() {
         <TabsList className="glass-panel p-1">
           <TabsTrigger value="signals">Signals</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="signals" className="space-y-4">
@@ -385,6 +421,50 @@ export default function Monitoring() {
                 value={performance?.request_success_rate || 0}
                 className="h-2 [&>div]:bg-success"
               />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="logs" className="space-y-4">
+          <div className="glass-card p-6 flex flex-col h-[600px]">
+            <div className="flex items-center justify-between mb-6 flex-shrink-0">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <TerminalSquare className="w-5 h-5 text-primary" />
+                Monitoring Logs
+              </h3>
+              <Badge variant="secondary" className="text-xs bg-white/5 hover:bg-white/10 text-muted-foreground border-white/5">
+                {monitorLogs.length} entries
+              </Badge>
+            </div>
+
+            <div className="flex-1 min-h-0 relative rounded-lg border border-white/5 bg-black/40 overflow-hidden">
+              <ScrollArea className="h-full">
+                {monitorLogs.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-sm text-muted-foreground p-8 text-center">
+                    No monitoring logs yet. Start the bot or refresh to load recent strategy logs.
+                  </div>
+                ) : (
+                  <div className="p-4 space-y-1 font-mono text-xs">
+                    {monitorLogs.map((log) => (
+                      <div key={log.id} className="flex gap-2 text-gray-300 break-all hover:bg-white/5 p-1 rounded transition-colors">
+                        <span className="text-muted-foreground shrink-0">{formatDate(log.timestamp)}</span>
+                        <span
+                          className={cn(
+                            "shrink-0 font-semibold",
+                            log.level === 'INFO' && 'text-blue-400',
+                            log.level === 'WARNING' && 'text-yellow-400',
+                            log.level === 'ERROR' && 'text-red-400',
+                            log.level === 'DEBUG' && 'text-gray-400'
+                          )}
+                        >
+                          [{log.level}]
+                        </span>
+                        <span>{log.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
             </div>
           </div>
         </TabsContent>
