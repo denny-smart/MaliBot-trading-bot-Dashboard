@@ -64,6 +64,21 @@ export const mergeHistoryTrades = (
   );
 };
 
+export const reconcileActiveTradesWithHistory = (
+  activeTrades: FrontendTrade[],
+  historyTrades: FrontendTrade[]
+): FrontendTrade[] => {
+  const closedHistoryIds = new Set(
+    historyTrades
+      .filter((trade) => isClosedTrade(trade))
+      .map((trade) => trade.id)
+  );
+  if (closedHistoryIds.size === 0) {
+    return activeTrades;
+  }
+  return activeTrades.filter((trade) => !closedHistoryIds.has(trade.id));
+};
+
 export default function Trades() {
   const [activeTrades, setActiveTrades] = useState<FrontendTrade[]>([]);
   const [historyTrades, setHistoryTrades] = useState<FrontendTrade[]>([]);
@@ -231,7 +246,10 @@ export default function Trades() {
 
     const handleTradeClosed = (data: any) => {
       const transformedTrade = transformTrades([data])[0];
-      if (!transformedTrade) return;
+      if (!transformedTrade) {
+        void fetchData();
+        return;
+      }
 
       const normalizedTrade = normalizeTradeStatus(transformedTrade);
       setActiveTrades((prev) => prev.filter((t) => t.id !== normalizedTrade.id));
@@ -244,10 +262,14 @@ export default function Trades() {
 
     wsService.on('new_trade', handleNewTrade);
     wsService.on('trade_closed', handleTradeClosed);
+    const refreshIntervalId = window.setInterval(() => {
+      void fetchData();
+    }, 15000);
 
     return () => {
       wsService.off('new_trade', handleNewTrade);
       wsService.off('trade_closed', handleTradeClosed);
+      window.clearInterval(refreshIntervalId);
     };
   }, []);
 
@@ -277,11 +299,12 @@ export default function Trades() {
       const closedFromActive = normalizedActiveTrades.filter((trade) => isClosedTrade(trade));
       const stillOpenTrades = normalizedActiveTrades.filter((trade) => !isClosedTrade(trade));
       const mergedHistoryTrades = mergeHistoryTrades(historyTradesData, closedFromActive);
+      const reconciledOpenTrades = reconcileActiveTradesWithHistory(stillOpenTrades, mergedHistoryTrades);
 
       // Use backend stats (guard against null/undefined response)
       const statsData = statsRes.data ? transformTradeStats(statsRes.data) : null;
 
-      setActiveTrades(stillOpenTrades);
+      setActiveTrades(reconciledOpenTrades);
       setHistoryTrades(mergedHistoryTrades);
       setStats(statsData);
     } catch (error) {

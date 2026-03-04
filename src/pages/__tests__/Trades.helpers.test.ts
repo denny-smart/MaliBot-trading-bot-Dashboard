@@ -66,6 +66,7 @@ import {
   isClosedTrade,
   mergeHistoryTrades,
   normalizeTradeStatus,
+  reconcileActiveTradesWithHistory,
 } from "../Trades";
 
 const makeTrade = (overrides: Partial<FrontendTrade> = {}): FrontendTrade => ({
@@ -137,5 +138,19 @@ describe("Trades page helpers", () => {
     expect(merged).toHaveLength(3);
     expect(merged.map((t) => t.id)).toEqual(["a", "b", "c"]);
     expect(merged[0].status).toBe("loss");
+  });
+
+  it("removes stale active rows when same trade is already closed in history", () => {
+    const active = [
+      makeTrade({ id: "still-open", status: "open" }),
+      makeTrade({ id: "stale-open", status: "open" }),
+    ];
+    const history = [
+      makeTrade({ id: "stale-open", status: "closed" }),
+      makeTrade({ id: "older-win", status: "win" }),
+    ];
+
+    const reconciled = reconcileActiveTradesWithHistory(active, history);
+    expect(reconciled.map((t) => t.id)).toEqual(["still-open"]);
   });
 });
