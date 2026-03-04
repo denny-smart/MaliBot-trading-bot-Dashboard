@@ -18,6 +18,8 @@ export interface BackendTrade {
   duration?: number | null;
   trailing_enabled?: boolean | null;
   stagnation_enabled?: boolean | null;
+  entry_source?: string | null;
+  multiplier?: number | string | null;
   // Legacy fields for backward compatibility during migration
   id?: string;
   signal?: string;
@@ -44,6 +46,8 @@ export interface FrontendTrade {
   strategy_type?: string;
   trailing_enabled?: boolean;
   stagnation_enabled?: boolean;
+  entry_source?: string;
+  multiplier?: number;
 }
 
 export interface BackendTradeStats {
@@ -170,6 +174,14 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
     strategy_type: strategyType || undefined,
     trailing_enabled: parseBooleanFlag(backendTrade.trailing_enabled),
     stagnation_enabled: parseBooleanFlag(backendTrade.stagnation_enabled),
+    entry_source:
+      backendTrade.entry_source !== null && backendTrade.entry_source !== undefined
+        ? String(backendTrade.entry_source)
+        : undefined,
+    multiplier:
+      backendTrade.multiplier !== null && backendTrade.multiplier !== undefined
+        ? Number(backendTrade.multiplier)
+        : undefined,
   };
 
   return transformed;

@@ -43,7 +43,7 @@ vi.mock("@/services/api", () => ({
   api: {
     trades: {
       updateExitControls: vi.fn(),
-      registerManualActiveTrade: vi.fn(),
+      syncActiveTrades: vi.fn(),
       active: vi.fn(),
       history: vi.fn(),
       stats: vi.fn(),
