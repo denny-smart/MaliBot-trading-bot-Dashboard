@@ -310,15 +310,6 @@ export default function Dashboard() {
               <RefreshCw className={cn("w-4 h-4", syncingTrades && "animate-spin")} />
               {syncingTrades ? 'Syncing...' : 'Sync'}
             </Button>
-            <Button
-              onClick={handleRefresh}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <RefreshCw className={cn("w-4 h-4", isStatusLoading && "animate-spin")} />
-              Refresh
-            </Button>
           </div>
         </div>
 
