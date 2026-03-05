@@ -94,6 +94,8 @@ export default function Trades() {
   const [accountStrategy, setAccountStrategy] = useState('Conservative');
 
   type ExitControlField = 'trailing_enabled' | 'stagnation_enabled';
+  type PersistedExitControls = Record<string, Pick<FrontendTrade, 'trailing_enabled' | 'stagnation_enabled'>>;
+  const EXIT_CONTROLS_STORAGE_KEY = 'trades_exit_controls_v1';
 
   const parseBooleanFlag = (value: unknown): boolean | undefined => {
     if (typeof value === 'boolean') return value;
@@ -108,6 +110,68 @@ export default function Trades() {
       if (normalized === 'false' || normalized === '0' || normalized === 'no' || normalized === 'off') return false;
     }
     return undefined;
+  };
+
+  const readPersistedExitControls = (): PersistedExitControls => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const raw = window.localStorage.getItem(EXIT_CONTROLS_STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw) as unknown;
+      if (!parsed || typeof parsed !== 'object') return {};
+
+      const next: PersistedExitControls = {};
+      Object.entries(parsed as Record<string, unknown>).forEach(([contractId, value]) => {
+        if (!value || typeof value !== 'object') return;
+        const maybeMap = value as Record<string, unknown>;
+        const trailing = parseBooleanFlag(maybeMap.trailing_enabled);
+        const stagnation = parseBooleanFlag(maybeMap.stagnation_enabled);
+        if (trailing !== undefined || stagnation !== undefined) {
+          next[contractId] = {
+            trailing_enabled: trailing,
+            stagnation_enabled: stagnation,
+          };
+        }
+      });
+
+      return next;
+    } catch (error) {
+      console.warn('Failed to read persisted exit controls:', error);
+      return {};
+    }
+  };
+
+  const writePersistedExitControls = (value: PersistedExitControls) => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(EXIT_CONTROLS_STORAGE_KEY, JSON.stringify(value));
+    } catch (error) {
+      console.warn('Failed to persist exit controls:', error);
+    }
+  };
+
+  const persistExitControlsFromTrades = (trades: FrontendTrade[]) => {
+    const next: PersistedExitControls = {};
+    trades.forEach((trade) => {
+      if (trade.trailing_enabled === undefined && trade.stagnation_enabled === undefined) {
+        return;
+      }
+      next[trade.id] = {
+        trailing_enabled: trade.trailing_enabled,
+        stagnation_enabled: trade.stagnation_enabled,
+      };
+    });
+    writePersistedExitControls(next);
+  };
+
+  const persistExitControlsForTrade = (
+    contractId: string,
+    patch: Pick<FrontendTrade, 'trailing_enabled' | 'stagnation_enabled'>
+  ) => {
+    const current = readPersistedExitControls();
+    const existing = current[contractId] ?? {};
+    current[contractId] = { ...existing, ...patch };
+    writePersistedExitControls(current);
   };
 
   const getStatusBadgeClassName = (status: FrontendTrade['status']) =>
@@ -162,13 +226,22 @@ export default function Trades() {
 
       const response = await api.trades.updateExitControls(contractId, payload);
       const responseData = response.data as unknown as Record<string, unknown>;
-      const normalizedTrailing = parseBooleanFlag(responseData.trailing_enabled);
-      const normalizedStagnation = parseBooleanFlag(responseData.stagnation_enabled);
+      const responseExitControls =
+        responseData.exit_controls && typeof responseData.exit_controls === 'object'
+          ? (responseData.exit_controls as Record<string, unknown>)
+          : undefined;
+      const normalizedTrailing =
+        parseBooleanFlag(responseData.trailing_enabled) ??
+        parseBooleanFlag(responseExitControls?.trailing_enabled);
+      const normalizedStagnation =
+        parseBooleanFlag(responseData.stagnation_enabled) ??
+        parseBooleanFlag(responseExitControls?.stagnation_enabled);
       const nextState = {
         trailing_enabled: normalizedTrailing ?? (field === 'trailing_enabled' ? checked : (trade.trailing_enabled ?? true)),
         stagnation_enabled: normalizedStagnation ?? (field === 'stagnation_enabled' ? checked : (trade.stagnation_enabled ?? true)),
       };
       setTradeControlLocal(contractId, nextState);
+      persistExitControlsForTrade(contractId, nextState);
 
       const fieldLabel = field === 'trailing_enabled' ? 'Trailing exit' : 'Stagnation exit';
       const finalValue = field === 'trailing_enabled'
@@ -291,11 +364,22 @@ export default function Trades() {
       const stillOpenTrades = normalizedActiveTrades.filter((trade) => !isClosedTrade(trade));
       const mergedHistoryTrades = mergeHistoryTrades(historyTradesData, closedFromActive);
       const reconciledOpenTrades = reconcileActiveTradesWithHistory(stillOpenTrades, mergedHistoryTrades);
+      const persistedExitControls = readPersistedExitControls();
+      const hydratedOpenTrades = reconciledOpenTrades.map((trade) => {
+        const persisted = persistedExitControls[trade.id];
+        if (!persisted) return trade;
+        return {
+          ...trade,
+          trailing_enabled: trade.trailing_enabled ?? persisted.trailing_enabled,
+          stagnation_enabled: trade.stagnation_enabled ?? persisted.stagnation_enabled,
+        };
+      });
 
       // Use backend stats (guard against null/undefined response)
       const statsData = statsRes.data ? transformTradeStats(statsRes.data) : null;
 
-      setActiveTrades(reconciledOpenTrades);
+      setActiveTrades(hydratedOpenTrades);
+      persistExitControlsFromTrades(hydratedOpenTrades);
       setHistoryTrades(mergedHistoryTrades);
       setStats(statsData);
     } catch (error) {

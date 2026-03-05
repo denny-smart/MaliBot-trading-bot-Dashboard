@@ -94,6 +94,21 @@ describe("tradeTransformers", () => {
     expect(lost.stagnation_enabled).toBeUndefined();
   });
 
+  it("falls back to nested exit_controls when top-level flags are missing", () => {
+    const transformed = transformTrade({
+      id: "nested-1",
+      symbol: "R_100",
+      status: "open",
+      exit_controls: {
+        trailing_enabled: "off",
+        stagnation_enabled: 1,
+      },
+    });
+
+    expect(transformed.trailing_enabled).toBe(false);
+    expect(transformed.stagnation_enabled).toBe(true);
+  });
+
   it("uses pnl fallback for non-open statuses and handles direct trade arrays", () => {
     const transformed = transformTrade({
       id: "x-1",

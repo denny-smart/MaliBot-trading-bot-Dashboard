@@ -18,6 +18,10 @@ export interface BackendTrade {
   duration?: number | null;
   trailing_enabled?: boolean | null;
   stagnation_enabled?: boolean | null;
+  exit_controls?: {
+    trailing_enabled?: boolean | number | string | null;
+    stagnation_enabled?: boolean | number | string | null;
+  } | null;
   entry_source?: string | null;
   multiplier?: number | string | null;
   // Legacy fields for backward compatibility during migration
@@ -157,6 +161,11 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
       ? String(strategyRaw).trim()
       : undefined;
 
+  const exitControls =
+    backendTrade.exit_controls && typeof backendTrade.exit_controls === 'object'
+      ? (backendTrade.exit_controls as Record<string, unknown>)
+      : undefined;
+
   const transformed: FrontendTrade = {
     id: String(backendTrade.contract_id || backendTrade.id || `trade-${index}`),
     symbol: backendTrade.symbol || 'Unknown',
@@ -172,8 +181,12 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
     duration: backendTrade.duration !== null && backendTrade.duration !== undefined ? Number(backendTrade.duration) : undefined,
     status,
     strategy_type: strategyType || undefined,
-    trailing_enabled: parseBooleanFlag(backendTrade.trailing_enabled),
-    stagnation_enabled: parseBooleanFlag(backendTrade.stagnation_enabled),
+    trailing_enabled:
+      parseBooleanFlag(backendTrade.trailing_enabled) ??
+      parseBooleanFlag(exitControls?.trailing_enabled),
+    stagnation_enabled:
+      parseBooleanFlag(backendTrade.stagnation_enabled) ??
+      parseBooleanFlag(exitControls?.stagnation_enabled),
     entry_source:
       backendTrade.entry_source !== null && backendTrade.entry_source !== undefined
         ? String(backendTrade.entry_source)
