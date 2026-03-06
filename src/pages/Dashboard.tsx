@@ -358,22 +358,20 @@ export default function Dashboard() {
   return (
     <DashboardLayout title="Dashboard">
       <div className="space-y-6">
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-1">
-            {/* Error handling usually at query level now, but we can check isError */}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleSyncTrades}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              disabled={syncingTrades}
-            >
-              <RefreshCw className={cn("w-4 h-4", syncingTrades && "animate-spin")} />
-              {syncingTrades ? 'Syncing...' : 'Sync'}
-            </Button>
-          </div>
+        {/* Top Action Bar */}
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSyncTrades}
+            size="sm"
+            disabled={syncingTrades}
+            className={cn(
+              "gap-2 bg-zinc-700 text-zinc-100 border border-zinc-600 hover:bg-zinc-600 hover:text-white transition-all duration-200",
+              syncingTrades && "opacity-70 cursor-not-allowed"
+            )}
+          >
+            <RefreshCw className={cn("w-4 h-4", syncingTrades && "animate-spin")} />
+            {syncingTrades ? 'Syncing...' : 'Sync Trades'}
+          </Button>
         </div>
 
         {/* Role Badge & Status */}
