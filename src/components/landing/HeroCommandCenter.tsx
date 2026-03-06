@@ -14,6 +14,21 @@ export function HeroCommandCenter() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden perspective-1000">
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        initial={{ opacity: 0, scale: 1.08 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.4, ease: "easeOut" }}
+      >
+        <motion.div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/hero-bg.png')" }}
+          animate={{ opacity: [0.08, 0.16, 0.12], scale: [1, 1.03, 1] }}
+          transition={{ duration: 8, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(6,182,212,0.12),transparent_32%),linear-gradient(180deg,rgba(5,8,12,0.2)_0%,rgba(5,8,12,0.7)_45%,rgba(5,8,12,0.94)_100%)]" />
+      </motion.div>
+
       {/* Background Grid with Parallax (Simulated via fixed attachment or translate) */}
       <div className="absolute inset-0 bg-grid-white/5 bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
 
