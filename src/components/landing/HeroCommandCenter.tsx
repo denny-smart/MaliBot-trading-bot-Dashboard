@@ -23,10 +23,10 @@ export function HeroCommandCenter() {
         <motion.div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/hero-bg.png')" }}
-          animate={{ opacity: [0.08, 0.16, 0.12], scale: [1, 1.03, 1] }}
+          animate={{ opacity: [0.12, 0.22, 0.17], scale: [1, 1.03, 1] }}
           transition={{ duration: 8, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(6,182,212,0.12),transparent_32%),linear-gradient(180deg,rgba(5,8,12,0.2)_0%,rgba(5,8,12,0.7)_45%,rgba(5,8,12,0.94)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(6,182,212,0.14),transparent_34%),linear-gradient(180deg,rgba(5,8,12,0.14)_0%,rgba(5,8,12,0.6)_45%,rgba(5,8,12,0.9)_100%)]" />
       </motion.div>
 
       {/* Background Grid with Parallax (Simulated via fixed attachment or translate) */}
@@ -45,6 +45,8 @@ export function HeroCommandCenter() {
           transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
         />
       </div>
+
+      <div className="absolute inset-x-0 bottom-0 h-32 md:h-40 bg-gradient-to-b from-transparent via-black/70 to-black pointer-events-none" />
 
       <motion.div
         ref={containerRef}
