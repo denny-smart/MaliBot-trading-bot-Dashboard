@@ -1,4 +1,4 @@
-import { Play, Square, RotateCw, Loader2, Settings } from 'lucide-react';
+import { Play, Square, RotateCw, Loader2, Settings, ToggleLeft, ToggleRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -248,6 +248,11 @@ export function BotControl({
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <span className="inline-flex items-center gap-2">
+              {autoExecuteSignals ? (
+                <ToggleRight className="w-4 h-4 shrink-0" />
+              ) : (
+                <ToggleLeft className="w-4 h-4 shrink-0" />
+              )}
               <span
                 className={cn(
                   "w-2 h-2 rounded-full animate-pulse",
