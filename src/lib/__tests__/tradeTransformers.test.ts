@@ -109,6 +109,17 @@ describe("tradeTransformers", () => {
     expect(transformed.stagnation_enabled).toBe(true);
   });
 
+  it("normalizes open_time to ISO UTC when timestamp is missing", () => {
+    const transformed = transformTrade({
+      id: "open-time-1",
+      symbol: "R_25",
+      status: "open",
+      open_time: "2026-03-04 11:57:00",
+    });
+
+    expect(transformed.time).toBe("2026-03-04T11:57:00.000Z");
+  });
+
   it("uses pnl fallback for non-open statuses and handles direct trade arrays", () => {
     const transformed = transformTrade({
       id: "x-1",
