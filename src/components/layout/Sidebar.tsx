@@ -42,7 +42,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'h-screen bg-black/20 backdrop-blur-md border-r border-white/5 transition-all duration-300',
+        'h-screen bg-zinc-950 border-r border-zinc-800 transition-all duration-300',
         collapsed ? 'w-20' : 'w-64'
       )}
     >
@@ -71,8 +71,8 @@ export function Sidebar() {
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200',
                   isActive
-                    ? 'bg-primary/20 text-primary border border-primary/30'
-                    : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100'
                 )}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />

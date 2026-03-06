@@ -24,10 +24,10 @@ export function RecentTrades({ trades }: RecentTradesProps) {
   };
 
   return (
-    <div className="glass-card p-6 rounded-xl border border-white/10 h-[400px] flex flex-col">
+    <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl h-[400px] flex flex-col">
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
-        <h3 className="font-semibold text-foreground">Recent Trades</h3>
-        <Badge variant="secondary" className="text-xs bg-white/5 hover:bg-white/10 text-muted-foreground border-white/5">
+        <h3 className="font-semibold text-white">Recent Trades</h3>
+        <Badge className="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-400 border-none">
           Live
         </Badge>
       </div>
@@ -35,26 +35,26 @@ export function RecentTrades({ trades }: RecentTradesProps) {
       <ScrollArea className="flex-1 -mr-4 pr-4">
         <div className="space-y-3 pb-2">
           {trades.length === 0 ? (
-            <div className="h-[250px] w-full border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center text-muted-foreground bg-white/5/50 gap-2">
-              <div className="p-3 bg-white/5 rounded-full">
+            <div className="h-[250px] w-full border-2 border-dashed border-zinc-800 rounded-xl flex flex-col items-center justify-center text-zinc-500 bg-zinc-800/20 gap-2">
+              <div className="p-3 bg-zinc-800/50 rounded-full">
                 <ArrowUp className="w-5 h-5 opacity-50" />
               </div>
-              <p className="text-sm font-medium">No recent trades</p>
+              <p className="text-sm font-medium text-zinc-400">No recent trades</p>
               <p className="text-xs opacity-50">Waiting for market activity...</p>
             </div>
           ) : (
             trades.map((trade) => (
               <div
                 key={trade.id}
-                className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/5 group"
+                className="flex items-center justify-between p-3 rounded-xl hover:bg-zinc-800/50 transition-colors border border-transparent hover:border-zinc-700/50 group"
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      'p-2 rounded-lg transition-colors',
+                      'p-2 rounded-xl transition-colors',
                       trade.direction === 'UP'
-                        ? 'bg-success/10 text-success group-hover:bg-success/20'
-                        : 'bg-destructive/10 text-destructive group-hover:bg-destructive/20'
+                        ? 'bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500/20'
+                        : 'bg-rose-500/10 text-rose-500 group-hover:bg-rose-500/20'
                     )}
                   >
                     {trade.direction === 'UP' ? (
@@ -67,24 +67,23 @@ export function RecentTrades({ trades }: RecentTradesProps) {
                     <div className="flex items-center gap-2">
                       <Badge
                         className={cn(
-                          'text-[10px] px-1.5 py-0 h-5',
-                          trade.direction === 'UP' ? 'bg-success/20 text-success hover:bg-success/30 border-success/20' : 'bg-destructive/20 text-destructive hover:bg-destructive/30 border-destructive/20'
+                          'text-[9px] px-1.5 py-0.5 h-4 border-none font-bold tracking-wider',
+                          trade.direction === 'UP' ? 'bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30' : 'bg-rose-500/20 text-rose-500 hover:bg-rose-500/30'
                         )}
-                        variant="outline"
                       >
                         {trade.direction}
                       </Badge>
                       {trade.strategy_type && (
-                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-5 bg-white/5 text-muted-foreground border-white/5/50 font-normal">
+                        <Badge className="text-[9px] px-1.5 py-0.5 h-4 bg-zinc-800 text-zinc-400 border-none font-medium hover:bg-zinc-700">
                           {trade.strategy_type}
                         </Badge>
                       )}
-                      <span className="text-xs text-muted-foreground font-mono">
+                      <span className="text-xs text-zinc-500 font-mono">
                         {renderTradeTime(trade.time)}
                       </span>
                     </div>
-                    <p className="text-xs font-mono text-muted-foreground mt-1">
-                      <span className="opacity-70">Entry:</span> {formatCurrency(trade.entry_price)}
+                    <p className="text-xs font-mono text-zinc-500 mt-1">
+                      <span className="text-zinc-600">Entry:</span> {formatCurrency(trade.entry_price)}
                     </p>
                   </div>
                 </div>
@@ -93,8 +92,8 @@ export function RecentTrades({ trades }: RecentTradesProps) {
                   {trade.profit !== undefined && (
                     <p
                       className={cn(
-                        'font-bold font-mono text-sm',
-                        trade.profit >= 0 ? 'text-success' : 'text-destructive'
+                        'font-bold font-mono text-sm tracking-tight',
+                        trade.profit >= 0 ? 'text-emerald-400' : 'text-rose-500'
                       )}
                     >
                       {trade.profit >= 0 ? '+' : ''}
@@ -102,15 +101,14 @@ export function RecentTrades({ trades }: RecentTradesProps) {
                     </p>
                   )}
                   <Badge
-                    variant="outline"
                     className={cn(
-                      'text-[10px] px-1.5 py-0 h-5 mt-1 border-0',
-                      trade.status === 'win' && 'bg-success/10 text-success',
-                      trade.status === 'loss' && 'bg-destructive/10 text-destructive',
-                      trade.status === 'open' && 'bg-primary/10 text-primary animate-pulse'
+                      'text-[9px] px-1.5 py-0.5 h-4 mt-1 border-none font-bold uppercase tracking-wider',
+                      trade.status === 'win' && 'bg-emerald-500/10 text-emerald-500',
+                      trade.status === 'loss' && 'bg-rose-500/10 text-rose-500',
+                      trade.status === 'open' && 'bg-zinc-500/10 text-zinc-400 animate-pulse'
                     )}
                   >
-                    {trade.status.toUpperCase()}
+                    {trade.status}
                   </Badge>
                 </div>
               </div>

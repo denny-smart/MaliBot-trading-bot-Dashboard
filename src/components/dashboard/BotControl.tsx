@@ -107,7 +107,7 @@ export function BotControl({
   const dialogContent = getDialogContent();
 
   return (
-    <div className="glass-card p-6 rounded-xl">
+    <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
       <div className="flex flex-col sm:flex-row items-center gap-8">
         {/* Status Indicator - Animated */}
         <div className="relative flex items-center justify-center w-24 h-24">
@@ -125,10 +125,10 @@ export function BotControl({
             className={cn(
               'absolute inset-2 rounded-full border-2 transition-all duration-500',
               status === 'running'
-                ? 'border-success bg-success/10 shadow-[0_0_20px_rgba(0,255,157,0.2)]'
+                ? 'border-emerald-500 bg-emerald-500/10'
                 : status === 'stopped'
-                  ? 'border-destructive bg-destructive/10'
-                  : 'border-primary bg-primary/10'
+                  ? 'border-rose-500 bg-rose-500/10'
+                  : 'border-zinc-500 bg-zinc-500/10'
             )}
           />
 
@@ -149,14 +149,14 @@ export function BotControl({
           <p
             className={cn(
               'text-3xl font-bold tracking-tight',
-              status === 'running' && 'text-success text-glow-accent',
-              status === 'stopped' && 'text-destructive',
-              status === 'loading' && 'text-primary'
+              status === 'running' && 'text-emerald-400',
+              status === 'stopped' && 'text-rose-500',
+              status === 'loading' && 'text-zinc-400'
             )}
           >
             {status === 'running' ? 'OPERATIONAL' : status === 'stopped' ? 'TERMINATED' : 'INITIALIZING...'}
           </p>
-          {status === 'running' && activeStrategy && <p className="text-xs text-success/80 font-mono">Running Strategy: {activeStrategy}</p>}
+          {status === 'running' && activeStrategy && <p className="text-xs text-emerald-400/80 font-mono">Running Strategy: {activeStrategy}</p>}
         </div>
 
         {/* Control Buttons */}
@@ -168,8 +168,8 @@ export function BotControl({
             className={cn(
               "control-btn transition-all duration-300",
               status !== 'running'
-                ? "bg-success text-success-foreground border-success hover:bg-success hover:shadow-[0_0_20px_rgba(0,255,157,0.4)] shadow-[0_0_15px_rgba(0,255,157,0.3)]"
-                : "bg-muted/10 text-muted-foreground border-muted/20 hover:bg-muted/20"
+                ? "bg-emerald-600 text-white hover:bg-emerald-500 border-transparent shadow-none"
+                : "bg-zinc-800 text-zinc-500 border-transparent shadow-none"
             )}
           >
             {isLoading === 'start' ? (
@@ -188,8 +188,8 @@ export function BotControl({
             className={cn(
               "control-btn transition-all duration-300",
               status === 'running'
-                ? "bg-destructive text-destructive-foreground border-destructive hover:bg-destructive hover:shadow-[0_0_20px_rgba(255,0,0,0.4)] shadow-[0_0_15px_rgba(255,0,0,0.3)]"
-                : "bg-muted/10 text-muted-foreground border-muted/20 hover:bg-muted/20"
+                ? "bg-rose-600 text-white hover:bg-rose-500 border-transparent shadow-none"
+                : "bg-zinc-800 text-zinc-500 border-transparent shadow-none"
             )}
           >
             {isLoading === 'stop' ? (
@@ -206,8 +206,8 @@ export function BotControl({
             className={cn(
               "control-btn transition-all duration-300",
               status === 'running'
-                ? "bg-primary text-primary-foreground border-primary hover:bg-primary hover:shadow-[0_0_20px_rgba(0,123,255,0.4)] shadow-[0_0_15px_rgba(0,123,255,0.3)]"
-                : "bg-muted/10 text-muted-foreground border-muted/20 hover:bg-muted/20"
+                ? "bg-zinc-700 text-white hover:bg-zinc-600 border-transparent shadow-none"
+                : "bg-zinc-800 text-zinc-500 border-transparent shadow-none"
             )}
           >
             {isLoading === 'restart' ? (
@@ -236,8 +236,8 @@ export function BotControl({
           className={cn(
             "min-w-[190px] h-11 px-4 font-semibold border-2 transition-all duration-200",
             autoExecuteSignals
-              ? "bg-success/20 text-success border-success shadow-[0_0_14px_rgba(0,255,157,0.25)] hover:bg-success/30"
-              : "bg-destructive/10 text-destructive border-destructive/50 shadow-[0_0_10px_rgba(255,0,0,0.2)] hover:bg-destructive/20",
+              ? "bg-emerald-500/20 text-emerald-400 border-none hover:bg-emerald-500/30"
+              : "bg-zinc-800 text-zinc-400 border-none hover:bg-zinc-700",
             isLoading !== null && "opacity-80"
           )}
         >
@@ -248,7 +248,7 @@ export function BotControl({
               <span
                 className={cn(
                   "w-2.5 h-2.5 rounded-full",
-                  autoExecuteSignals ? "bg-success" : "bg-destructive"
+                  autoExecuteSignals ? "bg-emerald-400" : "bg-rose-500"
                 )}
               />
               {autoExecuteSignals ? "AUTO: ON" : "AUTO: OFF"}

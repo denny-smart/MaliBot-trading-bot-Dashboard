@@ -69,13 +69,13 @@ export function StatsCard({
   return (
     <motion.div
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className={cn("glass-card p-4 rounded-xl flex flex-col justify-between h-full group border", variantClasses, className)}
+      className={cn("bg-zinc-900 border-zinc-800 p-6 rounded-2xl flex flex-col justify-between h-full group border", variantClasses, className)}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">{title}</h3>
+      <div className="flex items-start justify-between mb-2">
+        <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider group-hover:text-zinc-300 transition-colors">{title}</h3>
         {IconComponent && (
           <div className={cn(
-            "p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors relative",
+            "p-2 rounded-xl bg-zinc-800/50 text-zinc-400 group-hover:text-zinc-200 transition-colors relative",
             pulse && variant === 'success' && "animate-pulse"
           )}>
             <IconComponent className="w-4 h-4" />
@@ -83,8 +83,8 @@ export function StatsCard({
         )}
       </div>
 
-      <div className="space-y-1">
-        <div className="text-2xl font-bold font-mono tracking-tight text-foreground flex items-baseline">
+      <div className="space-y-1 mt-auto">
+        <div className="text-3xl font-bold tracking-tight text-white flex items-baseline">
           {prefix}
           {isNumeric ? (
             <AnimatedCounter value={numericValue} />
