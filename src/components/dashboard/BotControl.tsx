@@ -237,7 +237,7 @@ export function BotControl({
           disabled={isLoading !== null}
           variant="outline"
           className={cn(
-            "min-w-[200px] h-11 px-5 font-semibold border-2 transition-all duration-200",
+            "min-w-[160px] h-9 px-4 text-sm font-semibold border-2 transition-all duration-200",
             autoExecuteSignals
               ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/60 hover:bg-emerald-500/25 hover:border-emerald-400/80 shadow-[0_0_16px_rgba(16,185,129,0.3)]"
               : "bg-rose-500/10 text-rose-400 border-rose-500/50 hover:bg-rose-500/20 hover:border-rose-400/70 shadow-[0_0_16px_rgba(225,29,72,0.2)]",
@@ -247,10 +247,10 @@ export function BotControl({
           {isLoading === 'autoexec' ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <span className="inline-flex items-center gap-2.5">
+            <span className="inline-flex items-center gap-2">
               <span
                 className={cn(
-                  "w-2.5 h-2.5 rounded-full animate-pulse",
+                  "w-2 h-2 rounded-full animate-pulse",
                   autoExecuteSignals
                     ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"
                     : "bg-rose-500 shadow-[0_0_8px_rgba(225,29,72,0.8)]"
