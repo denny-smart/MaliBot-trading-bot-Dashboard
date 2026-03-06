@@ -29,7 +29,7 @@ export function NotificationBell() {
     const getNotificationColor = (type: AppNotification['type']) => {
         switch (type) {
             case 'success':
-                return 'text-cyan-300 bg-cyan-500/15 border-cyan-400/40';
+                return 'text-success bg-success/15 border-success/40';
             case 'warning':
                 return 'text-amber-300 bg-amber-500/15 border-amber-400/40';
             case 'error':
@@ -43,7 +43,7 @@ export function NotificationBell() {
     const getNotificationAccent = (type: AppNotification['type']) => {
         switch (type) {
             case 'success':
-                return 'border-l-cyan-400/70';
+                return 'border-l-success/70';
             case 'warning':
                 return 'border-l-amber-400/70';
             case 'error':
