@@ -84,44 +84,24 @@ export default function Home() {
               The MaliBot protocol is active. Secure your position in the algorithmic future.
             </p>
 
-            {/* Gooey Button Implementation */}
+            {/* Refined CTA Button */}
             <div className="relative pt-10 pb-10">
-              <svg className="absolute hidden">
-                <defs>
-                  <filter id="goo">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-                    <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
-                    <feComposite in="SourceGraphic" in2="goo" operator="atop" />
-                  </filter>
-                </defs>
-              </svg>
-
               <div className="relative z-10 inline-block group">
                 <Button
-                  className="relative rounded-full bg-black/60 backdrop-blur-md text-primary px-8 py-6 md:px-12 md:py-8 text-sm md:text-lg font-bold tracking-widest overflow-hidden transition-all duration-300 hover:scale-105 hover:text-black hover:bg-primary/80 border-none"
+                  className="relative rounded-full bg-black/70 backdrop-blur-md text-primary px-7 py-4 md:px-10 md:py-6 text-sm md:text-base font-bold tracking-[0.22em] overflow-hidden border border-primary/40 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:border-primary/60 hover:text-primary hover:bg-black/75"
                   asChild
                 >
                   <Link to="/login" className="relative block h-full w-full">
-                    {/* Filtered Background Layer - Gooey Effect */}
-                    <div className="absolute inset-0" style={{ filter: "url(#goo)" }}>
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/20 rounded-full blur-[20px] group-hover:blur-[30px] transition-all duration-500 opacity-0 group-hover:opacity-100" />
-
-                      {/* Animated Blobs */}
-                      <div className="absolute -top-10 -left-10 w-20 h-20 bg-primary/40 rounded-full group-hover:scale-[3] transition-transform duration-700 ease-in-out opacity-80" />
-                      <div className="absolute -top-10 -right-10 w-20 h-20 bg-primary/40 rounded-full group-hover:scale-[3] transition-transform duration-700 ease-in-out delay-100 opacity-80" />
-                      <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-primary/40 rounded-full group-hover:scale-[3] transition-transform duration-700 ease-in-out delay-200 opacity-80" />
-                      <div className="absolute -bottom-10 -right-10 w-20 h-20 bg-primary/40 rounded-full group-hover:scale-[3] transition-transform duration-700 ease-in-out delay-300 opacity-80" />
-                    </div>
-
-                    {/* Unfiltered Text Layer - Stays Sharp */}
-                    <span className="relative z-20 flex items-center gap-2 drop-shadow-[0_0_10px_rgba(6,182,212,0.5)] whitespace-nowrap">
+                    <div className="absolute inset-[1px] rounded-full bg-gradient-to-b from-white/[0.04] to-transparent opacity-70" />
+                    <div className="absolute inset-y-2 left-8 w-20 rounded-full bg-primary/15 blur-2xl transition-all duration-700 ease-out group-hover:left-1/2 group-hover:-translate-x-1/2 group-hover:bg-primary/20" />
+                    <div className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 transition-all duration-1000 ease-out group-hover:translate-x-[320%] group-hover:opacity-100" />
+                    <span className="relative z-20 flex items-center gap-2 drop-shadow-[0_0_12px_rgba(6,182,212,0.65)] whitespace-nowrap">
                       REQUEST SECURE ACCESS <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                     </span>
                   </Link>
                 </Button>
 
-                {/* Crisp Ring Overlay (Outside Button) */}
-                <div className="absolute inset-0 rounded-full border border-primary/50 group-hover:border-primary shadow-[0_0_20px_theme('colors.primary.DEFAULT')] group-hover:shadow-[0_0_60px_theme('colors.primary.DEFAULT')] pointer-events-none transition-all duration-300" />
+                <div className="absolute inset-0 rounded-full border border-primary/50 shadow-[0_0_22px_rgba(6,182,212,0.24)] group-hover:shadow-[0_0_36px_rgba(6,182,212,0.34)] pointer-events-none transition-all duration-500 ease-out" />
               </div>
             </div>
 
