@@ -3,7 +3,7 @@
  */
 
 export interface BackendSignal {
-  signal: 'BUY' | 'SELL';
+  signal: string;
   score: number;
   details: {
     [key: string]: any;
@@ -12,14 +12,17 @@ export interface BackendSignal {
     total_score?: number;
   };
   timestamp: string;
-  can_trade: boolean;
+  can_trade?: boolean;
   result?: string;
+  action_taken?: string;
+  execution_mode?: string;
+  auto_execute_signals?: boolean;
 }
 
 export interface FrontendSignal {
   id: string;
   timestamp: string;
-  signal_type: 'BUY' | 'SELL';
+  signal_type: string;
   confidence: number;
   market_conditions: string;
   action_taken: string;
@@ -87,8 +90,10 @@ export function transformSignal(backendSignal: BackendSignal, index: number): Fr
 
   const marketConditions = conditions.join(', ') || 'Neutral';
 
-  // Action taken based on can_trade flag
-  const actionTaken = backendSignal.can_trade ? 'Trade Executed' : 'Pending';
+  // Action can be explicitly provided by backend for manual/auto mode display.
+  const actionTaken =
+    backendSignal.action_taken ??
+    (backendSignal.can_trade ? 'Trade Executed' : 'Pending');
 
   // Result - use backend result if available, otherwise default to pending
   // Map common backend statuses to frontend display values if needed

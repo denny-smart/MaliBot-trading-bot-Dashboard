@@ -90,12 +90,26 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             });
         };
 
+        const handleSignal = (data: any) => {
+            const direction = String(data?.signal || data?.direction || 'UNKNOWN').toUpperCase();
+            const symbol = String(data?.symbol || 'UNKNOWN');
+            const actionTaken = String(data?.action_taken || 'Signal detected');
+            const mode = String(data?.execution_mode || '').toLowerCase() === 'manual' ? 'Manual' : 'Auto';
+            addNotification({
+                title: `${mode} Signal`,
+                message: `${symbol} ${direction} - ${actionTaken}`,
+                type: 'info',
+            });
+        };
+
         wsService.on('new_trade', handleNewTrade);
         wsService.on('trade_closed', handleTradeClosed);
+        wsService.on('signal', handleSignal);
 
         return () => {
             wsService.off('new_trade', handleNewTrade);
             wsService.off('trade_closed', handleTradeClosed);
+            wsService.off('signal', handleSignal);
             // We do not disconnect here because other components might use it?
             // Actually, if this unmounts (App unmounts, or AuthProvider unmounts), we should disconnect.
             // But if we navigate, NotificationProvider stays mounted.

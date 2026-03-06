@@ -98,6 +98,22 @@ describe("monitoringTransformers", () => {
     expect(passthrough.result).toBe("breakeven");
   });
 
+  it("prefers backend action_taken when provided", () => {
+    const signal = transformSignal(
+      {
+        signal: "UP",
+        score: 8,
+        details: {},
+        timestamp: "2026-03-04T12:00:00Z",
+        can_trade: true,
+        action_taken: "Awaiting Manual Entry",
+      },
+      4,
+    );
+
+    expect(signal.action_taken).toBe("Awaiting Manual Entry");
+  });
+
   it("transforms signal arrays", () => {
     const transformed = transformSignals([
       {
