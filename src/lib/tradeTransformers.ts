@@ -16,6 +16,10 @@ export interface BackendTrade {
   pnl?: number | string | null;
   timestamp?: string | null;
   open_time?: string | null;
+  closed_at?: string | null;
+  updated_at?: string | null;
+  date_start?: string | number | null;
+  sell_time?: string | number | null;
   created_at?: string | null;
   duration?: number | null;
   trailing_enabled?: boolean | null;
@@ -88,9 +92,19 @@ function normalizeTradeTime(value: unknown): string | undefined {
   }
 
   if (/^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(raw)) {
-    const parsed = new Date(`${raw.replace(' ', 'T')}Z`);
-    if (!isNaN(parsed.getTime())) {
-      return parsed.toISOString();
+    const naiveIso = raw.replace(' ', 'T');
+    const utcParsed = new Date(`${naiveIso}Z`);
+    const localParsed = new Date(naiveIso);
+    const candidates = [utcParsed, localParsed].filter(
+      (d) => !isNaN(d.getTime())
+    );
+    if (candidates.length > 0) {
+      const nowMs = Date.now();
+      candidates.sort(
+        (a, b) =>
+          Math.abs(a.getTime() - nowMs) - Math.abs(b.getTime() - nowMs)
+      );
+      return candidates[0].toISOString();
     }
   }
 
@@ -204,9 +218,14 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
     normalizeTradeTime(
       backendTrade.timestamp ??
       backendTrade.time ??
+      backendTrade.closed_at ??
       backendTrade.open_time ??
+      backendTrade.updated_at ??
       backendTrade.created_at
-    ) || new Date().toISOString();
+    ) ||
+    normalizeTradeTime(backendTrade.sell_time) ||
+    normalizeTradeTime(backendTrade.date_start) ||
+    '';
 
   // Map status: won -> win, lost -> loss, sold -> closed
   let status: 'open' | 'win' | 'loss' | 'closed' = 'open';

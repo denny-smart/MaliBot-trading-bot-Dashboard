@@ -75,12 +75,22 @@ const parseDateValue = (value: string | Date): Date | null => {
     }
   }
 
-  // ISO / SQL timestamps without explicit timezone are treated as UTC.
+  // ISO / SQL timestamps without explicit timezone: choose the interpretation
+  // closest to "now" to tolerate mixed backend timezone conventions.
   if (/^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(raw)) {
     const naiveIso = raw.replace(' ', 'T');
     const utcParsed = new Date(`${naiveIso}Z`);
-    if (!isNaN(utcParsed.getTime())) {
-      return utcParsed;
+    const localParsed = new Date(naiveIso);
+    const candidates = [utcParsed, localParsed].filter(
+      (d) => !isNaN(d.getTime())
+    );
+    if (candidates.length > 0) {
+      const nowMs = Date.now();
+      candidates.sort(
+        (a, b) =>
+          Math.abs(a.getTime() - nowMs) - Math.abs(b.getTime() - nowMs)
+      );
+      return candidates[0];
     }
   }
 
@@ -122,13 +132,25 @@ export const formatTimeAgo = (date: string | Date): string => {
   }
 
   const now = new Date();
-  const diffMs = Math.max(0, now.getTime() - parsed.getTime());
+  const diffMs = now.getTime() - parsed.getTime();
+  const absDiffSecs = Math.floor(Math.abs(diffMs) / 1000);
+  const absDiffMins = Math.floor(absDiffSecs / 60);
+  const absDiffHours = Math.floor(absDiffMins / 60);
+  const absDiffDays = Math.floor(absDiffHours / 24);
+
+  if (diffMs < -1000) {
+    if (absDiffSecs < 60) return `in ${absDiffSecs}s`;
+    if (absDiffMins < 60) return `in ${absDiffMins}m`;
+    if (absDiffHours < 24) return `in ${absDiffHours}h`;
+    return `in ${absDiffDays}d`;
+  }
+
   const diffSecs = Math.floor(diffMs / 1000);
   const diffMins = Math.floor(diffSecs / 60);
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffSecs < 10) return 'Just now'; // Reduced from 60s to 10s to show seconds for recent trades
+  if (diffSecs < 2) return 'Just now';
   if (diffSecs < 60) return `${diffSecs}s ago`;
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
