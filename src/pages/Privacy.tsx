@@ -33,9 +33,9 @@ export default function Privacy() {
                 </div>
             </header>
 
-            <main className="container mx-auto px-6 py-32 text-lg">
+            <main className="container mx-auto px-6 pt-16 pb-32 text-lg">
                 <div className="max-w-4xl mx-auto">
-                    <div className="w-px h-16 bg-gradient-to-b from-transparent via-primary to-transparent mb-8" />
+                    <div className="w-px h-16 bg-gradient-to-b from-transparent via-primary to-transparent mb-2" />
                     <h1 className="text-4xl md:text-5xl font-bold mb-4 uppercase tracking-widest">
                         Privacy <span className="text-primary">Policy</span>
                     </h1>
