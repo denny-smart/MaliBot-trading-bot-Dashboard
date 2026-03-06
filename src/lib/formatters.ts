@@ -64,7 +64,7 @@ const parseDateValue = (value: string | Date): Date | null => {
   }
 
   // PostgreSQL / logger format with optional timezone.
-  if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[+-]\d{2}(?::\d{2})?)?$/.test(raw)) {
+  if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[+-]\d{2}(?::\d{2})?)$/.test(raw)) {
     let iso = raw.replace(' ', 'T');
     if (/[+-]\d{2}$/.test(iso)) {
       iso += ':00';
@@ -72,6 +72,15 @@ const parseDateValue = (value: string | Date): Date | null => {
     const sqlParsed = new Date(iso);
     if (!isNaN(sqlParsed.getTime())) {
       return sqlParsed;
+    }
+  }
+
+  // ISO / SQL timestamps without explicit timezone are treated as UTC.
+  if (/^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(raw)) {
+    const naiveIso = raw.replace(' ', 'T');
+    const utcParsed = new Date(`${naiveIso}Z`);
+    if (!isNaN(utcParsed.getTime())) {
+      return utcParsed;
     }
   }
 
@@ -107,30 +116,13 @@ export const formatDate = (date: string | Date): string => {
 };
 
 export const formatTimeAgo = (date: string | Date): string => {
-  let parsed: Date;
-
-  // Handle PostgreSQL format with timezone: "YYYY-MM-DD HH:MM:SS+00" or "YYYY-MM-DD HH:MM:SS+00:00"
-  if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}[+-]\d{2}(:\d{2})?$/)) {
-    let isoString = date.replace(' ', 'T');
-    if (isoString.match(/[+-]\d{2}$/)) {
-      isoString += ':00';
-    }
-    parsed = new Date(isoString);
-  }
-  // Handle format "YYYY-MM-DD HH:MM:SS" directly
-  else if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}$/)) {
-    const isoString = date.replace(' ', 'T');
-    parsed = new Date(isoString);
-  } else {
-    parsed = new Date(date);
-  }
-
-  if (isNaN(parsed.getTime())) {
+  const parsed = parseDateValue(date);
+  if (!parsed || isNaN(parsed.getTime())) {
     return 'Invalid Date';
   }
 
   const now = new Date();
-  const diffMs = now.getTime() - parsed.getTime();
+  const diffMs = Math.max(0, now.getTime() - parsed.getTime());
   const diffSecs = Math.floor(diffMs / 1000);
   const diffMins = Math.floor(diffSecs / 60);
   const diffHours = Math.floor(diffMins / 60);
@@ -148,38 +140,8 @@ export const formatNumber = (num: number): string => {
 };
 
 export const formatTime = (date: string | Date): string => {
-  // Handle PostgreSQL format with timezone: "YYYY-MM-DD HH:MM:SS+00" or "YYYY-MM-DD HH:MM:SS+00:00"
-  if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}[+-]\d{2}(:\d{2})?$/)) {
-    let isoString = date.replace(' ', 'T');
-    if (isoString.match(/[+-]\d{2}$/)) {
-      isoString += ':00';
-    }
-    const parsed = new Date(isoString);
-    if (!isNaN(parsed.getTime())) {
-      return parsed.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-      });
-    }
-  }
-  // Handle format "YYYY-MM-DD HH:MM:SS" directly
-  if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}$/)) {
-    const isoString = date.replace(' ', 'T');
-    const parsed = new Date(isoString);
-    if (!isNaN(parsed.getTime())) {
-      return parsed.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-      });
-    }
-  }
-
-  const parsed = new Date(date);
-  if (isNaN(parsed.getTime())) {
+  const parsed = parseDateValue(date);
+  if (!parsed) {
     return 'Invalid Time';
   }
   return parsed.toLocaleTimeString('en-US', {

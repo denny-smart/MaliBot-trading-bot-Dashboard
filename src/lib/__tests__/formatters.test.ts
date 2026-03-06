@@ -75,9 +75,6 @@ describe("formatters", () => {
 
     expect(formatTimeAgo("2026-03-04 11:59:00+00")).toBe("1m ago");
     expect(formatTimeAgo("2026-03-04 11:58:00+00:00")).toBe("2m ago");
-
-    const sqlNoTimezone = formatTimeAgo("2026-03-04 11:57:00");
-    expect(sqlNoTimezone).not.toBe("Invalid Date");
-    expect(sqlNoTimezone).toMatch(/ago$/);
+    expect(formatTimeAgo("2026-03-04 11:57:00")).toBe("3m ago");
   });
 });

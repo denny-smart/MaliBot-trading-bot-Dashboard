@@ -35,6 +35,11 @@ import {
 } from '@/lib/dashboardTransformers';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+const parseTradeTimeToMs = (value: string): number => {
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
 export default function Dashboard() {
   const { role } = useAuth();
   const queryClient = useQueryClient();
@@ -88,7 +93,7 @@ export default function Dashboard() {
       activeTrades.forEach(t => tradeMap.set(t.id, t));
 
       return Array.from(tradeMap.values())
-        .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+        .sort((a, b) => parseTradeTimeToMs(b.time) - parseTradeTimeToMs(a.time))
         .slice(0, 50);
     },
     enabled: hasApiKey,

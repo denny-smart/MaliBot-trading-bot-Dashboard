@@ -15,6 +15,8 @@ export interface BackendTrade {
   stop_loss?: number | string | null;
   pnl?: number | string | null;
   timestamp?: string | null;
+  open_time?: string | null;
+  created_at?: string | null;
   duration?: number | null;
   trailing_enabled?: boolean | null;
   stagnation_enabled?: boolean | null;
@@ -33,6 +35,76 @@ export interface BackendTrade {
   strategy?: string | null;
   strategy_name?: string | null;
   active_strategy?: string | null;
+}
+
+function normalizeTradeTime(value: unknown): string | undefined {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+
+  if (value instanceof Date) {
+    return isNaN(value.getTime()) ? undefined : value.toISOString();
+  }
+
+  if (typeof value === 'number') {
+    const parsed = new Date(value > 1e12 ? value : value * 1000);
+    return isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+  }
+
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  let raw = value.trim();
+  if (!raw) {
+    return undefined;
+  }
+
+  if (raw.includes('|')) {
+    const head = raw.split('|')[0]?.trim();
+    if (head && /^\d{4}-\d{2}-\d{2}/.test(head)) {
+      raw = head;
+    }
+  }
+
+  if (/^\d{13}$/.test(raw)) {
+    const parsed = new Date(Number(raw));
+    return isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+  }
+  if (/^\d{10}$/.test(raw)) {
+    const parsed = new Date(Number(raw) * 1000);
+    return isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[+-]\d{2}(?::\d{2})?)$/.test(raw)) {
+    let iso = raw.replace(' ', 'T');
+    if (/[+-]\d{2}$/.test(iso)) {
+      iso += ':00';
+    }
+    const parsed = new Date(iso);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString();
+    }
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(raw)) {
+    const parsed = new Date(`${raw.replace(' ', 'T')}Z`);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString();
+    }
+  }
+
+  const direct = new Date(raw);
+  if (!isNaN(direct.getTime())) {
+    return direct.toISOString();
+  }
+
+  const normalized = new Date(raw.replace(' ', 'T'));
+  if (!isNaN(normalized.getTime())) {
+    return normalized.toISOString();
+  }
+
+  return raw;
 }
 
 export interface FrontendTrade {
@@ -127,8 +199,14 @@ export function transformTrade(backendTrade: BackendTrade | any, index: number =
     mappedDirection = 'DOWN';
   }
 
-  // Map timestamp
-  const time = backendTrade.timestamp || backendTrade.time || new Date().toISOString();
+  // Normalize timestamp so dashboard ordering and "time ago" remain consistent.
+  const time =
+    normalizeTradeTime(
+      backendTrade.timestamp ??
+      backendTrade.time ??
+      backendTrade.open_time ??
+      backendTrade.created_at
+    ) || new Date().toISOString();
 
   // Map status: won -> win, lost -> loss, sold -> closed
   let status: 'open' | 'win' | 'loss' | 'closed' = 'open';
