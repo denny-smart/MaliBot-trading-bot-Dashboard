@@ -18,6 +18,45 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+type AuthRole = 'admin' | 'user' | null;
+
+const parseBoolean = (value: unknown): boolean | null => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value === 1 ? true : value === 0 ? false : null;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes'].includes(normalized)) return true;
+    if (['false', '0', 'no'].includes(normalized)) return false;
+  }
+  return null;
+};
+
+const parseRole = (value: unknown): AuthRole => {
+  return value === 'admin' || value === 'user' ? value : null;
+};
+
+const extractApprovalState = (payload: unknown): { approved: boolean | null; role: AuthRole } => {
+  if (!payload || typeof payload !== 'object') {
+    return { approved: null, role: null };
+  }
+
+  const root = payload as Record<string, unknown>;
+  const nestedUser =
+    root.user && typeof root.user === 'object'
+      ? (root.user as Record<string, unknown>)
+      : null;
+
+  return {
+    approved: parseBoolean(
+      nestedUser?.is_approved ??
+      nestedUser?.approved ??
+      root.is_approved ??
+      root.approved
+    ),
+    role: parseRole(nestedUser?.role ?? root.role),
+  };
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -65,9 +104,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkApprovalStatus = async () => {
     try {
       const response = await api.auth.me();
-      const approved = !!response.data.is_approved;
-      setIsApproved(approved);
-      setRole(response.data.role);
+      const { approved, role } = extractApprovalState(response.data);
+
+      if (approved === null) {
+        const approvalResponse = await api.auth.checkApproval();
+        setIsApproved(Boolean(approvalResponse.data.approved));
+      } else {
+        setIsApproved(approved);
+      }
+
+      setRole(role);
     } catch (error) {
       console.error('Error checking approval status:', error);
       setIsApproved(false);
@@ -80,12 +126,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkApproval = async (): Promise<boolean> => {
     try {
       const response = await api.auth.me();
-      const approved = !!response.data.is_approved;
-      setIsApproved(approved);
-      setRole(response.data.role);
-      return approved;
+      const { approved, role } = extractApprovalState(response.data);
+      const resolvedApproval =
+        approved ?? Boolean((await api.auth.checkApproval()).data.approved);
+
+      setIsApproved(resolvedApproval);
+      setRole(role);
+      return resolvedApproval;
     } catch (error) {
       console.error('Error checking approval:', error);
+      setIsApproved(false);
+      setRole(null);
       return false;
     }
   };
