@@ -19,14 +19,26 @@ interface BotControlProps {
   status: 'running' | 'stopped' | 'loading';
   hasApiKey: boolean;
   activeStrategy?: string;
+  autoExecuteSignals: boolean;
   onStart: () => Promise<void>;
   onStop: () => Promise<void>;
   onRestart: () => Promise<void>;
+  onToggleAutoExecuteSignals: (enabled: boolean) => Promise<void>;
   onUpdateApiKey: (key: string) => Promise<void>;
 }
 
-export function BotControl({ status, hasApiKey, activeStrategy, onStart, onStop, onRestart, onUpdateApiKey }: BotControlProps) {
-  const [isLoading, setIsLoading] = useState<'start' | 'stop' | 'restart' | 'apikey' | null>(null);
+export function BotControl({
+  status,
+  hasApiKey,
+  activeStrategy,
+  autoExecuteSignals,
+  onStart,
+  onStop,
+  onRestart,
+  onToggleAutoExecuteSignals,
+  onUpdateApiKey,
+}: BotControlProps) {
+  const [isLoading, setIsLoading] = useState<'start' | 'stop' | 'restart' | 'apikey' | 'autoexec' | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogAction, setDialogAction] = useState<'start' | 'stop' | 'restart' | 'apikey' | null>(null);
   const [apiKey, setApiKey] = useState('');
@@ -53,6 +65,15 @@ export function BotControl({ status, hasApiKey, activeStrategy, onStart, onStop,
       setDialogAction(action);
     }
     setDialogOpen(true);
+  };
+
+  const handleToggleAutoExec = async () => {
+    setIsLoading('autoexec');
+    try {
+      await onToggleAutoExecuteSignals(!autoExecuteSignals);
+    } finally {
+      setIsLoading(null);
+    }
   };
 
 
@@ -197,6 +218,34 @@ export function BotControl({ status, hasApiKey, activeStrategy, onStart, onStop,
             <span className="hidden sm:inline">Reboot</span>
           </Button>
         </div>
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-foreground">Auto Signal Execution</p>
+          <p className="text-xs text-muted-foreground">
+            {autoExecuteSignals
+              ? 'Enabled: bot opens entries automatically.'
+              : 'Disabled: signals are notify-only, entry is manual.'}
+          </p>
+        </div>
+        <Button
+          onClick={handleToggleAutoExec}
+          disabled={isLoading !== null}
+          variant={autoExecuteSignals ? "default" : "outline"}
+          className={cn(
+            "min-w-28",
+            autoExecuteSignals ? "bg-success text-success-foreground hover:bg-success/90" : ""
+          )}
+        >
+          {isLoading === 'autoexec' ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : autoExecuteSignals ? (
+            "ON"
+          ) : (
+            "OFF"
+          )}
+        </Button>
       </div>
 
       {/* Confirmation Dialog */}

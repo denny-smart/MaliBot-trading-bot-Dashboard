@@ -53,6 +53,7 @@ export default function Dashboard() {
   const hasApiKey = !!configData?.deriv_api_key && configData.deriv_api_key !== '';
   const configStake = configData?.stake_amount;
   const configStrategy = configData?.active_strategy;
+  const autoExecuteSignals = Boolean(configData?.auto_execute_signals);
 
   // 2. Fetch Bot Status
   const { data: botStatus, isLoading: isStatusLoading } = useQuery({
@@ -245,6 +246,29 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ['tradeStats'] });
   };
 
+  const handleToggleAutoExecuteSignals = async (enabled: boolean) => {
+    queryClient.setQueryData(['config'], (prev: any) =>
+      prev ? { ...prev, auto_execute_signals: enabled } : { auto_execute_signals: enabled }
+    );
+    try {
+      await api.config.update({ auto_execute_signals: enabled });
+      await queryClient.invalidateQueries({ queryKey: ['config'] });
+      toast({
+        title: enabled ? 'Auto execution enabled' : 'Manual mode enabled',
+        description: enabled
+          ? 'Signals will be executed automatically.'
+          : 'Signals will be notifications only until you enable auto execution.',
+      });
+    } catch (error: any) {
+      await queryClient.invalidateQueries({ queryKey: ['config'] });
+      toast({
+        title: 'Failed to update execution mode',
+        description: error.response?.data?.detail || 'An error occurred',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleSyncTrades = async () => {
     setSyncingTrades(true);
     try {
@@ -389,9 +413,11 @@ export default function Dashboard() {
           status={botStatus?.status || 'stopped'}
           hasApiKey={hasApiKey}
           activeStrategy={botStatus?.active_strategy}
+          autoExecuteSignals={autoExecuteSignals}
           onStart={handleStart}
           onStop={handleStop}
           onRestart={handleRestart}
+          onToggleAutoExecuteSignals={handleToggleAutoExecuteSignals}
           onUpdateApiKey={handleUpdateApiKey}
         />
 
