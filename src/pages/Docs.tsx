@@ -28,17 +28,17 @@ export default function Docs() {
                 </div>
             </header>
 
-            <main className="container mx-auto px-6 py-32">
+            <main className="container mx-auto px-6 py-32 text-lg">
                 <div className="max-w-5xl mx-auto">
                     <div className="w-px h-16 bg-gradient-to-b from-transparent via-primary to-transparent mb-8" />
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4 uppercase tracking-widest">
-                        System <span className="text-primary">Documentation</span>
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4 uppercase tracking-widest leading-tight">
+                        System <span className="text-primary">Docs</span>
                     </h1>
-                    <p className="text-xl text-muted-foreground mb-16 max-w-2xl">
+                    <p className="text-2xl text-muted-foreground mb-16 max-w-2xl">
                         Comprehensive guide for initializing and operating the MaliBot trading system. Follow these procedures to ensure secure and optimal performance.
                     </p>
 
-                    <div className="grid gap-12">
+                    <div className="grid gap-12 prose-lg">
 
                         {/* Section 1: Access */}
                         <section className="relative pl-8 border-l border-primary/20">
@@ -47,7 +47,7 @@ export default function Docs() {
                                 <Lock className="w-6 h-6 text-primary" />
                                 1. System Access & Security
                             </h2>
-                            <div className="prose prose-invert prose-p:text-muted-foreground max-w-none">
+                            <div className="prose prose-invert prose-lg prose-p:text-muted-foreground max-w-none">
                                 <p>
                                     Access to the MaliBot system is restricted to authorized personnel.
                                     Authentication is handled securely via <strong>Google Sign-In</strong>.
@@ -70,7 +70,7 @@ export default function Docs() {
                                 <Key className="w-6 h-6 text-primary" />
                                 2. API Token Configuration
                             </h2>
-                            <div className="prose prose-invert prose-p:text-muted-foreground max-w-none">
+                            <div className="prose prose-invert prose-lg prose-p:text-muted-foreground max-w-none">
                                 <p>
                                     To execute trades, MaliBot requires a connection to your Deriv account via an API Token.
                                 </p>
@@ -100,7 +100,7 @@ export default function Docs() {
                                 <Shield className="w-6 h-6 text-primary" />
                                 3. Risk & Strategy Setup
                             </h2>
-                            <div className="prose prose-invert prose-p:text-muted-foreground max-w-none">
+                            <div className="prose prose-invert prose-lg prose-p:text-muted-foreground max-w-none">
                                 <p>
                                     Configure your trading parameters in the <Link to="/settings" className="text-primary hover:underline">Settings</Link> panel before activation.
                                 </p>
@@ -136,11 +136,11 @@ export default function Docs() {
                                 <PlayCircle className="w-6 h-6 text-primary" />
                                 4. Command Center Operations
                             </h2>
-                            <div className="prose prose-invert prose-p:text-muted-foreground max-w-none">
+                            <div className="prose prose-invert prose-lg prose-p:text-muted-foreground max-w-none">
                                 <p>
                                     The <Link to="/dashboard" className="text-primary hover:underline">Dashboard</Link> is your central control hub.
                                 </p>
-                                <ul className="list-disc pl-4 space-y-2 mt-4 text-sm md:text-base">
+                                <ul className="list-disc pl-4 space-y-2 mt-4 text-base md:text-lg">
                                     <li>
                                         <strong>Start Bot:</strong> Initiates the analysis loop. The bot will begin scanning for entry signals immediately.
                                     </li>
