@@ -125,7 +125,7 @@ export function BotControl({
             className={cn(
               'absolute inset-2 rounded-full border-2 transition-all duration-500',
               status === 'running'
-                ? 'border-emerald-500 bg-emerald-500/10'
+                ? 'border-cyan-500 bg-cyan-500/10'
                 : status === 'stopped'
                   ? 'border-rose-500 bg-rose-500/10'
                   : 'border-zinc-500 bg-zinc-500/10'
@@ -149,14 +149,14 @@ export function BotControl({
           <p
             className={cn(
               'text-3xl font-bold tracking-tight',
-              status === 'running' && 'text-emerald-400',
+              status === 'running' && 'text-cyan-400',
               status === 'stopped' && 'text-rose-500',
               status === 'loading' && 'text-zinc-400'
             )}
           >
             {status === 'running' ? 'OPERATIONAL' : status === 'stopped' ? 'TERMINATED' : 'INITIALIZING...'}
           </p>
-          {status === 'running' && activeStrategy && <p className="text-xs text-emerald-400/80 font-mono">Running Strategy: {activeStrategy}</p>}
+          {status === 'running' && activeStrategy && <p className="text-xs text-cyan-400/80 font-mono">Running Strategy: {activeStrategy}</p>}
         </div>
 
         {/* Control Buttons */}
@@ -169,7 +169,7 @@ export function BotControl({
             className={cn(
               "control-btn transition-all duration-300",
               status !== 'running'
-                ? "bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.45)] hover:shadow-[0_0_28px_rgba(16,185,129,0.65)] border-transparent"
+                ? "bg-cyan-600 text-white hover:bg-cyan-500 shadow-[0_0_18px_rgba(6,182,212,0.45)] hover:shadow-[0_0_28px_rgba(6,182,212,0.65)] border-transparent"
                 : "bg-transparent text-zinc-600 border border-zinc-700 cursor-not-allowed shadow-none"
             )}
           >
@@ -223,10 +223,10 @@ export function BotControl({
         </div>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-border/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-foreground">Auto Signal Execution</p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground">
             {autoExecuteSignals
               ? 'Enabled: bot opens entries automatically.'
               : 'Disabled: signals are notify-only, entry is manual.'}
@@ -239,7 +239,7 @@ export function BotControl({
           className={cn(
             "min-w-[200px] h-11 px-5 font-semibold border-2 transition-all duration-200",
             autoExecuteSignals
-              ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/60 hover:bg-emerald-500/25 hover:border-emerald-400/80 shadow-[0_0_16px_rgba(16,185,129,0.3)]"
+              ? "bg-cyan-500/15 text-cyan-300 border-cyan-500/60 hover:bg-cyan-500/25 hover:border-cyan-400/80 shadow-[0_0_16px_rgba(6,182,212,0.3)]"
               : "bg-rose-500/10 text-rose-400 border-rose-500/50 hover:bg-rose-500/20 hover:border-rose-400/70 shadow-[0_0_16px_rgba(225,29,72,0.2)]",
             isLoading !== null && "opacity-60"
           )}
@@ -252,7 +252,7 @@ export function BotControl({
                 className={cn(
                   "w-2.5 h-2.5 rounded-full animate-pulse",
                   autoExecuteSignals
-                    ? "bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]"
+                    ? "bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
                     : "bg-rose-500 shadow-[0_0_8px_rgba(225,29,72,0.8)]"
                 )}
               />

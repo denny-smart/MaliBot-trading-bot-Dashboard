@@ -53,7 +53,7 @@ export function HowItWorks() {
                             </div>
 
                             <div className="relative mb-6">
-                                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(0,255,157,0.2)]">
+                                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
                                     <step.icon className="w-8 h-8" />
                                 </div>
                             </div>
