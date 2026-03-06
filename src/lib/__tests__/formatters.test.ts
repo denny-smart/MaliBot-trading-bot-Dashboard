@@ -53,7 +53,8 @@ describe("formatters", () => {
     vi.useFakeTimers();
     vi.setSystemTime(now);
 
-    expect(formatTimeAgo(new Date(now.getTime() - 5000).toISOString())).toBe("Just now");
+    expect(formatTimeAgo(new Date(now.getTime() - 1000).toISOString())).toBe("Just now");
+    expect(formatTimeAgo(new Date(now.getTime() - 5000).toISOString())).toBe("5s ago");
     expect(formatTimeAgo(new Date(now.getTime() - 30000).toISOString())).toBe("30s ago");
     expect(formatTimeAgo(new Date(now.getTime() - 5 * 60_000).toISOString())).toBe("5m ago");
     expect(formatTimeAgo(new Date(now.getTime() - 2 * 60 * 60_000).toISOString())).toBe("2h ago");
@@ -76,5 +77,6 @@ describe("formatters", () => {
     expect(formatTimeAgo("2026-03-04 11:59:00+00")).toBe("1m ago");
     expect(formatTimeAgo("2026-03-04 11:58:00+00:00")).toBe("2m ago");
     expect(formatTimeAgo("2026-03-04 11:57:00")).toBe("3m ago");
+    expect(formatTimeAgo("2026-03-04T12:02:00Z")).toBe("in 2m");
   });
 });

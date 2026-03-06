@@ -10,6 +10,19 @@ interface RecentTradesProps {
 }
 
 export function RecentTrades({ trades }: RecentTradesProps) {
+  const renderTradeTime = (time: string): string => {
+    const exact = formatTime(time);
+    const relative = formatTimeAgo(time);
+
+    if (exact === 'Invalid Time') {
+      return 'Unknown time';
+    }
+    if (relative === 'Invalid Date') {
+      return exact;
+    }
+    return `${exact} (${relative})`;
+  };
+
   return (
     <div className="glass-card p-6 rounded-xl border border-white/10 h-[400px] flex flex-col">
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
@@ -66,8 +79,8 @@ export function RecentTrades({ trades }: RecentTradesProps) {
                           {trade.strategy_type}
                         </Badge>
                       )}
-                      <span className="text-xs text-muted-foreground">
-                        {formatTimeAgo(trade.time)}
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {renderTradeTime(trade.time)}
                       </span>
                     </div>
                     <p className="text-xs font-mono text-muted-foreground mt-1">

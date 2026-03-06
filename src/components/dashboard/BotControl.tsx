@@ -232,18 +232,27 @@ export function BotControl({
         <Button
           onClick={handleToggleAutoExec}
           disabled={isLoading !== null}
-          variant={autoExecuteSignals ? "default" : "outline"}
+          variant="outline"
           className={cn(
-            "min-w-28",
-            autoExecuteSignals ? "bg-success text-success-foreground hover:bg-success/90" : ""
+            "min-w-[190px] h-11 px-4 font-semibold border-2 transition-all duration-200",
+            autoExecuteSignals
+              ? "bg-success/20 text-success border-success shadow-[0_0_14px_rgba(0,255,157,0.25)] hover:bg-success/30"
+              : "bg-destructive/10 text-destructive border-destructive/50 shadow-[0_0_10px_rgba(255,0,0,0.2)] hover:bg-destructive/20",
+            isLoading !== null && "opacity-80"
           )}
         >
           {isLoading === 'autoexec' ? (
             <Loader2 className="w-4 h-4 animate-spin" />
-          ) : autoExecuteSignals ? (
-            "ON"
           ) : (
-            "OFF"
+            <span className="inline-flex items-center gap-2">
+              <span
+                className={cn(
+                  "w-2.5 h-2.5 rounded-full",
+                  autoExecuteSignals ? "bg-success" : "bg-destructive"
+                )}
+              />
+              {autoExecuteSignals ? "AUTO: ON" : "AUTO: OFF"}
+            </span>
           )}
         </Button>
       </div>

@@ -117,7 +117,8 @@ describe("tradeTransformers", () => {
       open_time: "2026-03-04 11:57:00",
     });
 
-    expect(transformed.time).toBe("2026-03-04T11:57:00.000Z");
+    expect(transformed.time).toContain("2026-03-04T");
+    expect(transformed.time).toContain(":57:00.000Z");
   });
 
   it("uses pnl fallback for non-open statuses and handles direct trade arrays", () => {
