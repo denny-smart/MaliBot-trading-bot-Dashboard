@@ -20,7 +20,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 font-syne overflow-x-hidden">
 
       {/* Cyber Navbar */}
       <header className={`fixed top-0 z-50 w-full transition-all duration-300 ${scrolled ? 'bg-black/80 backdrop-blur-md border-b border-white/5 py-4' : 'bg-transparent py-6'}`}>
@@ -35,7 +35,7 @@ export default function Home() {
             </span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 font-mono text-xs tracking-widest">
+          <nav className="hidden md:flex items-center gap-8 font-space text-xs tracking-widest">
             {['How It Works', 'Safety', 'Transparency'].map((item) => (
               <a
                 key={item}
@@ -49,7 +49,7 @@ export default function Home() {
 
           <div className="flex items-center gap-4">
             <Link to="/login" className="hidden md:flex relative items-center justify-center px-6 py-2 rounded-full border border-primary/50 text-primary bg-primary/5 overflow-hidden group transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:border-primary">
-              <span className="relative z-10 font-mono text-xs font-bold tracking-widest uppercase">
+              <span className="relative z-10 font-space text-xs font-bold tracking-widest uppercase">
                 ACCESS DASHBOARD
               </span>
 
@@ -125,7 +125,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mt-8 flex items-center gap-2 text-primary text-sm font-mono uppercase font-semibold">
+            <div className="mt-8 flex items-center gap-2 text-primary text-sm font-space uppercase font-semibold">
               <CheckCircle2 className="w-3 h-3" /> Encryption Enabled · Admin Approval Required
             </div>
           </div>
@@ -134,7 +134,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-black border-t border-primary/10 py-12 px-6">
-        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-muted-foreground text-xs font-mono">
+        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-muted-foreground text-xs font-space">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
             <img src="/favicon.png" alt="MaliBot" className="w-4 h-4 object-contain" />
             <span>MALIBOT // SYSTEM V2.5</span>

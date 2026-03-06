@@ -13,7 +13,7 @@ export default function Login() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (!authLoading && isAuthenticated && isApproved !== null) {
       if (isApproved) {
         navigate('/dashboard');
       } else {

@@ -16,6 +16,19 @@ interface ExitControlsResponse {
   stagnation_enabled: boolean;
 }
 
+export interface AuthMeResponsePayload {
+  is_approved?: boolean | null;
+  approved?: boolean | null;
+  role?: 'admin' | 'user' | null;
+  user?: {
+    is_approved?: boolean | null;
+    approved?: boolean | null;
+    role?: 'admin' | 'user' | null;
+    [key: string]: unknown;
+  } | null;
+  [key: string]: unknown;
+}
+
 export interface TradeSyncResponsePayload {
   checked_contracts: number;
   existing_count: number;
@@ -129,7 +142,7 @@ apiClient.interceptors.response.use(
 export const api = {
   auth: {
     checkApproval: () => apiClient.get<{ approved: boolean }>('/api/v1/auth/check-approval'),
-    me: () => apiClient.get<{ user: Record<string, unknown> }>('/api/v1/auth/me'),
+    me: () => apiClient.get<AuthMeResponsePayload>('/api/v1/auth/me'),
     status: () => apiClient.get<{ status: string }>('/api/v1/auth/status'),
     requestApproval: () => apiClient.post<{ success: boolean }>('/api/v1/auth/request-approval'),
   },

@@ -18,7 +18,7 @@ import { Send } from 'lucide-react';
 
 export default function PendingApproval() {
   const navigate = useNavigate();
-  const { logout, checkApproval, user } = useAuth();
+  const { logout, checkApproval, user, isApproved, isLoading } = useAuth();
 
   const [isChecking, setIsChecking] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
@@ -39,6 +39,12 @@ export default function PendingApproval() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (!isLoading && isApproved) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isApproved, isLoading, navigate]);
 
   const handleLogout = async () => {
     await logout();

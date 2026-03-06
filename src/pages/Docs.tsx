@@ -4,7 +4,7 @@ import { ArrowLeft, Shield, Key, LineChart, PlayCircle, Lock } from 'lucide-reac
 
 export default function Docs() {
     return (
-        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
+        <div className="min-h-screen bg-background text-foreground font-syne selection:bg-primary/30">
             {/* Header */}
             <header className="fixed top-0 z-50 w-full bg-black/80 backdrop-blur-md border-b border-white/5 py-4">
                 <div className="container mx-auto flex items-center justify-between px-6">
@@ -15,7 +15,7 @@ export default function Docs() {
                         </span>
                     </Link>
                     <Link to="/" className="hidden md:flex relative items-center justify-center px-6 py-2 rounded-full border border-primary/50 text-primary bg-primary/5 overflow-hidden group transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:border-primary">
-                        <span className="relative z-10 font-mono text-xs font-bold tracking-widest uppercase flex items-center gap-2">
+                        <span className="relative z-10 font-space text-xs font-bold tracking-widest uppercase flex items-center gap-2">
                             <ArrowLeft className="w-4 h-4" /> BACK TO HOME
                         </span>
                         {/* Surge Effect */}
@@ -81,8 +81,8 @@ export default function Docs() {
                                         <li>Navigate to <strong>API Token</strong> management.</li>
                                         <li>Create a new token with the following scopes <strong>ONLY</strong>:
                                             <div className="flex gap-2 mt-2">
-                                                <span className="bg-primary/20 text-primary px-2 py-1 rounded text-xs font-mono">Read</span>
-                                                <span className="bg-primary/20 text-primary px-2 py-1 rounded text-xs font-mono">Trade</span>
+                                                <span className="bg-primary/20 text-primary px-2 py-1 rounded text-xs font-space">Read</span>
+                                                <span className="bg-primary/20 text-primary px-2 py-1 rounded text-xs font-space">Trade</span>
                                             </div>
                                         </li>
                                         <li>Copy the generated token.</li>
@@ -160,7 +160,7 @@ export default function Docs() {
 
             {/* Footer */}
             <footer className="bg-black border-t border-primary/10 py-12 px-6 mt-24">
-                <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-muted-foreground text-xs font-mono">
+                <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-muted-foreground text-xs font-space">
                     <div className="flex items-center gap-2 mb-4 md:mb-0">
                         <img src="/favicon.png" alt="MaliBot" className="w-4 h-4 object-contain" />
                         <span>MALIBOT // SYSTEM V2.5</span>

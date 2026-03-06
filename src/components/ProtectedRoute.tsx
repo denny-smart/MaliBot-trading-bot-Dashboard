@@ -10,7 +10,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, isApproved } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  if (isLoading || (isAuthenticated && isApproved === null)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -25,8 +25,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check if user is approved (strict check)
-  if (!isApproved) {
+  if (isApproved === false) {
     return <Navigate to="/pending-approval" replace />;
   }
 
