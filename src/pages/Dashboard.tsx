@@ -34,6 +34,32 @@ import {
   type FrontendTradeStats
 } from '@/lib/dashboardTransformers';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { BackendTrade } from '@/lib/tradeTransformers';
+
+type DashboardConfig = {
+  deriv_api_key?: string;
+  strategy?: string;
+  stake_amount: number;
+  active_strategy?: string;
+  auto_execute_signals?: boolean;
+  [key: string]: unknown;
+};
+
+type WebSocketStatsPayload = {
+  stats?: Record<string, unknown>;
+};
+
+const getErrorDetail = (error: unknown, fallback = 'An error occurred') => {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: { data?: { detail?: unknown } } }).response;
+    const detail = response?.data?.detail;
+    if (typeof detail === 'string' && detail.trim()) {
+      return detail;
+    }
+  }
+
+  return fallback;
+};
 
 const parseTradeTimeToMs = (value: string): number => {
   const parsed = Date.parse(value);
@@ -115,37 +141,41 @@ export default function Dashboard() {
   useEffect(() => {
     // Connection is now managed by NotificationContext/Global
 
-    const handleBotStatus = (data: any) => {
+    const handleBotStatus = (data: unknown) => {
       console.log('Dashboard received bot_status event:', data);
-      
+
+      const eventData = data && typeof data === 'object'
+        ? (data as Record<string, unknown>)
+        : {};
+
       queryClient.setQueryData(['botStatus'], (prev: FrontendBotStatus | undefined) => {
-        const newStatus = transformBotStatus(data);
-        
+        const newStatus = transformBotStatus(eventData);
+
         // Explicitly preserve and update balance from event
-        if (data.balance !== undefined && data.balance !== null) {
-          newStatus.balance = Number(data.balance);
+        if (eventData.balance !== undefined && eventData.balance !== null) {
+          newStatus.balance = Number(eventData.balance);
           console.log('Updated balance from websocket:', newStatus.balance);
         }
-        
+
         if (newStatus.stake_amount === 0 && prev?.stake_amount) {
           newStatus.stake_amount = prev.stake_amount;
         }
-        
+
         console.log('Final transformed bot status:', newStatus);
         return prev ? { ...prev, ...newStatus } : newStatus;
       });
     };
 
-    const handleNewTrade = (data: any) => {
-      const transformedTrade = transformTrades([data])[0];
+    const handleNewTrade = (data: unknown) => {
+      const transformedTrade = transformTrades([data as BackendTrade])[0];
       queryClient.setQueryData(['trades'], (prev: FrontendTrade[] | undefined) => {
         const currentData = prev || [];
         return [transformedTrade, ...currentData.slice(0, 49)];
       });
     };
 
-    const handleTradeClosed = (data: any) => {
-      const transformedTrade = transformTrades([data])[0];
+    const handleTradeClosed = (data: unknown) => {
+      const transformedTrade = transformTrades([data as BackendTrade])[0];
 
       // Update trades list
       queryClient.setQueryData(['trades'], (prev: FrontendTrade[] | undefined) => {
@@ -167,11 +197,15 @@ export default function Dashboard() {
     };
 
     wsService.on('bot_status', handleBotStatus);
-    wsService.on('statistics', (data: any) => {
+    wsService.on('statistics', (data: unknown) => {
       console.log('Dashboard received statistics event:', data);
-      queryClient.setQueryData(['tradeStats'], (prev: any) => {
-        console.log('Updated trade stats from websocket:', data.stats);
-        return data.stats || prev;
+      const eventData = data && typeof data === 'object'
+        ? (data as WebSocketStatsPayload)
+        : {};
+
+      queryClient.setQueryData(['tradeStats'], (prev: FrontendTradeStats | undefined) => {
+        console.log('Updated trade stats from websocket:', eventData.stats);
+        return eventData.stats ? transformTradeStats(eventData.stats) : prev;
       });
       // Also invalidate to trigger fresh fetch
       queryClient.invalidateQueries({ queryKey: ['tradeStats'] });
@@ -189,12 +223,12 @@ export default function Dashboard() {
   const handleStart = async () => {
     try {
       await api.bot.start();
-      queryClient.setQueryData(['botStatus'], (prev: any) => prev && { ...prev, status: 'running' });
+      queryClient.setQueryData(['botStatus'], (prev: FrontendBotStatus | undefined) => prev && { ...prev, status: 'running' });
       toast({ title: 'Bot Started', description: 'Trading bot is now running.' });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Failed to start bot',
-        description: error.response?.data?.detail || 'An error occurred',
+        description: getErrorDetail(error),
         variant: 'destructive',
       });
     }
@@ -203,12 +237,12 @@ export default function Dashboard() {
   const handleStop = async () => {
     try {
       await api.bot.stop();
-      queryClient.setQueryData(['botStatus'], (prev: any) => prev && { ...prev, status: 'stopped' });
+      queryClient.setQueryData(['botStatus'], (prev: FrontendBotStatus | undefined) => prev && { ...prev, status: 'stopped' });
       toast({ title: 'Bot Stopped', description: 'Trading bot has been stopped.' });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Failed to stop bot',
-        description: error.response?.data?.detail || 'An error occurred',
+        description: getErrorDetail(error),
         variant: 'destructive',
       });
     }
@@ -218,10 +252,10 @@ export default function Dashboard() {
     try {
       await api.bot.restart();
       toast({ title: 'Bot Restarted', description: 'Trading bot has been restarted.' });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Failed to restart bot',
-        description: error.response?.data?.detail || 'An error occurred',
+        description: getErrorDetail(error),
         variant: 'destructive',
       });
     }
@@ -233,10 +267,10 @@ export default function Dashboard() {
       await api.config.update({ ...currentConfigRes.data, deriv_api_key: key });
       await queryClient.invalidateQueries({ queryKey: ['config'] });
       toast({ title: 'API Key Updated', description: 'Your Deriv API key has been securely saved.' });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Failed to update API Key',
-        description: error.response?.data?.detail || 'An error occurred',
+        description: getErrorDetail(error),
         variant: 'destructive',
       });
     }
@@ -252,7 +286,7 @@ export default function Dashboard() {
   };
 
   const handleToggleAutoExecuteSignals = async (enabled: boolean) => {
-    queryClient.setQueryData(['config'], (prev: any) =>
+    queryClient.setQueryData(['config'], (prev: DashboardConfig | undefined) =>
       prev ? { ...prev, auto_execute_signals: enabled } : { auto_execute_signals: enabled }
     );
     try {
@@ -264,11 +298,11 @@ export default function Dashboard() {
           ? 'Signals will be executed automatically.'
           : 'Signals will be notifications only until you enable auto execution.',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       await queryClient.invalidateQueries({ queryKey: ['config'] });
       toast({
         title: 'Failed to update execution mode',
-        description: error.response?.data?.detail || 'An error occurred',
+        description: getErrorDetail(error),
         variant: 'destructive',
       });
     }
@@ -284,10 +318,10 @@ export default function Dashboard() {
         title: importedCount > 0 ? 'Trade sync complete' : 'No new trades found',
         description: `Imported ${importedCount} open contract(s) from broker.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Trade sync failed',
-        description: error?.response?.data?.detail || 'Could not sync open contracts.',
+        description: getErrorDetail(error, 'Could not sync open contracts.'),
         variant: 'destructive',
       });
     } finally {
@@ -343,18 +377,18 @@ export default function Dashboard() {
         </div>
 
         {/* Role Badge & Status */}
-        <div className="flex items-center gap-2">
-          <Badge variant={role === 'admin' ? 'default' : 'secondary'} className="text-sm px-3 py-1">
+        <div className="flex items-center gap-3">
+          <Badge className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-none text-sm px-4 py-1.5 rounded-full font-medium">
             Role: {role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User'}
           </Badge>
           {botStatus?.active_strategy && (
-            <Badge variant="outline" className="text-sm px-3 py-1 flex items-center gap-1">
+            <Badge className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-none text-sm px-4 py-1.5 flex items-center gap-1.5 rounded-full font-medium">
               <Shield className="w-3 h-3" />
               Strategy: {botStatus.active_strategy}
             </Badge>
           )}
           {botStatus?.stake_amount !== undefined && (
-            <Badge variant="outline" className="text-sm px-3 py-1 flex items-center gap-1">
+            <Badge className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-none text-sm px-4 py-1.5 flex items-center gap-1.5 rounded-full font-medium">
               <Target className="w-3 h-3" />
               Stake: ${botStatus.stake_amount}
             </Badge>

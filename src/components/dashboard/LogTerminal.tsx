@@ -122,14 +122,14 @@ export function LogTerminal() {
 
     // WebSocket listener for real-time updates
     useEffect(() => {
-        const handleLog = (data: any) => {
-            if (data && data.message) {
+        const handleLog = (data: unknown) => {
+            if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
                 // Parse the message string from WebSocket
                 // Use a generic index since we don't have the full list context here
                 const parsedLog = parseLogString(data.message, Date.now());
                 if (parsedLog) {
-                    const wsTsMs = Number(data.timestamp_unix_ms);
-                    const wsTsIso = typeof data.timestamp === "string" ? new Date(data.timestamp) : null;
+                    const wsTsMs = 'timestamp_unix_ms' in data ? Number(data.timestamp_unix_ms) : Number.NaN;
+                    const wsTsIso = 'timestamp' in data && typeof data.timestamp === "string" ? new Date(data.timestamp) : null;
                     if (!isNaN(wsTsMs)) {
                         parsedLog.timestamp = wsTsMs / 1000;
                     } else if (wsTsIso && !isNaN(wsTsIso.getTime())) {
@@ -200,9 +200,9 @@ export function LogTerminal() {
     const clearLogs = () => setLogs([]);
 
     return (
-        <Card className="col-span-full glass-card border-white/10">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
+        <Card className="col-span-full bg-zinc-900 border-zinc-800 rounded-2xl overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between pb-3 space-y-0 p-6 border-b border-zinc-800">
+                <CardTitle className="text-sm font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
                     <Terminal className="h-4 w-4" />
                     Live Terminal
                 </CardTitle>
@@ -210,7 +210,7 @@ export function LogTerminal() {
                     <Button
                         variant="ghost"
                         size="icon"
-                        className={cn("h-6 w-6 text-muted-foreground hover:text-foreground", autoScroll && "text-primary")}
+                        className={cn("h-6 w-6 text-zinc-400 hover:text-zinc-200", autoScroll && "text-emerald-400")}
                         onClick={() => {
                             // If currently auto-scrolling, this pauses it.
                             // If paused, this resumes it AND scrolls to bottom immediately.
@@ -227,7 +227,7 @@ export function LogTerminal() {
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        className="h-6 w-6 text-zinc-400 hover:text-rose-500"
                         onClick={clearLogs}
                         title="Clear Logs"
                     >
@@ -235,31 +235,31 @@ export function LogTerminal() {
                     </Button>
                 </div>
             </CardHeader>
-            <CardContent>
-                <ScrollArea ref={scrollAreaRef} className="h-[300px] w-full rounded-md border bg-black/90 p-4 font-mono text-xs">
+            <CardContent className="p-0">
+                <ScrollArea ref={scrollAreaRef} className="h-[300px] w-full bg-black/50 shadow-inner p-4 font-mono text-xs">
                     {logs.length === 0 ? (
-                        <div className="flex h-full items-center justify-center text-muted-foreground/50">
+                        <div className="flex h-full items-center justify-center text-zinc-500/50">
                             Waiting for incoming logs...
                         </div>
                     ) : (
                         <div className="space-y-1">
                             {logs.map((log) => (
-                                <div key={log.id} className="flex gap-2 text-primary/90 break-all hover:bg-white/5 p-0.5 rounded transition-colors">
-                                    <span className="text-muted-foreground shrink-0 select-none">
+                                <div key={log.id} className="flex gap-2 text-zinc-300 break-all hover:bg-zinc-800/50 p-1 rounded transition-colors tracking-tight">
+                                    <span className="text-zinc-500 shrink-0 select-none">
                                         {new Date(log.timestamp * 1000).toLocaleTimeString()}
                                     </span>
                                     <span
                                         className={cn(
                                             "shrink-0 font-bold",
-                                            log.level === "INFO" && "text-blue-400",
-                                            log.level === "WARNING" && "text-yellow-400",
-                                            log.level === "ERROR" && "text-red-500",
-                                            log.level === "DEBUG" && "text-gray-400"
+                                            log.level === "INFO" && "text-emerald-400",
+                                            log.level === "WARNING" && "text-amber-400",
+                                            log.level === "ERROR" && "text-rose-500",
+                                            log.level === "DEBUG" && "text-zinc-400"
                                         )}
                                     >
                                         [{log.level}]
                                     </span>
-                                    <span className={cn(log.level === 'ERROR' ? "text-red-300" : "text-gray-300")}>
+                                    <span className={cn(log.level === 'ERROR' ? "text-rose-300" : "text-zinc-300")}>
                                         {log.message}
                                     </span>
                                 </div>

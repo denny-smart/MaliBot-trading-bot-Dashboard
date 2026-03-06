@@ -13,9 +13,8 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden">
-      {/* Cyber Background */}
-      <div className="fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background pointer-events-none" />
-      <div className="fixed inset-0 z-0 bg-grid-white/5 bg-[size:30px_30px] [mask-image:radial-gradient(ellipse_at_center,black,transparent)] pointer-events-none" />
+      {/* Modern Fintech Background */}
+      <div className="fixed inset-0 z-0 bg-zinc-950 pointer-events-none" />
 
       {/* Sidebar - hidden on mobile, fixed on desktop */}
       <div className={cn(
