@@ -48,7 +48,7 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-4">
-            <Link to="/login" className="hidden md:flex relative items-center justify-center px-6 py-2 rounded-full border border-primary/50 text-primary bg-primary/5 overflow-hidden group transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:border-primary">
+            <Link to="/login" className="hidden md:flex relative items-center justify-center px-6 py-2 rounded-full border border-primary/50 text-primary bg-primary/5 overflow-hidden group transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:border-primary">
               <span className="relative z-10 font-space text-xs font-bold tracking-widest uppercase">
                 ACCESS DASHBOARD
               </span>
@@ -114,7 +114,7 @@ export default function Home() {
                     </div>
 
                     {/* Unfiltered Text Layer - Stays Sharp */}
-                    <span className="relative z-20 flex items-center gap-2 drop-shadow-[0_0_10px_rgba(0,255,157,0.5)] whitespace-nowrap">
+                    <span className="relative z-20 flex items-center gap-2 drop-shadow-[0_0_10px_rgba(6,182,212,0.5)] whitespace-nowrap">
                       REQUEST SECURE ACCESS <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                     </span>
                   </Link>

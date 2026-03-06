@@ -110,7 +110,7 @@ export function HeroCommandCenter() {
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-10">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-                <div className="w-20 h-20 rounded-full bg-black/50 border border-primary/50 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:bg-primary text-primary group-hover:text-black transition-all duration-300 shadow-[0_0_30px_rgba(0,255,157,0.3)]">
+                <div className="w-20 h-20 rounded-full bg-black/50 border border-primary/50 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:bg-primary text-primary group-hover:text-black transition-all duration-300 shadow-[0_0_30px_rgba(6,182,212,0.3)]">
                   <Play className="w-8 h-8 fill-current ml-1" />
                 </div>
               </div>
