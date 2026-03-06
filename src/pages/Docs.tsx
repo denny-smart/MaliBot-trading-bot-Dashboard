@@ -1,8 +1,13 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Shield, Key, LineChart, PlayCircle, Lock } from 'lucide-react';
 
 export default function Docs() {
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+    }, []);
+
     return (
         <div className="min-h-screen bg-background text-foreground font-syne selection:bg-primary/30">
             {/* Header */}
