@@ -210,7 +210,7 @@ export function LogTerminal() {
                     <Button
                         variant="ghost"
                         size="icon"
-                        className={cn("h-6 w-6 text-zinc-400 hover:text-zinc-200", autoScroll && "text-cyan-400")}
+                        className={cn("h-6 w-6 text-zinc-400 hover:text-zinc-200", autoScroll && "text-success")}
                         onClick={() => {
                             // If currently auto-scrolling, this pauses it.
                             // If paused, this resumes it AND scrolls to bottom immediately.
@@ -251,7 +251,7 @@ export function LogTerminal() {
                                     <span
                                         className={cn(
                                             "shrink-0 font-bold",
-                                            log.level === "INFO" && "text-cyan-400",
+                                            log.level === "INFO" && "text-success",
                                             log.level === "WARNING" && "text-amber-400",
                                             log.level === "ERROR" && "text-rose-500",
                                             log.level === "DEBUG" && "text-zinc-400"

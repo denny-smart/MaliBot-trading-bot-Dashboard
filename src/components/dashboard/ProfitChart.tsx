@@ -19,6 +19,8 @@ interface ProfitChartProps {
 
 export function ProfitChart({ data }: ProfitChartProps) {
   const isProfit = data.length > 0 && data[data.length - 1].profit >= 0;
+  const positiveColor = 'hsl(var(--success))';
+  const negativeColor = 'hsl(var(--destructive))';
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl h-[400px] flex flex-col">
@@ -39,12 +41,12 @@ export function ProfitChart({ data }: ProfitChartProps) {
                 <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="5%"
-                    stopColor={isProfit ? 'hsl(142, 71%, 45%)' : 'hsl(346, 87%, 44%)'}
+                    stopColor={isProfit ? positiveColor : negativeColor}
                     stopOpacity={0.2}
                   />
                   <stop
                     offset="95%"
-                    stopColor={isProfit ? 'hsl(142, 71%, 45%)' : 'hsl(346, 87%, 44%)'}
+                    stopColor={isProfit ? positiveColor : negativeColor}
                     stopOpacity={0}
                   />
                 </linearGradient>
@@ -77,7 +79,7 @@ export function ProfitChart({ data }: ProfitChartProps) {
                           <span className="text-xs font-medium text-white">Profit:</span>
                           <span
                             className={`font-mono font-bold text-sm tracking-tight ${payload[0].value && Number(payload[0].value) >= 0
-                              ? 'text-cyan-400'
+                              ? 'text-success'
                               : 'text-rose-500'
                               }`}
                           >
@@ -93,7 +95,7 @@ export function ProfitChart({ data }: ProfitChartProps) {
               <Area
                 type="monotone"
                 dataKey="profit"
-                stroke={isProfit ? 'hsl(142, 71%, 45%)' : 'hsl(346, 87%, 44%)'}
+                stroke={isProfit ? positiveColor : negativeColor}
                 strokeWidth={2}
                 fill="url(#profitGradient)"
               />

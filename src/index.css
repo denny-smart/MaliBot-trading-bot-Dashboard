@@ -68,6 +68,25 @@
     --sidebar-border: 240 4% 16%;
     --sidebar-ring: 177 71% 56%;
   }
+
+  .theme-dashboard {
+    --primary: 160 84% 39%;
+    /* emerald-500 */
+    --primary-foreground: 0 0% 100%;
+
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    --ring: 160 84% 39%;
+    --chart-1: 160 84% 39%;
+
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-ring: 160 84% 39%;
+  }
 }
 
 @layer base {
