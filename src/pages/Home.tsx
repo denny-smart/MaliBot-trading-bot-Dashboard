@@ -76,11 +76,11 @@ export default function Home() {
           <div className="container relative z-10 flex flex-col items-center text-center px-4">
             <div className="w-px h-24 bg-gradient-to-b from-transparent via-primary to-transparent mb-8" />
 
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+            <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
               System Ready. <span className="text-primary">Awaiting Input.</span>
             </h2>
 
-            <p className="text-muted-foreground max-w-xl mb-12">
+            <p className="text-xl text-muted-foreground max-w-xl mb-12">
               The MaliBot protocol is active. Secure your position in the algorithmic future.
             </p>
 
@@ -98,7 +98,7 @@ export default function Home() {
 
               <div className="relative z-10 inline-block group">
                 <Button
-                  className="relative rounded-full bg-black/60 backdrop-blur-md text-primary px-12 py-8 text-lg font-bold tracking-widest overflow-hidden transition-all duration-300 hover:scale-105 hover:text-black hover:bg-primary/80 border-none"
+                  className="relative rounded-full bg-black/60 backdrop-blur-md text-primary px-8 py-6 md:px-12 md:py-8 text-sm md:text-lg font-bold tracking-widest overflow-hidden transition-all duration-300 hover:scale-105 hover:text-black hover:bg-primary/80 border-none"
                   asChild
                 >
                   <Link to="/login" className="relative block h-full w-full">
@@ -114,8 +114,8 @@ export default function Home() {
                     </div>
 
                     {/* Unfiltered Text Layer - Stays Sharp */}
-                    <span className="relative z-20 flex items-center gap-2 drop-shadow-[0_0_10px_rgba(0,255,157,0.5)]">
-                      REQUEST SECURE ACCESS <ArrowRight className="w-5 h-5" />
+                    <span className="relative z-20 flex items-center gap-2 drop-shadow-[0_0_10px_rgba(0,255,157,0.5)] whitespace-nowrap">
+                      REQUEST SECURE ACCESS <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                     </span>
                   </Link>
                 </Button>
@@ -125,8 +125,9 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mt-8 flex items-center gap-2 text-primary text-sm font-space uppercase font-semibold">
-              <CheckCircle2 className="w-3 h-3" /> Encryption Enabled · Admin Approval Required
+            <div className="mt-8 flex flex-col md:flex-row items-center justify-center text-center gap-2 text-primary text-sm md:text-base font-space uppercase font-semibold">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>Encryption Enabled · Admin Approval Required</span>
             </div>
           </div>
         </section>

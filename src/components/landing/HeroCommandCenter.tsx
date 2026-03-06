@@ -48,7 +48,7 @@ export function HeroCommandCenter() {
           </motion.div>
 
           <motion.h1
-            className="text-4xl md:text-6xl font-bold tracking-tighter"
+            className="text-4xl md:text-7xl font-bold tracking-tighter"
             variants={itemFadeIn}
           >
             Trade with rules,<br />
@@ -56,7 +56,7 @@ export function HeroCommandCenter() {
           </motion.h1>
 
           <motion.p
-            className="text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed"
+            className="text-lg md:text-2xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed"
             variants={itemFadeIn}
           >
             Automated trading designed to protect your capital. A system that waits for the right moment. Not every moment.
@@ -77,13 +77,13 @@ export function HeroCommandCenter() {
               </Link>
             </div>
 
-            <div className="text-sm text-muted-foreground font-mono pl-2">
+            <div className="text-sm md:text-base text-muted-foreground font-space pl-2">
               New to MaliBot? <Link to="/docs" className="text-primary hover:underline underline-offset-4 decoration-primary/50 transition-all font-bold">Start Here</Link>
             </div>
 
-            <div className="flex items-center gap-3 text-muted-foreground bg-black/40 px-4 py-2 rounded border border-white/5">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-              <span className="font-mono text-xs tracking-widest uppercase">
+            <div className="flex items-center gap-3 text-muted-foreground bg-black/40 px-4 md:px-5 py-2 md:py-3 rounded border border-white/5">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              <span className="font-space text-xs md:text-sm tracking-widest uppercase">
                 Access Restricted to Authorized Personnel
               </span>
             </div>
@@ -132,7 +132,7 @@ export function HeroCommandCenter() {
 
           {/* Floating Badges */}
           <motion.div
-            className="absolute -right-4 top-20 p-3 glass-card rounded-lg flex items-center gap-3 z-20 pointer-events-none"
+            className="absolute right-2 md:-right-8 -top-4 md:top-20 p-2 md:p-3 bg-black/20 backdrop-blur-md border border-white/10 shadow-2xl rounded-lg flex items-center gap-2 md:gap-3 z-20 pointer-events-none"
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
@@ -144,14 +144,14 @@ export function HeroCommandCenter() {
           </motion.div>
 
           <motion.div
-            className="absolute -left-4 bottom-20 p-3 glass-card rounded-lg flex items-center gap-3 z-20 pointer-events-none"
+            className="absolute left-2 md:-left-8 -bottom-4 md:bottom-20 p-2 md:p-3 bg-black/20 backdrop-blur-md border border-white/10 shadow-2xl rounded-lg flex items-center gap-2 md:gap-3 z-20 pointer-events-none"
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           >
-            <div className="p-2 bg-secondary/20 rounded-lg text-secondary"><ShieldCheck className="w-4 h-4" /></div>
+            <div className="p-2 bg-cyan-500/20 rounded-lg text-cyan-400"><ShieldCheck className="w-4 h-4" /></div>
             <div>
               <div className="text-[10px] text-muted-foreground">PROTECTION</div>
-              <div className="text-xs font-bold text-secondary">ENABLED</div>
+              <div className="text-xs font-bold text-cyan-400">ENABLED</div>
             </div>
           </motion.div>
         </motion.div>

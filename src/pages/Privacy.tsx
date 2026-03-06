@@ -28,17 +28,17 @@ export default function Privacy() {
                 </div>
             </header>
 
-            <main className="container mx-auto px-6 py-32">
+            <main className="container mx-auto px-6 py-32 text-lg">
                 <div className="max-w-4xl mx-auto">
                     <div className="w-px h-16 bg-gradient-to-b from-transparent via-primary to-transparent mb-8" />
                     <h1 className="text-4xl md:text-5xl font-bold mb-4 uppercase tracking-widest">
                         Privacy <span className="text-primary">Policy</span>
                     </h1>
-                    <p className="text-xl text-muted-foreground mb-16 max-w-2xl">
+                    <p className="text-2xl text-muted-foreground mb-16 max-w-2xl">
                         We believe in keeping things simple. We protect your data, respect your ownership, and ensure everything remains secure.
                     </p>
 
-                    <div className="grid gap-12">
+                    <div className="grid gap-12 prose-lg">
 
                         {/* Section 1: Data Collection */}
                         <section className="relative pl-8 border-l border-primary/20">
@@ -47,7 +47,7 @@ export default function Privacy() {
                                 <Database className="w-6 h-6 text-primary" />
                                 1. What We Collect
                             </h2>
-                            <div className="prose prose-invert prose-p:text-muted-foreground max-w-none">
+                            <div className="prose prose-invert prose-lg prose-p:text-muted-foreground max-w-none">
                                 <p>
                                     We rely on a "Need-to-Know" rule. We only collect the bare minimum needed for the bot to trade for you.
                                 </p>
@@ -65,7 +65,7 @@ export default function Privacy() {
                                 <Lock className="w-6 h-6 text-primary" />
                                 2. How We Protect You
                             </h2>
-                            <div className="prose prose-invert prose-p:text-muted-foreground max-w-none">
+                            <div className="prose prose-invert prose-lg prose-p:text-muted-foreground max-w-none">
                                 <p>
                                     Your secrets stay secret. We use the highest standard of encryption (AES-256) to lock your API tokens.
                                 </p>
@@ -85,7 +85,7 @@ export default function Privacy() {
                                 <Shield className="w-6 h-6 text-primary" />
                                 3. Your Data Rights
                             </h2>
-                            <div className="prose prose-invert prose-p:text-muted-foreground max-w-none">
+                            <div className="prose prose-invert prose-lg prose-p:text-muted-foreground max-w-none">
                                 <p>
                                     <strong>It's your data, not ours.</strong> We do not sell, rent, or trade your information to anyone—ever.
                                 </p>
@@ -102,11 +102,11 @@ export default function Privacy() {
                                 <Scale className="w-6 h-6 text-primary" />
                                 4. Our Promise to You
                             </h2>
-                            <div className="prose prose-invert prose-p:text-muted-foreground max-w-none">
+                            <div className="prose prose-invert prose-lg prose-p:text-muted-foreground max-w-none">
                                 <p>
                                     We stand by our security. If anything goes wrong, we have clear rules to protect you.
                                 </p>
-                                <ul className="list-disc pl-4 space-y-2 mt-4 text-sm md:text-base">
+                                <ul className="list-disc pl-4 space-y-2 mt-4 text-base md:text-lg">
                                     <li>
                                         <strong>We'll Tell You First:</strong> If there is ever a security issue, we will notify you within <strong>72 hours</strong>.
                                     </li>

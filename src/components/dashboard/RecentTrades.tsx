@@ -53,7 +53,7 @@ export function RecentTrades({ trades }: RecentTradesProps) {
                     className={cn(
                       'p-2 rounded-xl transition-colors',
                       trade.direction === 'UP'
-                        ? 'bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500/20'
+                        ? 'bg-cyan-500/10 text-cyan-500 group-hover:bg-cyan-500/20'
                         : 'bg-rose-500/10 text-rose-500 group-hover:bg-rose-500/20'
                     )}
                   >
@@ -68,7 +68,7 @@ export function RecentTrades({ trades }: RecentTradesProps) {
                       <Badge
                         className={cn(
                           'text-[9px] px-1.5 py-0.5 h-4 border-none font-bold tracking-wider',
-                          trade.direction === 'UP' ? 'bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30' : 'bg-rose-500/20 text-rose-500 hover:bg-rose-500/30'
+                          trade.direction === 'UP' ? 'bg-cyan-500/20 text-cyan-500 hover:bg-cyan-500/30' : 'bg-rose-500/20 text-rose-500 hover:bg-rose-500/30'
                         )}
                       >
                         {trade.direction}
@@ -93,7 +93,7 @@ export function RecentTrades({ trades }: RecentTradesProps) {
                     <p
                       className={cn(
                         'font-bold font-mono text-sm tracking-tight',
-                        trade.profit >= 0 ? 'text-emerald-400' : 'text-rose-500'
+                        trade.profit >= 0 ? 'text-cyan-400' : 'text-rose-500'
                       )}
                     >
                       {trade.profit >= 0 ? '+' : ''}
@@ -103,7 +103,7 @@ export function RecentTrades({ trades }: RecentTradesProps) {
                   <Badge
                     className={cn(
                       'text-[9px] px-1.5 py-0.5 h-4 mt-1 border-none font-bold uppercase tracking-wider',
-                      trade.status === 'win' && 'bg-emerald-500/10 text-emerald-500',
+                      trade.status === 'win' && 'bg-cyan-500/10 text-cyan-500',
                       trade.status === 'loss' && 'bg-rose-500/10 text-rose-500',
                       trade.status === 'open' && 'bg-zinc-500/10 text-zinc-400 animate-pulse'
                     )}
