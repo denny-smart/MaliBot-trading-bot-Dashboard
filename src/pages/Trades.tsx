@@ -536,7 +536,7 @@ export default function Trades() {
                 </p>
                 <p className="text-xs text-zinc-500">
                   Strategy context:{' '}
-                  <span className="font-semibold text-cyan-400">{accountStrategy}</span>
+                  <span className="font-semibold text-emerald-400">{accountStrategy}</span>
                 </p>
               </div>
               <Button
@@ -546,7 +546,7 @@ export default function Trades() {
                   "gap-2 font-semibold transition-all duration-200",
                   syncSubmitting
                     ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
-                    : "bg-cyan-600 text-white hover:bg-cyan-500 shadow-[0_0_18px_rgba(6,182,212,0.4)] hover:shadow-[0_0_28px_rgba(6,182,212,0.6)]"
+                    : "bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.4)] hover:shadow-[0_0_28px_rgba(16,185,129,0.6)]"
                 )}
               >
                 {syncSubmitting ? 'Syncing...' : 'Sync Open Trades'}
@@ -759,11 +759,11 @@ export default function Trades() {
                 placeholder="Search by Trade ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus:border-cyan-500/50 focus:ring-cyan-500/20"
+                className="pl-10 bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500/50 focus:ring-emerald-500/20"
               />
             </div>
             <Select value={directionFilter} onValueChange={setDirectionFilter}>
-              <SelectTrigger className="w-[150px] bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600 focus:border-cyan-500/50">
+              <SelectTrigger className="w-[150px] bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600 focus:border-emerald-500/50">
                 <Filter className="w-3.5 h-3.5 mr-2 text-zinc-500" />
                 <SelectValue placeholder="Direction" />
               </SelectTrigger>
@@ -774,7 +774,7 @@ export default function Trades() {
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[140px] bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600 focus:border-cyan-500/50">
+              <SelectTrigger className="w-[140px] bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600 focus:border-emerald-500/50">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent className="bg-zinc-900 border-zinc-700">
@@ -784,7 +784,7 @@ export default function Trades() {
               </SelectContent>
             </Select>
             <Select value={strategyFilter} onValueChange={setStrategyFilter}>
-              <SelectTrigger className="w-[155px] bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600 focus:border-cyan-500/50">
+              <SelectTrigger className="w-[155px] bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600 focus:border-emerald-500/50">
                 <SelectValue placeholder="Strategy" />
               </SelectTrigger>
               <SelectContent className="bg-zinc-900 border-zinc-700">
@@ -904,17 +904,17 @@ export default function Trades() {
               <p className="text-3xl font-bold text-white mt-1">{stats?.total_trades || 0}</p>
             </div>
             {/* Win Rate */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-cyan-800/40 transition-colors">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-emerald-800/40 transition-colors">
               <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Win Rate</p>
-              <p className="text-3xl font-bold text-cyan-400 mt-1">{(stats?.win_rate || 0).toFixed(1)}%</p>
+              <p className="text-3xl font-bold text-emerald-400 mt-1">{(stats?.win_rate || 0).toFixed(1)}%</p>
             </div>
             {/* Total Profit */}
             <div className={cn(
               'bg-zinc-900 border rounded-2xl p-5 flex flex-col gap-1 transition-colors',
-              (stats?.total_profit || 0) >= 0 ? 'border-cyan-800/40 hover:border-cyan-700/60' : 'border-rose-800/40 hover:border-rose-700/60'
+              (stats?.total_profit || 0) >= 0 ? 'border-emerald-800/40 hover:border-emerald-700/60' : 'border-rose-800/40 hover:border-rose-700/60'
             )}>
               <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Total Profit</p>
-              <p className={cn('text-3xl font-bold mt-1', (stats?.total_profit || 0) >= 0 ? 'text-cyan-400' : 'text-rose-500')}>
+              <p className={cn('text-3xl font-bold mt-1', (stats?.total_profit || 0) >= 0 ? 'text-emerald-400' : 'text-rose-500')}>
                 {(stats?.total_profit || 0) >= 0 ? '+' : ''}{formatCurrency(stats?.total_profit || 0)}
               </p>
             </div>
@@ -924,9 +924,9 @@ export default function Trades() {
               <p className="text-3xl font-bold text-white mt-1">{(stats?.profit_factor || 0).toFixed(2)}</p>
             </div>
             {/* Avg Win */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-cyan-800/40 transition-colors">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-emerald-800/40 transition-colors">
               <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Average Win</p>
-              <p className="text-3xl font-bold text-cyan-400 mt-1">{formatCurrency(stats?.avg_win || 0)}</p>
+              <p className="text-3xl font-bold text-emerald-400 mt-1">{formatCurrency(stats?.avg_win || 0)}</p>
             </div>
             {/* Avg Loss */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-rose-800/40 transition-colors">
@@ -934,9 +934,9 @@ export default function Trades() {
               <p className="text-3xl font-bold text-rose-500 mt-1">{formatCurrency(stats?.avg_loss || 0)}</p>
             </div>
             {/* Largest Win */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-cyan-800/40 transition-colors">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-emerald-800/40 transition-colors">
               <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Largest Win</p>
-              <p className="text-3xl font-bold text-cyan-400 mt-1">{formatCurrency(stats?.largest_win || 0)}</p>
+              <p className="text-3xl font-bold text-emerald-400 mt-1">{formatCurrency(stats?.largest_win || 0)}</p>
             </div>
             {/* Largest Loss */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-rose-800/40 transition-colors">

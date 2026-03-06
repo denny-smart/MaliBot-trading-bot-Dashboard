@@ -77,7 +77,7 @@ export function ProfitChart({ data }: ProfitChartProps) {
                           <span className="text-xs font-medium text-white">Profit:</span>
                           <span
                             className={`font-mono font-bold text-sm tracking-tight ${payload[0].value && Number(payload[0].value) >= 0
-                              ? 'text-cyan-400'
+                              ? 'text-emerald-400'
                               : 'text-rose-500'
                               }`}
                           >

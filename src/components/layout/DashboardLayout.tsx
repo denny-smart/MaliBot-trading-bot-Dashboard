@@ -12,7 +12,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background relative overflow-x-hidden">
+    <div className="theme-dashboard min-h-screen bg-background relative overflow-x-hidden">
       {/* Modern Fintech Background */}
       <div className="fixed inset-0 z-0 bg-zinc-950 pointer-events-none" />
 
