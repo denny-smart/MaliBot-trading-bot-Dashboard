@@ -68,6 +68,17 @@
     --sidebar-border: 240 4% 16%;
     --sidebar-ring: 177 71% 56%;
   }
+
+  .theme-dashboard {
+    /* Revert to Emerald theme for Dashboard */
+    --primary: 142 71% 45%;
+    --accent: 142 71% 45%;
+    --success: 142 71% 45%;
+    --ring: 142 71% 45%;
+    --chart-1: 142 71% 45%;
+    --sidebar-primary: 142 71% 45%;
+    --sidebar-ring: 142 71% 45%;
+  }
 }
 
 @layer base {
