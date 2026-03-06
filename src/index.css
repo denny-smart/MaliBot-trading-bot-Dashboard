@@ -7,41 +7,50 @@
 @layer base {
   :root {
     /* Modern Fintech Dark Theme */
-    --background: 240 6% 5%; /* zinc-950 */
+    --background: 240 6% 5%;
+    /* zinc-950 */
     --foreground: 0 0% 98%;
 
-    --card: 240 6% 10%; /* zinc-900 */
+    --card: 240 6% 10%;
+    /* zinc-900 */
     --card-foreground: 0 0% 98%;
 
     --popover: 240 6% 10%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 142 71% 45%; /* emerald-500 */
+    --primary: 142 71% 45%;
+    /* emerald-500 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 4% 15%; /* zinc-800 */
+    --secondary: 240 4% 15%;
+    /* zinc-800 */
     --secondary-foreground: 0 0% 98%;
 
     --muted: 240 4% 15%;
     --muted-foreground: 240 5% 65%;
 
-    --accent: 142 71% 45%; /* emerald */
+    --accent: 142 71% 45%;
+    /* emerald */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 346 87% 44%; /* rose-500 */
+    --destructive: 346 87% 44%;
+    /* rose-500 */
     --destructive-foreground: 0 0% 98%;
 
-    --success: 142 71% 45%; /* emerald */
+    --success: 142 71% 45%;
+    /* emerald */
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 98%;
 
-    --border: 240 4% 16%; /* zinc-800 */
+    --border: 240 4% 16%;
+    /* zinc-800 */
     --input: 240 4% 16%;
     --ring: 142 71% 45%;
 
-    --radius: 0.75rem; /* rounded-xl */
+    --radius: 0.75rem;
+    /* rounded-xl */
 
     --chart-1: 142 71% 45%;
     --chart-2: 346 87% 44%;
@@ -49,7 +58,8 @@
     --chart-4: 38 92% 50%;
     --chart-5: 270 100% 60%;
 
-    --sidebar-background: 240 6% 5%; /* zinc-950 */
+    --sidebar-background: 240 6% 5%;
+    /* zinc-950 */
     --sidebar-foreground: 240 5% 80%;
     --sidebar-primary: 142 71% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -118,17 +128,6 @@
 }
 
 @layer utilities {
-  .text-glow {
-    /* Removed aggressive glow */
-  }
-
-  .text-glow-accent {
-    /* Removed aggressive glow */
-  }
-
-  .bg-grid-white {
-    /* Removed grid */
-  }
 
   .bg-scanlines {
     background: linear-gradient(to bottom,

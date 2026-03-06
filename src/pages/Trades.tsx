@@ -438,55 +438,55 @@ export default function Trades() {
 
     return (
       <tr className="hover:bg-secondary/50 transition-colors">
-      <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
-      <td className="py-3 px-4 text-sm text-muted-foreground">{trade.symbol || '-'}</td>
-      <td className="py-3 px-4 text-muted-foreground text-sm">{formatDate(trade.time)}</td>
-      <td className="py-3 px-4">
-        {trade.strategy_type ? (
-          <Badge variant="secondary" className="text-[10px] bg-secondary/50 text-muted-foreground border-border/50 font-normal">
-            {trade.strategy_type}
+        <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
+        <td className="py-3 px-4 text-sm text-muted-foreground">{trade.symbol || '-'}</td>
+        <td className="py-3 px-4 text-muted-foreground text-sm">{formatDate(trade.time)}</td>
+        <td className="py-3 px-4">
+          {trade.strategy_type ? (
+            <Badge variant="secondary" className="text-[10px] bg-secondary/50 text-muted-foreground border-border/50 font-normal">
+              {trade.strategy_type}
+            </Badge>
+          ) : '-'}
+        </td>
+        <td className="py-3 px-4">
+          <Badge className={cn('text-xs', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
+            {trade.direction === 'UP' ? (
+              <ArrowUp className="w-3 h-3 mr-1" />
+            ) : (
+              <ArrowDown className="w-3 h-3 mr-1" />
+            )}
+            {trade.direction}
           </Badge>
-        ) : '-'}
-      </td>
-      <td className="py-3 px-4">
-        <Badge className={cn('text-xs', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
-          {trade.direction === 'UP' ? (
-            <ArrowUp className="w-3 h-3 mr-1" />
+        </td>
+        <td className="py-3 px-4 font-mono text-sm">
+          {trade.entry_price ? formatCurrency(trade.entry_price) : '-'}
+        </td>
+        <td className="py-3 px-4 font-mono text-sm">
+          {trade.exit_price ? formatCurrency(trade.exit_price) : '-'}
+        </td>
+        <td className="py-3 px-4 font-mono text-sm">
+          {trade.stake ? formatCurrency(trade.stake) : '-'}
+        </td>
+        <td className="py-3 px-4">
+          {trade.profit !== undefined ? (
+            <span className={cn('font-mono font-medium', trade.profit >= 0 ? 'profit-positive' : 'profit-negative')}>
+              {trade.profit >= 0 ? '+' : ''}{formatCurrency(trade.profit)}
+            </span>
           ) : (
-            <ArrowDown className="w-3 h-3 mr-1" />
+            '-'
           )}
-          {trade.direction}
-        </Badge>
-      </td>
-      <td className="py-3 px-4 font-mono text-sm">
-        {trade.entry_price ? formatCurrency(trade.entry_price) : '-'}
-      </td>
-      <td className="py-3 px-4 font-mono text-sm">
-        {trade.exit_price ? formatCurrency(trade.exit_price) : '-'}
-      </td>
-      <td className="py-3 px-4 font-mono text-sm">
-        {trade.stake ? formatCurrency(trade.stake) : '-'}
-      </td>
-      <td className="py-3 px-4">
-        {trade.profit !== undefined ? (
-          <span className={cn('font-mono font-medium', trade.profit >= 0 ? 'profit-positive' : 'profit-negative')}>
-            {trade.profit >= 0 ? '+' : ''}{formatCurrency(trade.profit)}
-          </span>
-        ) : (
-          '-'
-        )}
-      </td>
-      <td className="py-3 px-4 text-sm text-muted-foreground">
-        {trade.duration ? formatDuration(trade.duration) : '-'}
-      </td>
-      <td className="py-3 px-4">
-        <Badge
-          variant="outline"
-          className={getStatusBadgeClassName(displayStatus)}
-        >
-          {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
-        </Badge>
-      </td>
+        </td>
+        <td className="py-3 px-4 text-sm text-muted-foreground">
+          {trade.duration ? formatDuration(trade.duration) : '-'}
+        </td>
+        <td className="py-3 px-4">
+          <Badge
+            variant="outline"
+            className={getStatusBadgeClassName(displayStatus)}
+          >
+            {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
+          </Badge>
+        </td>
       </tr>
     );
   };
@@ -505,25 +505,50 @@ export default function Trades() {
   return (
     <DashboardLayout title="Trades">
       <Tabs defaultValue="active" className="space-y-6">
-        <TabsList className="glass-panel p-1">
-          <TabsTrigger value="active">Active Trades</TabsTrigger>
-          <TabsTrigger value="history">Trade History</TabsTrigger>
-          <TabsTrigger value="stats">Statistics</TabsTrigger>
+        <TabsList className="bg-zinc-900 border border-zinc-800 p-1 rounded-xl">
+          <TabsTrigger
+            value="active"
+            className="data-[state=active]:bg-zinc-700 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg font-medium text-zinc-400 transition-all"
+          >
+            Active Trades
+          </TabsTrigger>
+          <TabsTrigger
+            value="history"
+            className="data-[state=active]:bg-zinc-700 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg font-medium text-zinc-400 transition-all"
+          >
+            Trade History
+          </TabsTrigger>
+          <TabsTrigger
+            value="stats"
+            className="data-[state=active]:bg-zinc-700 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg font-medium text-zinc-400 transition-all"
+          >
+            Statistics
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="space-y-4">
-          <div className="glass-card p-6 space-y-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="space-y-1">
-                <h3 className="font-semibold text-foreground">Broker Contract Sync</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-semibold text-white tracking-tight">Broker Contract Sync</h3>
+                <p className="text-sm text-zinc-400">
                   Detect open multiplier contracts on Deriv and import missing ones into active tracking.
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Strategy context: <span className="font-medium text-foreground">{accountStrategy}</span>
+                <p className="text-xs text-zinc-500">
+                  Strategy context:{' '}
+                  <span className="font-semibold text-emerald-400">{accountStrategy}</span>
                 </p>
               </div>
-              <Button onClick={handleSyncTrades} disabled={syncSubmitting}>
+              <Button
+                onClick={handleSyncTrades}
+                disabled={syncSubmitting}
+                className={cn(
+                  "gap-2 font-semibold transition-all duration-200",
+                  syncSubmitting
+                    ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
+                    : "bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.4)] hover:shadow-[0_0_28px_rgba(16,185,129,0.6)]"
+                )}
+              >
                 {syncSubmitting ? 'Syncing...' : 'Sync Open Trades'}
               </Button>
             </div>
@@ -563,89 +588,90 @@ export default function Trades() {
                         {activeTrades.map((trade) => {
                           const displayStatus = getDisplayStatus(trade);
                           return (
-                          <tr key={trade.id} className="hover:bg-secondary/50 transition-colors">
-                            <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
-                            <td className="py-3 px-4 text-sm text-muted-foreground">{trade.symbol || '-'}</td>
-                            <td className="py-3 px-4 text-muted-foreground text-sm">{formatDate(trade.time)}</td>
-                            <td className="py-3 px-4">
-                              <div className="flex flex-wrap items-center gap-1">
-                                {trade.strategy_type ? (
-                                  <Badge variant="secondary" className="text-[10px] bg-secondary/50 text-muted-foreground border-border/50 font-normal">
-                                    {trade.strategy_type}
-                                  </Badge>
-                                ) : '-'}
-                                {trade.entry_source === 'manual_imported' && (
-                                  <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
-                                    Active and Tracked
-                                  </Badge>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <Badge className={cn('text-xs', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
-                                {trade.direction === 'UP' ? (
-                                  <ArrowUp className="w-3 h-3 mr-1" />
+                            <tr key={trade.id} className="hover:bg-secondary/50 transition-colors">
+                              <td className="py-3 px-4 font-mono text-sm">{trade.id}</td>
+                              <td className="py-3 px-4 text-sm text-muted-foreground">{trade.symbol || '-'}</td>
+                              <td className="py-3 px-4 text-muted-foreground text-sm">{formatDate(trade.time)}</td>
+                              <td className="py-3 px-4">
+                                <div className="flex flex-wrap items-center gap-1">
+                                  {trade.strategy_type ? (
+                                    <Badge variant="secondary" className="text-[10px] bg-secondary/50 text-muted-foreground border-border/50 font-normal">
+                                      {trade.strategy_type}
+                                    </Badge>
+                                  ) : '-'}
+                                  {trade.entry_source === 'manual_imported' && (
+                                    <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
+                                      Active and Tracked
+                                    </Badge>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge className={cn('text-xs', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
+                                  {trade.direction === 'UP' ? (
+                                    <ArrowUp className="w-3 h-3 mr-1" />
+                                  ) : (
+                                    <ArrowDown className="w-3 h-3 mr-1" />
+                                  )}
+                                  {trade.direction}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4 font-mono text-sm">
+                                {trade.entry_price ? formatCurrency(trade.entry_price) : '-'}
+                              </td>
+                              <td className="py-3 px-4 font-mono text-sm">
+                                {trade.exit_price ? formatCurrency(trade.exit_price) : '-'}
+                              </td>
+                              <td className="py-3 px-4 font-mono text-sm">
+                                {trade.stake ? formatCurrency(trade.stake) : '-'}
+                              </td>
+                              <td className="py-3 px-4">
+                                {trade.profit !== undefined ? (
+                                  <span className={cn('font-mono font-medium', trade.profit >= 0 ? 'profit-positive' : 'profit-negative')}>
+                                    {trade.profit >= 0 ? '+' : ''}{formatCurrency(trade.profit)}
+                                  </span>
                                 ) : (
-                                  <ArrowDown className="w-3 h-3 mr-1" />
+                                  '-'
                                 )}
-                                {trade.direction}
-                              </Badge>
-                            </td>
-                            <td className="py-3 px-4 font-mono text-sm">
-                              {trade.entry_price ? formatCurrency(trade.entry_price) : '-'}
-                            </td>
-                            <td className="py-3 px-4 font-mono text-sm">
-                              {trade.exit_price ? formatCurrency(trade.exit_price) : '-'}
-                            </td>
-                            <td className="py-3 px-4 font-mono text-sm">
-                              {trade.stake ? formatCurrency(trade.stake) : '-'}
-                            </td>
-                            <td className="py-3 px-4">
-                              {trade.profit !== undefined ? (
-                                <span className={cn('font-mono font-medium', trade.profit >= 0 ? 'profit-positive' : 'profit-negative')}>
-                                  {trade.profit >= 0 ? '+' : ''}{formatCurrency(trade.profit)}
-                                </span>
-                              ) : (
-                                '-'
-                              )}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-muted-foreground">
-                              {trade.duration ? formatDuration(trade.duration) : '-'}
-                            </td>
-                            <td className="py-3 px-4">
-                              <Badge
-                                variant="outline"
-                                className={getStatusBadgeClassName(displayStatus)}
-                              >
-                                {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
-                              </Badge>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex flex-col gap-2 min-w-[150px]">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="text-xs text-muted-foreground">Trailing</span>
-                                  <Switch
-                                    checked={trade.trailing_enabled ?? true}
-                                    disabled={isToggleLoading(trade.id, 'trailing_enabled')}
-                                    onCheckedChange={(checked) =>
-                                      handleExitControlToggle(trade, 'trailing_enabled', checked)
-                                    }
-                                  />
+                              </td>
+                              <td className="py-3 px-4 text-sm text-muted-foreground">
+                                {trade.duration ? formatDuration(trade.duration) : '-'}
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge
+                                  variant="outline"
+                                  className={getStatusBadgeClassName(displayStatus)}
+                                >
+                                  {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="flex flex-col gap-2 min-w-[150px]">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-xs text-muted-foreground">Trailing</span>
+                                    <Switch
+                                      checked={trade.trailing_enabled ?? true}
+                                      disabled={isToggleLoading(trade.id, 'trailing_enabled')}
+                                      onCheckedChange={(checked) =>
+                                        handleExitControlToggle(trade, 'trailing_enabled', checked)
+                                      }
+                                    />
+                                  </div>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-xs text-muted-foreground">Stagnation</span>
+                                    <Switch
+                                      checked={trade.stagnation_enabled ?? true}
+                                      disabled={isToggleLoading(trade.id, 'stagnation_enabled')}
+                                      onCheckedChange={(checked) =>
+                                        handleExitControlToggle(trade, 'stagnation_enabled', checked)
+                                      }
+                                    />
+                                  </div>
                                 </div>
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="text-xs text-muted-foreground">Stagnation</span>
-                                  <Switch
-                                    checked={trade.stagnation_enabled ?? true}
-                                    disabled={isToggleLoading(trade.id, 'stagnation_enabled')}
-                                    onCheckedChange={(checked) =>
-                                      handleExitControlToggle(trade, 'stagnation_enabled', checked)
-                                    }
-                                  />
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )})}
+                              </td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -726,49 +752,53 @@ export default function Trades() {
 
         <TabsContent value="history" className="space-y-4">
           {/* Filters */}
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-3 items-center bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <Input
                 placeholder="Search by Trade ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500/50 focus:ring-emerald-500/20"
               />
             </div>
             <Select value={directionFilter} onValueChange={setDirectionFilter}>
-              <SelectTrigger className="w-[140px]">
-                <Filter className="w-4 h-4 mr-2" />
+              <SelectTrigger className="w-[150px] bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600 focus:border-emerald-500/50">
+                <Filter className="w-3.5 h-3.5 mr-2 text-zinc-500" />
                 <SelectValue placeholder="Direction" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-zinc-900 border-zinc-700">
                 <SelectItem value="all">All Directions</SelectItem>
                 <SelectItem value="UP">Rise (Up)</SelectItem>
                 <SelectItem value="DOWN">Fall (Down)</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[140px] bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600 focus:border-emerald-500/50">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-zinc-900 border-zinc-700">
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="win">Win</SelectItem>
                 <SelectItem value="loss">Loss</SelectItem>
               </SelectContent>
             </Select>
             <Select value={strategyFilter} onValueChange={setStrategyFilter}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[155px] bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600 focus:border-emerald-500/50">
                 <SelectValue placeholder="Strategy" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-zinc-900 border-zinc-700">
                 <SelectItem value="all">All Strategies</SelectItem>
-                <SelectItem value="Conservative">Conservative (Trend Following)</SelectItem>
-                <SelectItem value="Scalping">Scalping (High Frequency)</SelectItem>
-                <SelectItem value="RiseFall">Rise/Fall (Binary Options)</SelectItem>
+                <SelectItem value="Conservative">Conservative</SelectItem>
+                <SelectItem value="Scalping">Scalping</SelectItem>
+                <SelectItem value="RiseFall">Rise/Fall</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="gap-2" onClick={exportToCSV} disabled={filteredHistory.length === 0}>
+            <Button
+              onClick={exportToCSV}
+              disabled={filteredHistory.length === 0}
+              className="gap-2 bg-zinc-700 text-zinc-100 border border-zinc-600 hover:bg-zinc-600 hover:text-white disabled:opacity-40 transition-all"
+            >
               <Download className="w-4 h-4" />
               Export CSV
             </Button>
@@ -811,53 +841,54 @@ export default function Trades() {
                     {filteredHistory.map((trade) => {
                       const displayStatus = getDisplayStatus(trade);
                       return (
-                      <Card key={trade.id} className="p-4 bg-card border-border">
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <span className="font-mono text-xs text-muted-foreground">#{trade.id}</span>
-                            <div className="text-xs text-muted-foreground mt-1">{trade.symbol || '-'}</div>
-                            <div className="text-sm font-medium mt-1">{formatDate(trade.time)}</div>
-                          </div>
-                          <Badge
-                            variant="outline"
-                            className={getStatusBadgeClassName(displayStatus)}
-                          >
-                            {displayStatus.toUpperCase()}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-                          <div className="flex items-center gap-1 col-span-2 mb-1">
-                            <Badge className={cn('text-[10px] h-5 px-1.5', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
-                              {trade.direction === 'UP' ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
-                              {trade.direction}
+                        <Card key={trade.id} className="p-4 bg-card border-border">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <span className="font-mono text-xs text-muted-foreground">#{trade.id}</span>
+                              <div className="text-xs text-muted-foreground mt-1">{trade.symbol || '-'}</div>
+                              <div className="text-sm font-medium mt-1">{formatDate(trade.time)}</div>
+                            </div>
+                            <Badge
+                              variant="outline"
+                              className={getStatusBadgeClassName(displayStatus)}
+                            >
+                              {displayStatus.toUpperCase()}
                             </Badge>
-                            {trade.strategy_type && (
-                              <Badge variant="secondary" className="text-[10px] h-5 px-1.5 bg-secondary/50 text-muted-foreground font-normal">
-                                {trade.strategy_type}
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                            <div className="flex items-center gap-1 col-span-2 mb-1">
+                              <Badge className={cn('text-[10px] h-5 px-1.5', trade.direction === 'UP' ? 'badge-rise' : 'badge-fall')}>
+                                {trade.direction === 'UP' ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
+                                {trade.direction}
                               </Badge>
-                            )}
+                              {trade.strategy_type && (
+                                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 bg-secondary/50 text-muted-foreground font-normal">
+                                  {trade.strategy_type}
+                                </Badge>
+                              )}
+                            </div>
+                            <div>
+                              <div className="text-muted-foreground text-xs">Entry</div>
+                              <div className="font-mono">{trade.entry_price ? formatCurrency(trade.entry_price) : '-'}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-muted-foreground text-xs">Exit</div>
+                              <div className="font-mono">{trade.exit_price ? formatCurrency(trade.exit_price) : '-'}</div>
+                            </div>
                           </div>
-                          <div>
-                            <div className="text-muted-foreground text-xs">Entry</div>
-                            <div className="font-mono">{trade.entry_price ? formatCurrency(trade.entry_price) : '-'}</div>
+                          <div className="pt-3 border-t border-border flex justify-between items-center">
+                            <div className="text-xs text-muted-foreground">
+                              Stake: {trade.stake ? formatCurrency(trade.stake) : '-'}
+                            </div>
+                            {trade.profit !== undefined ? (
+                              <span className={cn('font-mono font-bold text-base', trade.profit >= 0 ? 'profit-positive' : 'profit-negative')}>
+                                {trade.profit >= 0 ? '+' : ''}{formatCurrency(trade.profit)}
+                              </span>
+                            ) : '-'}
                           </div>
-                          <div className="text-right">
-                            <div className="text-muted-foreground text-xs">Exit</div>
-                            <div className="font-mono">{trade.exit_price ? formatCurrency(trade.exit_price) : '-'}</div>
-                          </div>
-                        </div>
-                        <div className="pt-3 border-t border-border flex justify-between items-center">
-                          <div className="text-xs text-muted-foreground">
-                            Stake: {trade.stake ? formatCurrency(trade.stake) : '-'}
-                          </div>
-                          {trade.profit !== undefined ? (
-                            <span className={cn('font-mono font-bold text-base', trade.profit >= 0 ? 'profit-positive' : 'profit-negative')}>
-                              {trade.profit >= 0 ? '+' : ''}{formatCurrency(trade.profit)}
-                            </span>
-                          ) : '-'}
-                        </div>
-                      </Card>
-                    )})}
+                        </Card>
+                      )
+                    })}
                   </div>
                 </>
               )}
@@ -866,40 +897,51 @@ export default function Trades() {
         </TabsContent>
 
         <TabsContent value="stats" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="stat-card text-center">
-              <p className="text-sm text-muted-foreground">Total Trades</p>
-              <p className="text-3xl font-bold text-foreground mt-2">{stats?.total_trades || 0}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Total Trades */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-zinc-700 transition-colors">
+              <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Total Trades</p>
+              <p className="text-3xl font-bold text-white mt-1">{stats?.total_trades || 0}</p>
             </div>
-            <div className="stat-card text-center">
-              <p className="text-sm text-muted-foreground">Win Rate</p>
-              <p className="text-3xl font-bold text-success mt-2">{(stats?.win_rate || 0).toFixed(1)}%</p>
+            {/* Win Rate */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-emerald-800/40 transition-colors">
+              <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Win Rate</p>
+              <p className="text-3xl font-bold text-emerald-400 mt-1">{(stats?.win_rate || 0).toFixed(1)}%</p>
             </div>
-            <div className="stat-card text-center">
-              <p className="text-sm text-muted-foreground">Total Profit</p>
-              <p className={cn('text-3xl font-bold mt-2', (stats?.total_profit || 0) >= 0 ? 'text-success' : 'text-destructive')}>
-                {formatCurrency(stats?.total_profit || 0)}
+            {/* Total Profit */}
+            <div className={cn(
+              'bg-zinc-900 border rounded-2xl p-5 flex flex-col gap-1 transition-colors',
+              (stats?.total_profit || 0) >= 0 ? 'border-emerald-800/40 hover:border-emerald-700/60' : 'border-rose-800/40 hover:border-rose-700/60'
+            )}>
+              <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Total Profit</p>
+              <p className={cn('text-3xl font-bold mt-1', (stats?.total_profit || 0) >= 0 ? 'text-emerald-400' : 'text-rose-500')}>
+                {(stats?.total_profit || 0) >= 0 ? '+' : ''}{formatCurrency(stats?.total_profit || 0)}
               </p>
             </div>
-            <div className="stat-card text-center">
-              <p className="text-sm text-muted-foreground">Profit Factor</p>
-              <p className="text-3xl font-bold text-foreground mt-2">{(stats?.profit_factor || 0).toFixed(2)}</p>
+            {/* Profit Factor */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-zinc-700 transition-colors">
+              <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Profit Factor</p>
+              <p className="text-3xl font-bold text-white mt-1">{(stats?.profit_factor || 0).toFixed(2)}</p>
             </div>
-            <div className="stat-card text-center">
-              <p className="text-sm text-muted-foreground">Average Win</p>
-              <p className="text-3xl font-bold text-success mt-2">{formatCurrency(stats?.avg_win || 0)}</p>
+            {/* Avg Win */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-emerald-800/40 transition-colors">
+              <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Average Win</p>
+              <p className="text-3xl font-bold text-emerald-400 mt-1">{formatCurrency(stats?.avg_win || 0)}</p>
             </div>
-            <div className="stat-card text-center">
-              <p className="text-sm text-muted-foreground">Average Loss</p>
-              <p className="text-3xl font-bold text-destructive mt-2">{formatCurrency(stats?.avg_loss || 0)}</p>
+            {/* Avg Loss */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-rose-800/40 transition-colors">
+              <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Average Loss</p>
+              <p className="text-3xl font-bold text-rose-500 mt-1">{formatCurrency(stats?.avg_loss || 0)}</p>
             </div>
-            <div className="stat-card text-center">
-              <p className="text-sm text-muted-foreground">Largest Win</p>
-              <p className="text-3xl font-bold text-success mt-2">{formatCurrency(stats?.largest_win || 0)}</p>
+            {/* Largest Win */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-emerald-800/40 transition-colors">
+              <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Largest Win</p>
+              <p className="text-3xl font-bold text-emerald-400 mt-1">{formatCurrency(stats?.largest_win || 0)}</p>
             </div>
-            <div className="stat-card text-center">
-              <p className="text-sm text-muted-foreground">Largest Loss</p>
-              <p className="text-3xl font-bold text-destructive mt-2">{formatCurrency(stats?.largest_loss || 0)}</p>
+            {/* Largest Loss */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 flex flex-col gap-1 hover:border-rose-800/40 transition-colors">
+              <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">Largest Loss</p>
+              <p className="text-3xl font-bold text-rose-500 mt-1">{formatCurrency(stats?.largest_loss || 0)}</p>
             </div>
           </div>
         </TabsContent>

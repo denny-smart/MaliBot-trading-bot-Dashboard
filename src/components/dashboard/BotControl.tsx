@@ -162,14 +162,15 @@ export function BotControl({
         {/* Control Buttons */}
         {/* Control Buttons */}
         <div className="flex gap-3">
+          {/* START / CONFIGURE */}
           <Button
             onClick={() => openDialog('start')}
             disabled={status === 'running' || isLoading !== null}
             className={cn(
               "control-btn transition-all duration-300",
               status !== 'running'
-                ? "bg-emerald-600 text-white hover:bg-emerald-500 border-transparent shadow-none"
-                : "bg-zinc-800 text-zinc-500 border-transparent shadow-none"
+                ? "bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.45)] hover:shadow-[0_0_28px_rgba(16,185,129,0.65)] border-transparent"
+                : "bg-transparent text-zinc-600 border border-zinc-700 cursor-not-allowed shadow-none"
             )}
           >
             {isLoading === 'start' ? (
@@ -182,14 +183,15 @@ export function BotControl({
             <span className="hidden sm:inline">{!hasApiKey ? 'Configure API' : 'Activate'}</span>
           </Button>
 
+          {/* STOP */}
           <Button
             onClick={() => openDialog('stop')}
             disabled={status !== 'running' || isLoading !== null}
             className={cn(
               "control-btn transition-all duration-300",
               status === 'running'
-                ? "bg-rose-600 text-white hover:bg-rose-500 border-transparent shadow-none"
-                : "bg-zinc-800 text-zinc-500 border-transparent shadow-none"
+                ? "bg-rose-600 text-white hover:bg-rose-500 shadow-[0_0_18px_rgba(225,29,72,0.45)] hover:shadow-[0_0_28px_rgba(225,29,72,0.65)] border-transparent"
+                : "bg-transparent text-zinc-600 border border-zinc-700 cursor-not-allowed shadow-none"
             )}
           >
             {isLoading === 'stop' ? (
@@ -200,14 +202,15 @@ export function BotControl({
             <span className="hidden sm:inline">Terminate</span>
           </Button>
 
+          {/* RESTART */}
           <Button
             onClick={() => openDialog('restart')}
             disabled={status !== 'running' || isLoading !== null}
             className={cn(
               "control-btn transition-all duration-300",
               status === 'running'
-                ? "bg-zinc-700 text-white hover:bg-zinc-600 border-transparent shadow-none"
-                : "bg-zinc-800 text-zinc-500 border-transparent shadow-none"
+                ? "bg-zinc-600 text-white hover:bg-zinc-500 shadow-[0_0_16px_rgba(161,161,170,0.3)] hover:shadow-[0_0_24px_rgba(161,161,170,0.5)] border-transparent"
+                : "bg-transparent text-zinc-600 border border-zinc-700 cursor-not-allowed shadow-none"
             )}
           >
             {isLoading === 'restart' ? (
@@ -234,11 +237,11 @@ export function BotControl({
           disabled={isLoading !== null}
           variant="outline"
           className={cn(
-            "min-w-[190px] h-11 px-4 font-semibold border-2 transition-all duration-200",
+            "min-w-[190px] h-11 px-4 font-semibold border transition-all duration-200",
             autoExecuteSignals
-              ? "bg-emerald-500/20 text-emerald-400 border-none hover:bg-emerald-500/30"
-              : "bg-zinc-800 text-zinc-400 border-none hover:bg-zinc-700",
-            isLoading !== null && "opacity-80"
+              ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/50 hover:bg-emerald-500/25 shadow-[0_0_14px_rgba(16,185,129,0.25)]"
+              : "bg-zinc-800/60 text-zinc-400 border-zinc-600 hover:bg-zinc-700 hover:text-zinc-300",
+            isLoading !== null && "opacity-70"
           )}
         >
           {isLoading === 'autoexec' ? (
@@ -247,8 +250,8 @@ export function BotControl({
             <span className="inline-flex items-center gap-2">
               <span
                 className={cn(
-                  "w-2.5 h-2.5 rounded-full",
-                  autoExecuteSignals ? "bg-emerald-400" : "bg-rose-500"
+                  "w-2.5 h-2.5 rounded-full shadow-[0_0_6px_currentColor]",
+                  autoExecuteSignals ? "bg-emerald-400 text-emerald-400" : "bg-rose-500 text-rose-500"
                 )}
               />
               {autoExecuteSignals ? "AUTO: ON" : "AUTO: OFF"}
