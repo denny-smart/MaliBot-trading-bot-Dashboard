@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   generateProfitChartData,
+  generateProfitChartDataFromTrades,
   transformBotStatus,
   transformTradeStats,
 } from "../dashboardTransformers";
@@ -109,6 +110,62 @@ describe("dashboardTransformers", () => {
     expect(chart).toHaveLength(24);
     expect(chart[0]).toEqual({ time: "00:00", profit: 10 });
     expect(chart[23]).toEqual({ time: "23:00", profit: 240 });
+  });
+
+  it("builds chart data from real trades including manual imports", () => {
+    const chart = generateProfitChartDataFromTrades(
+      [
+        {
+          id: "manual-1",
+          symbol: "R_100",
+          time: "2026-03-07T10:15:00.000Z",
+          direction: "UP",
+          profit: 12,
+          status: "open",
+          entry_source: "manual_imported",
+        },
+        {
+          id: "bot-1",
+          symbol: "R_100",
+          time: "2026-03-07T11:20:00.000Z",
+          direction: "DOWN",
+          profit: -5,
+          status: "loss",
+        },
+      ],
+      { now: new Date("2026-03-07T11:45:00.000Z"), hours: 3 },
+    );
+
+    expect(chart).toEqual([
+      { time: "09:00", profit: 0 },
+      { time: "10:00", profit: 12 },
+      { time: "11:00", profit: 7 },
+    ]);
+  });
+
+  it("ignores invalid trade timestamps and missing profits when building chart data", () => {
+    const chart = generateProfitChartDataFromTrades(
+      [
+        {
+          id: "bad-time",
+          symbol: "R_50",
+          time: "not-a-date",
+          direction: "UP",
+          profit: 8,
+          status: "win",
+        },
+        {
+          id: "no-profit",
+          symbol: "R_50",
+          time: "2026-03-07T11:05:00.000Z",
+          direction: "UP",
+          status: "open",
+        },
+      ],
+      { now: new Date("2026-03-07T11:45:00.000Z"), hours: 2 },
+    );
+
+    expect(chart).toEqual([]);
   });
 
   it("maps trade stats and handles invalid payload", () => {

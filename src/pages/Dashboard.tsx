@@ -29,6 +29,7 @@ import { transformTrades, type FrontendTrade } from '@/lib/tradeTransformers';
 import {
   transformBotStatus,
   generateProfitChartData,
+  generateProfitChartDataFromTrades,
   transformTradeStats,
   type FrontendBotStatus,
   type FrontendTradeStats
@@ -64,6 +65,18 @@ const getErrorDetail = (error: unknown, fallback = 'An error occurred') => {
 const parseTradeTimeToMs = (value: string): number => {
   const parsed = Date.parse(value);
   return Number.isNaN(parsed) ? 0 : parsed;
+};
+
+const mergeDashboardTrades = (...tradeGroups: FrontendTrade[][]): FrontendTrade[] => {
+  const tradeMap = new Map<string, FrontendTrade>();
+
+  tradeGroups.flat().forEach((trade) => {
+    tradeMap.set(trade.id, trade);
+  });
+
+  return Array.from(tradeMap.values()).sort(
+    (a, b) => parseTradeTimeToMs(b.time) - parseTradeTimeToMs(a.time)
+  );
 };
 
 export default function Dashboard() {
@@ -114,13 +127,7 @@ export default function Dashboard() {
       const activeTrades = transformTrades(active.data || []);
       const historyTrades = transformTrades(history.data || []);
 
-      const tradeMap = new Map<string, FrontendTrade>();
-      historyTrades.forEach(t => tradeMap.set(t.id, t));
-      activeTrades.forEach(t => tradeMap.set(t.id, t));
-
-      return Array.from(tradeMap.values())
-        .sort((a, b) => parseTradeTimeToMs(b.time) - parseTradeTimeToMs(a.time))
-        .slice(0, 50);
+      return mergeDashboardTrades(historyTrades, activeTrades);
     },
     enabled: hasApiKey,
     refetchInterval: 30000,
@@ -168,18 +175,19 @@ export default function Dashboard() {
 
     const handleNewTrade = (data: unknown) => {
       const transformedTrade = transformTrades([data as BackendTrade])[0];
+      if (!transformedTrade) return;
+
       queryClient.setQueryData(['trades'], (prev: FrontendTrade[] | undefined) => {
-        const currentData = prev || [];
-        return [transformedTrade, ...currentData.slice(0, 49)];
+        return mergeDashboardTrades([transformedTrade], prev || []);
       });
     };
 
     const handleTradeClosed = (data: unknown) => {
       const transformedTrade = transformTrades([data as BackendTrade])[0];
+      if (!transformedTrade) return;
 
-      // Update trades list
       queryClient.setQueryData(['trades'], (prev: FrontendTrade[] | undefined) => {
-        return prev?.map((t) => (t.id === transformedTrade.id ? { ...t, ...transformedTrade } : t)) ?? [];
+        return mergeDashboardTrades([transformedTrade], prev || []);
       });
 
       // Update bot status (balance and profit)
@@ -353,7 +361,11 @@ export default function Dashboard() {
     ? (botStatus.profit / (botStatus.balance - botStatus.profit)) * 100
     : 0;
 
-  const profitData = generateProfitChartData(botStatus?.profit || 0, botStatus?.trades_today || 0);
+  const profitDataFromTrades = generateProfitChartDataFromTrades(trades);
+  const profitData = profitDataFromTrades.length > 0
+    ? profitDataFromTrades
+    : generateProfitChartData(botStatus?.profit || 0, botStatus?.trades_today || 0);
+  const recentTrades = trades.slice(0, 50);
 
   return (
     <DashboardLayout title="Dashboard">
@@ -460,7 +472,7 @@ export default function Dashboard() {
 
         {/* Charts and Trades */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RecentTrades trades={trades} />
+          <RecentTrades trades={recentTrades} />
           <ProfitChart data={profitData} />
         </div>
 

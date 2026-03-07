@@ -1,6 +1,7 @@
 /**
  * Transforms dashboard and bot status data from backend API format to frontend interface format
  */
+import type { FrontendTrade } from './tradeTransformers';
 
 export interface BackendBotStatus {
   status: 'running' | 'stopped';
@@ -29,6 +30,11 @@ export interface FrontendBotStatus {
   profit_percent: number;
   active_positions: number;
   win_rate: number;
+}
+
+export interface ProfitChartDataPoint {
+  time: string;
+  profit: number;
 }
 
 /**
@@ -98,8 +104,8 @@ export function transformBotStatus(backendStatus: BackendBotStatus | any): Front
 export function generateProfitChartData(
   totalProfit: number,
   tradesToday: number
-): { time: string; profit: number }[] {
-  const data: { time: string; profit: number }[] = [];
+): ProfitChartDataPoint[] {
+  const data: ProfitChartDataPoint[] = [];
   let cumulativeProfit = 0;
   const avgTradePerHour = tradesToday / 24;
 
@@ -114,6 +120,70 @@ export function generateProfitChartData(
 
     data.push({
       time: `${hour}:00`,
+      profit: Math.round(cumulativeProfit * 100) / 100,
+    });
+  }
+
+  return data;
+}
+
+export function generateProfitChartDataFromTrades(
+  trades: FrontendTrade[],
+  options?: { hours?: number; now?: Date }
+): ProfitChartDataPoint[] {
+  if (!Array.isArray(trades) || trades.length === 0) {
+    return [];
+  }
+
+  const hours = Math.max(1, Math.floor(options?.hours ?? 24));
+  const now = options?.now instanceof Date ? options.now : new Date();
+  const hourMs = 60 * 60 * 1000;
+  const endHour = new Date(now);
+  endHour.setMinutes(0, 0, 0);
+
+  const endMs = endHour.getTime();
+  const startMs = endMs - (hours - 1) * hourMs;
+  const profitsByHour = new Map<number, number>();
+
+  trades.forEach((trade) => {
+    if (typeof trade?.profit !== 'number' || !Number.isFinite(trade.profit)) {
+      return;
+    }
+
+    const tradeMs = Date.parse(trade.time);
+    if (Number.isNaN(tradeMs)) {
+      return;
+    }
+
+    const tradeHour = new Date(tradeMs);
+    tradeHour.setMinutes(0, 0, 0);
+    const bucketMs = tradeHour.getTime();
+
+    if (bucketMs < startMs || bucketMs > endMs) {
+      return;
+    }
+
+    profitsByHour.set(bucketMs, (profitsByHour.get(bucketMs) || 0) + trade.profit);
+  });
+
+  if (profitsByHour.size === 0) {
+    return [];
+  }
+
+  const data: ProfitChartDataPoint[] = [];
+  let cumulativeProfit = 0;
+
+  for (let index = 0; index < hours; index += 1) {
+    const bucketMs = startMs + index * hourMs;
+    cumulativeProfit += profitsByHour.get(bucketMs) || 0;
+
+    data.push({
+      time: new Date(bucketMs).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'UTC',
+      }),
       profit: Math.round(cumulativeProfit * 100) / 100,
     });
   }
