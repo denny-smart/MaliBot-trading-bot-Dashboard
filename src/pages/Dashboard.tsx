@@ -34,6 +34,7 @@ import {
   type FrontendBotStatus,
   type FrontendTradeStats
 } from '@/lib/dashboardTransformers';
+import { deriveClosedTradeBotStatusPatch, normalizeDashboardEvent } from '@/lib/dashboardRealtime';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { BackendTrade } from '@/lib/tradeTransformers';
 
@@ -151,9 +152,7 @@ export default function Dashboard() {
     const handleBotStatus = (data: unknown) => {
       console.log('Dashboard received bot_status event:', data);
 
-      const eventData = data && typeof data === 'object'
-        ? (data as Record<string, unknown>)
-        : {};
+      const eventData = normalizeDashboardEvent(data);
 
       queryClient.setQueryData(['botStatus'], (prev: FrontendBotStatus | undefined) => {
         const newStatus = transformBotStatus(eventData);
@@ -186,22 +185,38 @@ export default function Dashboard() {
       const transformedTrade = transformTrades([data as BackendTrade])[0];
       if (!transformedTrade) return;
 
+      const eventData = normalizeDashboardEvent(data);
+      const previousTrades = queryClient.getQueryData<FrontendTrade[]>(['trades']) || [];
+      const previousTrade = previousTrades.find((trade) => trade.id === transformedTrade.id);
+      const wasAlreadyClosed = previousTrade
+        ? previousTrade.status === 'win' || previousTrade.status === 'loss' || previousTrade.status === 'closed'
+        : false;
+
       queryClient.setQueryData(['trades'], (prev: FrontendTrade[] | undefined) => {
         return mergeDashboardTrades([transformedTrade], prev || []);
       });
 
-      // Update bot status (balance and profit)
+      // Prefer authoritative balance/position values from the close event and
+      // only fall back to optimistic local math when the event does not include them.
       queryClient.setQueryData(['botStatus'], (prev: FrontendBotStatus | undefined) => {
         if (!prev) return undefined;
 
-        const tradeProfit = transformedTrade.profit || 0;
+        const nextStatusPatch = deriveClosedTradeBotStatusPatch({
+          prevStatus: prev,
+          closeEvent: eventData,
+          tradeProfit: transformedTrade.profit || 0,
+          wasAlreadyClosed,
+        });
 
         return {
           ...prev,
-          balance: prev.balance + tradeProfit,
-          profit: prev.profit + tradeProfit
+          ...nextStatusPatch,
         };
       });
+
+      void queryClient.invalidateQueries({ queryKey: ['botStatus'] });
+      void queryClient.invalidateQueries({ queryKey: ['tradeStats'] });
+      void queryClient.invalidateQueries({ queryKey: ['trades'] });
     };
 
     wsService.on('bot_status', handleBotStatus);
