@@ -17,6 +17,9 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 2000,
+  },
   test: {
     globals: true,
     environment: "node",
